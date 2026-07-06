@@ -1,0 +1,13 @@
+{
+"type": "FeatureCollection",
+"name": "comisarias",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "Comisaría": "El Agustino A - Corporación", "Dirección": null, "Teléfono": null, "Teléfono de Medidas de Protección": null, "Comisario": null }, "geometry": { "type": "Point", "coordinates": [ -76.997671533223212, -12.049401164992942 ] } },
+{ "type": "Feature", "properties": { "fid": 2, "Comisaría": "Santoyo", "Dirección": null, "Teléfono": null, "Teléfono de Medidas de Protección": null, "Comisario": null }, "geometry": { "type": "Point", "coordinates": [ -77.008671141557883, -12.051040743881121 ] } },
+{ "type": "Feature", "properties": { "fid": 3, "Comisaría": "San Cayetano", "Dirección": null, "Teléfono": null, "Teléfono de Medidas de Protección": null, "Comisario": null }, "geometry": { "type": "Point", "coordinates": [ -77.008019649860969, -12.056878691824464 ] } },
+{ "type": "Feature", "properties": { "fid": 4, "Comisaría": "San Pedro", "Dirección": null, "Teléfono": null, "Teléfono de Medidas de Protección": null, "Comisario": null }, "geometry": { "type": "Point", "coordinates": [ -77.002713086206725, -12.060085195651201 ] } },
+{ "type": "Feature", "properties": { "fid": 5, "Comisaría": "Villa Hermosa", "Dirección": null, "Teléfono": null, "Teléfono de Medidas de Protección": null, "Comisario": null }, "geometry": { "type": "Point", "coordinates": [ -76.988824302321575, -12.041435790874576 ] } },
+{ "type": "Feature", "properties": { "fid": 6, "Comisaría": "De Familia", "Dirección": null, "Teléfono": null, "Teléfono de Medidas de Protección": null, "Comisario": null }, "geometry": { "type": "Point", "coordinates": [ -76.997974303025799, -12.050691340512939 ] } }
+]
+}

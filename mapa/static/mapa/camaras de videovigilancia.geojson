@@ -1,0 +1,16 @@
+{
+"type": "FeatureCollection",
+"name": "camaras de videovigilancia",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "CAMARAS DE VIDEOVIGILANCIA": 1 }, "geometry": { "type": "Point", "coordinates": [ -76.999068886512646, -12.040589556046031 ] } },
+{ "type": "Feature", "properties": { "fid": 2, "CAMARAS DE VIDEOVIGILANCIA": 2 }, "geometry": { "type": "Point", "coordinates": [ -77.006004494591991, -12.050548625586131 ] } },
+{ "type": "Feature", "properties": { "fid": 3, "CAMARAS DE VIDEOVIGILANCIA": 3 }, "geometry": { "type": "Point", "coordinates": [ -77.002681584871539, -12.053533448561774 ] } },
+{ "type": "Feature", "properties": { "fid": 4, "CAMARAS DE VIDEOVIGILANCIA": 4 }, "geometry": { "type": "Point", "coordinates": [ -77.004618338938286, -12.041719731735837 ] } },
+{ "type": "Feature", "properties": { "fid": 5, "CAMARAS DE VIDEOVIGILANCIA": 5 }, "geometry": { "type": "Point", "coordinates": [ -76.98452149686436, -12.044694895090203 ] } },
+{ "type": "Feature", "properties": { "fid": 6, "CAMARAS DE VIDEOVIGILANCIA": 6 }, "geometry": { "type": "Point", "coordinates": [ -76.98979082027283, -12.039609104486074 ] } },
+{ "type": "Feature", "properties": { "fid": 7, "CAMARAS DE VIDEOVIGILANCIA": 7 }, "geometry": { "type": "Point", "coordinates": [ -77.000894554934661, -12.054282069211018 ] } },
+{ "type": "Feature", "properties": { "fid": 8, "CAMARAS DE VIDEOVIGILANCIA": 8 }, "geometry": { "type": "Point", "coordinates": [ -76.99668296005639, -12.032673496406751 ] } },
+{ "type": "Feature", "properties": { "fid": 9, "CAMARAS DE VIDEOVIGILANCIA": 9 }, "geometry": { "type": "Point", "coordinates": [ -76.998201935502692, -12.033366574233616 ] } }
+]
+}
