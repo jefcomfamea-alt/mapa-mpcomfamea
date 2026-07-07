@@ -20,16 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!ice^e7gyq6ss5wxhu#)#*ri#79xs*$akrdcsx7a(9uan+5@d9'
+SECRET_KEY = 'django-insecure-+v#1ei3)k_t_lkzc*s7^$^sikozqj^9=f6rn5pht$uo&27*4kp'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'mapa-mpcomfamea.onrender.com',
-]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -40,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles', 'mapa',
+    'django.contrib.staticfiles',
 ]
 
 MIDDLEWARE = [
@@ -118,10 +114,4 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    BASE_DIR / "mapa" / "static",
-]
-
-
+STATIC_URL = 'static/'

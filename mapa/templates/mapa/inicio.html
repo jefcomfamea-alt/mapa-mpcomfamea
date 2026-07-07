@@ -52,17 +52,10 @@
 
 var map = L.map('map').setView([-12.02224, -77.00984], 14);
 
-// ====================================
-// MAPA BASE
-// ====================================
-
-L.tileLayer(
-    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
-        maxZoom:19,
-        attribution:'© OpenStreetMap'
-    }
-).addTo(map);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap"
+}).addTo(map);
 
 
 // ====================================
@@ -70,23 +63,17 @@ L.tileLayer(
 // ====================================
 
 fetch("/static/mapa/comisarias.geojson")
-
 .then(response => response.json())
-
 .then(data => {
 
-    L.geoJSON(data,{
+    L.geoJSON(data, {
 
-        onEachFeature:function(feature,layer){
+        onEachFeature: function(feature, layer){
 
-            let popup="<h3>COMISARÍA</h3><hr>";
+            let popup = "<h3>COMISARÍA</h3><hr>";
 
             for(let campo in feature.properties){
-
-                popup += "<b>"+campo+":</b> "
-                      + feature.properties[campo]
-                      + "<br>";
-
+                popup += "<b>" + campo + ":</b> " + feature.properties[campo] + "<br>";
             }
 
             layer.bindPopup(popup);
@@ -94,12 +81,6 @@ fetch("/static/mapa/comisarias.geojson")
         }
 
     }).addTo(map);
-
-})
-
-.catch(error=>{
-
-    console.log(error);
 
 });
 
@@ -202,11 +183,14 @@ fetch("/static/mapa/camaras de videovigilancia.geojson")
 
     }).addTo(map);
 
+    });
+
     //==============================
 // LIMITE DISTRITAL
 //==============================
 
-fetch("/static/mapa/limite distrital inei 2025.geojson")
+
+fetch("/static/mapa/limite_distrital inei 2025.geojson")
 .then(response=>response.json())
 .then(data=>{
 
@@ -220,23 +204,7 @@ fetch("/static/mapa/limite distrital inei 2025.geojson")
 
     }).addTo(map);
 
-    //==============================
-// LIMITE DISTRITAL
-//==============================
-
-fetch("/static/mapa/limite distrital inei 2025.geojson")
-.then(response=>response.json())
-.then(data=>{
-
-    L.geoJSON(data,{
-
-        style:{
-            color:"black",
-            weight:3,
-            fill:false
-        }
-
-    }).addTo(map);
+    });
 
     //==============================
 // LIMITE DE COMISARIAS
@@ -255,12 +223,6 @@ fetch("/static/mapa/limite de comisarias.geojson")
         }
 
     }).addTo(map);
-
-});
-
-});
-
-});
 
 });
 
