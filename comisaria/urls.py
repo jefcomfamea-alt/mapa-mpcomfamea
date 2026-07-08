@@ -5,9 +5,12 @@ from mapa.views import inicio
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # Login y logout de Django
+    # Login y logout
     path("accounts/", include("django.contrib.auth.urls")),
 
-    # Página principal (mapa)
+    # Página principal
     path("", inicio, name="inicio"),
+
+    # Rutas de la aplicación mapa
+    path("", include("mapa.urls")),
 ]

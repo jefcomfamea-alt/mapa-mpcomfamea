@@ -1,6 +1,68 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+
+from .forms import CasoForm
+from .models import Caso
+
 
 @login_required
 def inicio(request):
     return render(request, "mapa/inicio.html")
+
+
+@login_required
+def nuevo_caso(request):
+
+    if request.method == "POST":
+
+        form = CasoForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect("inicio")
+        else:
+            print(form.errors)
+
+    else:
+        form = CasoForm()
+
+    return render(request, "mapa/nuevo_caso.html", {
+        "form": form
+    })
+
+@login_required
+def casos_json(request):
+
+    features = []
+
+    for caso in Caso.objects.all():
+
+        features.append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [caso.longitud, caso.latitud]
+            },
+            "properties": {
+                "BENEFICIARIO": caso.beneficiario,
+                "DOMICILIO": caso.domicilio,
+                "NIVEL RIESGO": caso.nivel_riesgo,
+                "DISTRITO": caso.distrito,
+                "COMISARIA DE LA JURISDICCIÓN": caso.comisaria,
+                "EFECTIVO": caso.efectivo,
+                "FOLDER": caso.folder,
+                "EXP.": caso.expediente,
+                "AGRESOR": caso.agresor,
+                "TELEFONO": caso.telefono,
+                "fecha_registro": str(caso.fecha_registro) if caso.fecha_registro else "",
+                "ULTIMA VISITA": str(caso.ultima_visita) if caso.ultima_visita else "",
+                "FECHA LIMITE DE SEGUIMIENTO": str(caso.fecha_limite) if caso.fecha_limite else "",
+                "NOTIFICACIÓN": caso.notificacion,
+            }
+        })
+
+    return JsonResponse({
+        "type": "FeatureCollection",
+        "features": features
+    })
