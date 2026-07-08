@@ -40,6 +40,26 @@
 
 <h1>Mapa Web de Comisarías</h1>
 
+<div style="padding:10px;background:white;text-align:center">
+
+    <a href="/nuevo-caso/">
+
+        <button style="
+            background:#198754;
+            color:white;
+            border:none;
+            padding:12px 20px;
+            font-size:16px;
+            border-radius:6px;
+            cursor:pointer;
+        ">
+            ➕ Registrar Nuevo Caso
+        </button>
+
+    </a>
+
+</div>
+
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -89,11 +109,11 @@ fetch("/static/mapa/comisarias.geojson")
 // CAPA MONITOREO CASOS
 // ====================================
 
-fetch("/static/mapa/monitoreo_casos.geojson")
+fetch("/casos-json/")
 .then(response => response.json())
 .then(data => {
 
-    L.geoJSON(data, {
+    const capaCasos = L.geoJSON(data, {
 
         pointToLayer: function(feature, latlng){
 
@@ -222,7 +242,9 @@ fetch("/static/mapa/limite de comisarias.geojson")
             fill:false
         }
 
-    }).addTo(map);
+    });
+
+capaCasos.addTo(map);
 
 });
 
