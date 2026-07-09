@@ -46,13 +46,15 @@ body{
 
 .encabezado{
 
-    background:#0A3D91;
+    background:linear-gradient(135deg,#005A32,#0B7D4E);
 
-    color:white;
+    color:#FFFFFF;
 
     text-align:center;
 
-    padding:25px;
+    padding:30px;
+
+    border-bottom:6px solid #FFD100;
 
 }
 
@@ -65,17 +67,29 @@ body{
 
 .encabezado h1{
 
-    font-size:20px;
+    font-size:28px;
 
-    margin-bottom:8px;
+    margin-bottom:10px;
+
+    color:#FFD100;
+
+    font-weight:bold;
+
+    letter-spacing:1px;
+
+    text-shadow:1px 1px 3px rgba(0,0,0,.4);
 
 }
 
 .encabezado h2{
 
-    font-size:15px;
-    font-weight:normal;
-    line-height:22px;
+    font-size:16px;
+
+    line-height:26px;
+
+    color:#FFFFFF;
+
+    font-weight:500;
 
 }
 
@@ -89,11 +103,29 @@ body{
 
 .sistema h3{
 
-    color:#0A3D91;
+    color:#006B3F;
 
     font-size:22px;
 
     margin-bottom:10px;
+
+    font-weight:bold;
+
+}
+
+.comisaria{
+
+    color:#FFD100;
+
+    font-size:22px;
+
+    margin-top:15px;
+
+    font-weight:bold;
+
+    letter-spacing:1px;
+
+    text-shadow:1px 1px 2px rgba(0,0,0,.3);
 
 }
 
@@ -127,13 +159,25 @@ input{
 
     width:100%;
 
-    padding:12px;
+    padding:14px;
 
-    border:1px solid #ccc;
+    border:2px solid #C8D6C5;
 
-    border-radius:6px;
+    border-radius:8px;
 
-    font-size:15px;
+    font-size:16px;
+
+    transition:.3s;
+
+}
+
+input:focus{
+
+    outline:none;
+
+    border-color:#006B3F;
+
+    box-shadow:0 0 8px rgba(0,107,63,.30);
 
 }
 
@@ -143,25 +187,39 @@ button{
 
     margin-top:30px;
 
-    padding:13px;
+    padding:15px;
 
     border:none;
 
-    background:#0A3D91;
+    background:#006B3F;
 
     color:white;
 
-    font-size:16px;
+    font-size:17px;
 
-    border-radius:6px;
+    font-weight:bold;
+
+    border-radius:8px;
 
     cursor:pointer;
+
+    transition:.30s;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.20);
 
 }
 
 button:hover{
 
-    background:#062d6b;
+    background:#004C2A;
+
+    transform:translateY(-2px);
+
+}
+
+button:hover{
+
+    background:#00502F;
 
 }
 
@@ -199,17 +257,22 @@ button:hover{
 
 <div class="encabezado">
 
-<!-- Después pondremos aquí el escudo de la PNP -->
+    <!-- Después pondremos aquí el escudo de la PNP -->
 
-<h1>POLICÍA NACIONAL DEL PERÚ</h1>
+    <h1 style="color:#FFD100;">
+        POLICÍA NACIONAL DEL PERÚ
+    </h1>
 
-<h2>
-Dirección de Familia<br>
-División de Investigación de la Violencia Contra la Mujer e Integrantes del Grupo Familiar<br><br>
-
-<b>COMISARÍA DE FAMILIA PNP EL AGUSTINO</b>
-
+ <h2>
+    Dirección de Familia<br>
+    División de Investigación de la Violencia Contra la Mujer e Integrantes del Grupo Familiar
 </h2>
+
+<br>
+
+<h3 class="comisaria">
+    COMISARÍA DE FAMILIA PNP EL AGUSTINO
+</h3>
 
 </div>
 
