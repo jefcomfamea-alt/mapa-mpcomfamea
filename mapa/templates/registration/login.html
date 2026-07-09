@@ -1,74 +1,264 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Ingreso al Sistema</title>
-    <style>
-        body{
-            font-family: Arial, sans-serif;
-            background:#f0f2f5;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            height:100vh;
-            margin:0;
-        }
 
-        .login{
-            width:360px;
-            background:white;
-            padding:30px;
-            border-radius:10px;
-            box-shadow:0 0 15px rgba(0,0,0,.2);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-        h2{
-            text-align:center;
-        }
+<title>SIGESMP - Inicio de Sesión</title>
 
-        input{
-            width:100%;
-            padding:10px;
-            margin-top:10px;
-            margin-bottom:15px;
-            box-sizing:border-box;
-        }
+<style>
 
-        button{
-            width:100%;
-            padding:10px;
-            background:#0b5ed7;
-            color:white;
-            border:none;
-            cursor:pointer;
-            font-size:16px;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        button:hover{
-            background:#084298;
-        }
-    </style>
+body{
+
+    font-family:Segoe UI,Arial,sans-serif;
+    background:#eef2f7;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    min-height:100vh;
+
+}
+
+.contenedor{
+
+    width:100%;
+    max-width:650px;
+
+    background:white;
+
+    border-radius:12px;
+
+    box-shadow:0 5px 18px rgba(0,0,0,.15);
+
+    overflow:hidden;
+
+}
+
+.encabezado{
+
+    background:#0A3D91;
+
+    color:white;
+
+    text-align:center;
+
+    padding:25px;
+
+}
+
+.encabezado img{
+
+    width:80px;
+    margin-bottom:10px;
+
+}
+
+.encabezado h1{
+
+    font-size:20px;
+
+    margin-bottom:8px;
+
+}
+
+.encabezado h2{
+
+    font-size:15px;
+    font-weight:normal;
+    line-height:22px;
+
+}
+
+.sistema{
+
+    padding:20px;
+
+    text-align:center;
+
+}
+
+.sistema h3{
+
+    color:#0A3D91;
+
+    font-size:22px;
+
+    margin-bottom:10px;
+
+}
+
+.sistema p{
+
+    color:#555;
+
+    line-height:24px;
+
+}
+
+.login{
+
+    padding:30px 50px 40px;
+
+}
+
+label{
+
+    font-weight:bold;
+
+    display:block;
+
+    margin-bottom:8px;
+
+    margin-top:15px;
+
+}
+
+input{
+
+    width:100%;
+
+    padding:12px;
+
+    border:1px solid #ccc;
+
+    border-radius:6px;
+
+    font-size:15px;
+
+}
+
+button{
+
+    width:100%;
+
+    margin-top:30px;
+
+    padding:13px;
+
+    border:none;
+
+    background:#0A3D91;
+
+    color:white;
+
+    font-size:16px;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+}
+
+button:hover{
+
+    background:#062d6b;
+
+}
+
+.footer{
+
+    text-align:center;
+
+    padding:15px;
+
+    background:#f6f6f6;
+
+    color:#666;
+
+    font-size:13px;
+
+}
+
+.errorlist{
+
+    color:red;
+
+    list-style:none;
+
+    margin-bottom:10px;
+
+}
+
+</style>
+
 </head>
 
 <body>
 
-<div class="login">
+<div class="contenedor">
 
-<h2>Mapa de Medidas de Protección</h2>
+<div class="encabezado">
+
+<!-- Después pondremos aquí el escudo de la PNP -->
+
+<h1>POLICÍA NACIONAL DEL PERÚ</h1>
+
+<h2>
+Dirección de Familia<br>
+División de Investigación de la Violencia Contra la Mujer e Integrantes del Grupo Familiar<br><br>
+
+<b>COMISARÍA DE FAMILIA PNP EL AGUSTINO</b>
+
+</h2>
+
+</div>
+
+<div class="sistema">
+
+<h3>SIGESMP</h3>
+
+<p>
+
+Sistema Integrado de Gestión para la Ejecución y Seguimiento de Medidas de Protección de la COMFAM El Agustino
+
+</p>
+
+</div>
+
+<div class="login">
 
 <form method="post">
 
 {% csrf_token %}
 
-{{ form.as_p }}
+{{ form.non_field_errors }}
+
+<label>Usuario</label>
+
+{{ form.username }}
+
+<label>Contraseña</label>
+
+{{ form.password }}
 
 <button type="submit">
-Ingresar
+
+Ingresar al Sistema
+
 </button>
 
 </form>
 
 </div>
 
+<div class="footer">
+
+© Policía Nacional del Perú - COMFAM PNP El Agustino
+
+</div>
+
+</div>
+
 </body>
+
 </html>
