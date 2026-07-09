@@ -54,18 +54,21 @@
     ➕ Registrar Nuevo Caso
 </button>
 
-<button id="btnCerrarSesion" style="
-    background:#dc3545;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    font-size:16px;
-    border-radius:6px;
-    cursor:pointer;
-    margin-left:10px;
-">
-    🚪 Cerrar Sesión
-</button>
+<form method="post" action="{% url 'logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" style="
+        background:#dc3545;
+        color:white;
+        border:none;
+        padding:12px 20px;
+        font-size:16px;
+        border-radius:6px;
+        cursor:pointer;
+        margin-left:10px;
+    ">
+        🚪 Cerrar Sesión
+    </button>
+</form>
 
 </div>
 
@@ -301,10 +304,8 @@ document.getElementById("btnNuevoCaso").onclick = function () {
 };
 
 
-// Botón Cerrar Sesión
-document.getElementById("btnCerrarSesion").onclick = function () {
-    window.location.href = "/accounts/logout/";
-};
+// Ya no es necesario.
+// El formulario envía el POST automáticamente.
 
 </script>
 
