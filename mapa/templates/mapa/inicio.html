@@ -54,6 +54,19 @@
     ➕ Registrar Nuevo Caso
 </button>
 
+<button id="btnCerrarSesion" style="
+    background:#dc3545;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    font-size:16px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-left:10px;
+">
+    🚪 Cerrar Sesión
+</button>
+
 </div>
 
 <div id="map"></div>
@@ -280,6 +293,18 @@ fetch("/static/mapa/limite de comisarias.geojson")
 capaCasos.addTo(map);
 
 });
+
+
+// Botón Registrar Nuevo Caso
+document.getElementById("btnNuevoCaso").onclick = function () {
+    alert("Primero haz clic sobre el mapa para elegir la ubicación del caso.");
+};
+
+
+// Botón Cerrar Sesión
+document.getElementById("btnCerrarSesion").onclick = function () {
+    window.location.href = "/accounts/logout/";
+};
 
 </script>
 
