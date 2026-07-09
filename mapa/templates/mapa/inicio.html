@@ -54,9 +54,9 @@
     ➕ Registrar Nuevo Caso
 </button>
 
-<form method="post" action="{% url 'logout' %}" style="display:inline;">
-    {% csrf_token %}
-    <button type="submit" style="
+<button
+    onclick="window.location.href='/cerrar-sesion/'"
+    style="
         background:#dc3545;
         color:white;
         border:none;
@@ -66,9 +66,8 @@
         cursor:pointer;
         margin-left:10px;
     ">
-        🚪 Cerrar Sesión
-    </button>
-</form>
+    🚪 Cerrar Sesión
+</button>
 
 </div>
 

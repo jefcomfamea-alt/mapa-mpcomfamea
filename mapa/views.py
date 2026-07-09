@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
@@ -67,9 +68,14 @@ def casos_json(request):
                 "FECHA LIMITE DE SEGUIMIENTO": str(caso.fecha_limite) if caso.fecha_limite else "",
                 "NOTIFICACIÓN": caso.notificacion,
             }
-        })
+            })
 
     return JsonResponse({
         "type": "FeatureCollection",
         "features": features
     })
+
+
+def cerrar_sesion(request):
+    logout(request)
+    return redirect("/accounts/login/")
