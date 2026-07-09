@@ -42,21 +42,17 @@
 
 <div style="padding:10px;background:white;text-align:center">
 
-    <a href="/nuevo-caso/">
-
-        <button style="
-            background:#198754;
-            color:white;
-            border:none;
-            padding:12px 20px;
-            font-size:16px;
-            border-radius:6px;
-            cursor:pointer;
-        ">
-            ➕ Registrar Nuevo Caso
-        </button>
-
-    </a>
+    <button id="btnNuevoCaso" style="
+    background:#198754;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    font-size:16px;
+    border-radius:6px;
+    cursor:pointer;
+">
+    ➕ Registrar Nuevo Caso
+</button>
 
 </div>
 
@@ -71,6 +67,43 @@
 // ====================================
 
 var map = L.map('map').setView([-12.02224, -77.00984], 14);
+let modoNuevoCaso = false;
+let marcadorTemporal = null;
+
+// Al hacer clic en el botón
+document.getElementById("btnNuevoCaso").addEventListener("click", function () {
+
+    modoNuevoCaso = true;
+
+    alert("Ahora haz clic sobre el mapa para indicar la ubicación del nuevo caso.");
+
+});
+
+// Cuando el usuario haga clic en el mapa
+map.on("click", function(e){
+
+    if(!modoNuevoCaso){
+        return;
+    }
+
+    modoNuevoCaso = false;
+
+    // Elimina el marcador anterior si existía
+    if(marcadorTemporal){
+        map.removeLayer(marcadorTemporal);
+    }
+
+    // Coloca un marcador temporal
+    marcadorTemporal = L.marker(e.latlng).addTo(map);
+
+    // Redirige al formulario con las coordenadas
+    window.location.href =
+        "/nuevo-caso/?lat=" +
+        e.latlng.lat +
+        "&lng=" +
+        e.latlng.lng;
+
+});
 
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,

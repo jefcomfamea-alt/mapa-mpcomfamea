@@ -25,7 +25,14 @@ def nuevo_caso(request):
             print(form.errors)
 
     else:
-        form = CasoForm()
+
+        lat = request.GET.get("lat")
+        lng = request.GET.get("lng")
+
+        form = CasoForm(initial={
+            "latitud": lat,
+            "longitud": lng,
+        })
 
     return render(request, "mapa/nuevo_caso.html", {
         "form": form

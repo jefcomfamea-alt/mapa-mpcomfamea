@@ -1,7 +1,6 @@
 from django import forms
 from .models import Caso
 
-
 class CasoForm(forms.ModelForm):
 
     class Meta:
@@ -18,4 +17,6 @@ class CasoForm(forms.ModelForm):
             "fecha_limite": forms.DateInput(
                 attrs={"type": "date"}
             ),
+            "latitud": forms.HiddenInput(),
+            "longitud": forms.HiddenInput(),
         }
