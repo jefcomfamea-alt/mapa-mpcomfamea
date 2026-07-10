@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 
     <meta charset="UTF-8">
@@ -61,6 +60,8 @@
             cursor:pointer;
             color:white;
             text-decoration:none;
+            display:inline-block;
+            margin:2px;
         }
 
         .editar{
@@ -99,7 +100,7 @@
 
     <div class="acciones">
 
-        <a href="/nuevo-caso/" class="btn nuevo">
+        <a href="{% url 'nuevo_caso' %}" class="btn nuevo">
             ➕ Nuevo Caso
         </a>
 
@@ -114,13 +115,9 @@
         <tr>
 
             <th>ID</th>
-
             <th>Beneficiario</th>
-
             <th>Distrito</th>
-
             <th>Riesgo</th>
-
             <th>Acciones</th>
 
         </tr>
@@ -137,19 +134,49 @@
 
             <td>{{ caso.nivel_riesgo }}</td>
 
-     <td>
+            <td>
 
-    <a href="{% url 'editar_caso' caso.pk %}" class="btn editar">
-        ✏️ Editar
-    </a>
+                {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
 
-    <a href="{% url 'archivar_caso' caso.id %}"
-   class="btn archivar"
-   onclick="return coznfirm('¿Desea archivar este caso?');">
-    📁 Archivar
-    </a>
+                    <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
+                        ✏️ Editar
+                    </a>
 
-</td>
+                    <a href="{% url 'archivar_caso' caso.id %}"
+                       class="btn archivar"
+                       onclick="return confirm('¿Desea archivar este caso?');">
+                        📁 Archivar
+                    </a>
+
+                {% elif request.user.groups.all.0.name == "Jefe_MP" %}
+
+                    <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
+                        ✏️ Editar
+                    </a>
+
+                    <a href="#" class="btn archivar">
+                        📩 Solicitar Archivo
+                    </a>
+
+                {% elif request.user.groups.all.0.name == "Efectivo_MP" %}
+
+                    <a href="{% url 'solicitar_modificacion' caso.id %}" class="btn editar">
+                📨 Solicitar Modificación
+                    </a>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+
+            <td colspan="5">
+                No hay casos registrados.
+            </td>
 
         </tr>
 
@@ -160,5 +187,4 @@
 </div>
 
 </body>
-
 </html>

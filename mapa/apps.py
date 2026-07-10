@@ -2,4 +2,8 @@ from django.apps import AppConfig
 
 
 class MapaConfig(AppConfig):
-    name = 'mapa'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "mapa"
+
+    def ready(self):
+        import mapa.signals

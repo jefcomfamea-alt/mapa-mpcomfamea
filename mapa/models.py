@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Caso(models.Model):
@@ -109,3 +110,50 @@ class Caso(models.Model):
 
     def __str__(self):
         return self.beneficiario
+
+
+class SolicitudModificacion(models.Model):
+
+    ESTADOS = [
+        ("PENDIENTE", "Pendiente"),
+        ("APROBADA", "Aprobada"),
+        ("RECHAZADA", "Rechazada"),
+    ]
+
+    caso = models.ForeignKey(
+        Caso,
+        on_delete=models.CASCADE
+    )
+
+    solicitante = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    motivo = models.TextField()
+
+    estado = models.CharField(
+        max_length=15,
+        choices=ESTADOS,
+        default="PENDIENTE"
+    )
+
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    autorizado_por = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="autorizaciones_modificacion"
+    )
+
+    fecha_autorizacion = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f"Solicitud #{self.id} - Caso {self.caso.id}"

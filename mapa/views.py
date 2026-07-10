@@ -5,6 +5,9 @@ from django.http import JsonResponse
 
 from .forms import CasoForm
 from .models import Caso
+from .decorators import grupo_requerido
+from .models import Caso, SolicitudModificacion
+from .forms_solicitudes import SolicitudModificacionForm
 
 
 @login_required
@@ -39,10 +42,13 @@ def nuevo_caso(request):
         "form": form
     })
 
+
 @login_required
 def gestion_casos(request):
 
-    casos = Caso.objects.all().order_by("-id")
+    casos = Caso.objects.filter(
+        estado="ACTIVO"
+    ).order_by("-id")
 
     return render(
         request,
@@ -97,12 +103,9 @@ def casos_json(request):
         "features": features
     })
 
-    return JsonResponse({
-        "type": "FeatureCollection",
-        "features": features
-    })
 
 @login_required
+@grupo_requerido("Administrador", "Jefe_MP")
 def editar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
@@ -123,7 +126,9 @@ def editar_caso(request, id):
         "form": form
     })
 
+
 @login_required
+@grupo_requerido("Administrador")
 def archivar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
@@ -134,6 +139,7 @@ def archivar_caso(request, id):
 
 
 @login_required
+@grupo_requerido("Administrador")
 def casos_archivados(request):
 
     casos = Caso.objects.filter(
@@ -150,6 +156,7 @@ def casos_archivados(request):
 
 
 @login_required
+@grupo_requerido("Administrador")
 def restaurar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
@@ -157,6 +164,38 @@ def restaurar_caso(request, id):
     caso.save()
 
     return redirect("casos_archivados")
+
+@login_required
+@grupo_requerido("Efectivo_MP")
+def solicitar_modificacion(request, id):
+
+    caso = get_object_or_404(Caso, pk=id)
+
+    if request.method == "POST":
+
+        form = SolicitudModificacionForm(request.POST)
+
+        if form.is_valid():
+
+            solicitud = form.save(commit=False)
+            solicitud.caso = caso
+            solicitud.solicitante = request.user
+            solicitud.save()
+
+            return redirect("gestion_casos")
+
+    else:
+
+        form = SolicitudModificacionForm()
+
+    return render(
+        request,
+        "mapa/solicitar_modificacion.html",
+        {
+            "form": form,
+            "caso": caso
+        }
+    )
 
 def cerrar_sesion(request):
     logout(request)

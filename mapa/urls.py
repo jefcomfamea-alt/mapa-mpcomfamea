@@ -9,6 +9,7 @@ from .views import (
     archivar_caso,
     casos_archivados,
     restaurar_caso,
+    solicitar_modificacion,
 )
 
 urlpatterns = [
@@ -28,5 +29,11 @@ urlpatterns = [
     path("casos-archivados/", casos_archivados, name="casos_archivados"),
 
     path("restaurar-caso/<int:id>/", restaurar_caso, name="restaurar_caso"),
+
+    path(
+    "solicitar-modificacion/<int:id>/",
+    solicitar_modificacion,
+    name="solicitar_modificacion"
+),
 
 ]
