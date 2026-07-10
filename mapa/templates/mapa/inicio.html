@@ -43,7 +43,21 @@ ENCABEZADO
 }
 
 #titulo{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:20px;
     text-align:center;
+}
+
+.texto-titulo{
+    text-align:center;
+}
+
+.escudo{
+    width:80px;
+    height:80px;
+    object-fit:contain;
 }
 
 #titulo h1{
@@ -131,12 +145,26 @@ MAPA
 <div id="encabezado">
 
     <div id="titulo">
-        <h1>SIGESMP</h1>
 
-        <p>
-            Sistema Integrado de Gestión para la Ejecución y Seguimiento de Medidas de Protección<br>
-        Comisaría de Familia PNP El Agustino
-        </p>
+        <img class="escudo"
+             src="{% static 'mapa/img/1. EscudoPNP.png' %}"
+             alt="Escudo PNP">
+
+        <div class="texto-titulo">
+
+            <h1>SIGESMP</h1>
+
+            <p>
+                Sistema Integrado de Gestión para la Ejecución y Seguimiento de Medidas de Protección<br>
+                Comisaría de Familia PNP El Agustino
+            </p>
+
+        </div>
+
+        <img class="escudo"
+             src="{% static 'mapa/img/2. EscudoDIRFAM.png' %}"
+             alt="Escudo DIRFAM">
+
     </div>
 
     <div id="usuario">
