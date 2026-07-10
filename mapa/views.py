@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -89,6 +89,26 @@ def casos_json(request):
         "features": features
     })
 
+@login_required
+def editar_caso(request, id):
+
+    caso = get_object_or_404(Caso, pk=id)
+
+    if request.method == "POST":
+
+        form = CasoForm(request.POST, instance=caso)
+
+        if form.is_valid():
+            form.save()
+            return redirect("gestion_casos")
+
+    else:
+
+        form = CasoForm(instance=caso)
+
+    return render(request, "mapa/nuevo_caso.html", {
+        "form": form
+    })
 
 def cerrar_sesion(request):
     logout(request)

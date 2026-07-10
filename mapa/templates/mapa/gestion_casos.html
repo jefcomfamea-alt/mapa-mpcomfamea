@@ -137,17 +137,17 @@
 
             <td>{{ caso.nivel_riesgo }}</td>
 
-            <td>
+     <td>
 
-                <button class="btn editar">
-                    ✏️ Editar
-                </button>
+    <a href="{% url 'editar_caso' caso.pk %}" class="btn editar">
+        ✏️ Editar
+    </a>
 
-                <button class="btn archivar">
-                    📁 Archivar
-                </button>
+    <button class="btn archivar">
+        📁 Archivar
+    </button>
 
-            </td>
+</td>
 
         </tr>
 

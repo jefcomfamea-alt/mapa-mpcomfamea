@@ -5,6 +5,7 @@ from .views import (
     casos_json,
     cerrar_sesion,
     gestion_casos,
+    editar_caso,
 )
 
 urlpatterns = [
@@ -16,5 +17,7 @@ urlpatterns = [
     path("cerrar-sesion/", cerrar_sesion, name="cerrar_sesion"),
 
     path("gestion-casos/", gestion_casos, name="gestion_casos"),
+
+    path("editar-caso/<int:id>/", editar_caso, name="editar_caso"),
 
 ]
