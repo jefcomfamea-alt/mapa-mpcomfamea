@@ -143,9 +143,11 @@
         ✏️ Editar
     </a>
 
-    <button class="btn archivar">
-        📁 Archivar
-    </button>
+    <a href="{% url 'archivar_caso' caso.id %}"
+   class="btn archivar"
+   onclick="return coznfirm('¿Desea archivar este caso?');">
+    📁 Archivar
+    </a>
 
 </td>
 

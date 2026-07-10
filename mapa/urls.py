@@ -6,6 +6,9 @@ from .views import (
     cerrar_sesion,
     gestion_casos,
     editar_caso,
+    archivar_caso,
+    casos_archivados,
+    restaurar_caso,
 )
 
 urlpatterns = [
@@ -19,5 +22,11 @@ urlpatterns = [
     path("gestion-casos/", gestion_casos, name="gestion_casos"),
 
     path("editar-caso/<int:id>/", editar_caso, name="editar_caso"),
+
+    path("archivar-caso/<int:id>/", archivar_caso, name="archivar_caso"),
+
+    path("casos-archivados/", casos_archivados, name="casos_archivados"),
+
+    path("restaurar-caso/<int:id>/", restaurar_caso, name="restaurar_caso"),
 
 ]

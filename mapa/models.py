@@ -60,12 +60,13 @@ class Caso(models.Model):
 
     fecha_limite = models.DateField(null=True, blank=True)
 
-    notificacion = models.CharField(
-        max_length=2,
-        choices=NOTIFICACION,
-        blank=True
-    )
+    notificacion = models.CharField(max_length=100)
 
+    estado = models.CharField(
+        max_length=15,
+        default="ACTIVO"
+    )
+    
     latitud = models.FloatField(
         null=True,
         blank=True

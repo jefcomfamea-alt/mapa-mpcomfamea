@@ -42,7 +42,7 @@ def nuevo_caso(request):
 @login_required
 def gestion_casos(request):
 
-    casos = Caso.objects.all().order_by("-id")
+    casos = Caso.objects.filter(estado="ACTIVO").order_by("-id")
 
     return render(
         request,
@@ -113,3 +113,31 @@ def editar_caso(request, id):
 def cerrar_sesion(request):
     logout(request)
     return redirect("/accounts/login/")
+
+def archivar_caso(request, id):
+
+    caso = get_object_or_404(Caso, pk=id)
+
+    caso.estado = "ARCHIVADO"
+    caso.save()
+
+    return redirect("gestion_casos")
+
+@login_required
+def restaurar_caso(request, id):
+
+    caso = get_object_or_404(Caso, pk=id)
+
+    caso.estado = "ACTIVO"
+    caso.save()
+
+    return redirect("casos_archivados")
+
+@login_required
+def casos_archivados(request):
+
+    casos = Caso.objects.filter(estado="ARCHIVADO").order_by("-id")
+
+    return render(request, "mapa/casos_archivados.html", {
+        "casos": casos
+    })

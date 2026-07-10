@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    
+@login_required
+def casos_archivados(request):
+
+    casos = Caso.objects.filter(estado="ARCHIVADO").order_by("-id")
+
+    return render(request, "mapa/casos_archivados.html", {
+        "casos": casos
+    })
