@@ -40,6 +40,20 @@ def nuevo_caso(request):
     })
 
 @login_required
+def gestion_casos(request):
+
+    casos = Caso.objects.all().order_by("-id")
+
+    return render(
+        request,
+        "mapa/gestion_casos.html",
+        {
+            "casos": casos
+        }
+    )
+
+
+@login_required
 def casos_json(request):
 
     features = []

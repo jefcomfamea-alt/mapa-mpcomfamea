@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Gestión de Casos</title>
+
+    <style>
+
+        body{
+            margin:0;
+            font-family:Arial, Helvetica, sans-serif;
+            background:#f4f6f9;
+        }
+
+        header{
+            background:#2E6B2E;
+            color:#FFD700;
+            text-align:center;
+            padding:20px;
+        }
+
+        h1{
+            margin:0;
+        }
+
+        .contenedor{
+            width:95%;
+            margin:auto;
+            margin-top:20px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+        }
+
+        th{
+            background:#2E6B2E;
+            color:white;
+            padding:10px;
+        }
+
+        td{
+            padding:10px;
+            border-bottom:1px solid #ddd;
+            text-align:center;
+        }
+
+        tr:hover{
+            background:#f2f2f2;
+        }
+
+        .btn{
+            padding:8px 15px;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            color:white;
+            text-decoration:none;
+        }
+
+        .editar{
+            background:#0d6efd;
+        }
+
+        .archivar{
+            background:#dc3545;
+        }
+
+        .nuevo{
+            background:#198754;
+        }
+
+        .volver{
+            background:#6c757d;
+        }
+
+        .acciones{
+            margin-bottom:20px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Gestión de Casos</h1>
+
+</header>
+
+<div class="contenedor">
+
+    <div class="acciones">
+
+        <a href="/nuevo-caso/" class="btn nuevo">
+            ➕ Nuevo Caso
+        </a>
+
+        <a href="/" class="btn volver">
+            🗺️ Volver al Mapa
+        </a>
+
+    </div>
+
+    <table>
+
+        <tr>
+
+            <th>ID</th>
+
+            <th>Beneficiario</th>
+
+            <th>Distrito</th>
+
+            <th>Riesgo</th>
+
+            <th>Acciones</th>
+
+        </tr>
+
+        {% for caso in casos %}
+
+        <tr>
+
+            <td>{{ caso.id }}</td>
+
+            <td>{{ caso.beneficiario }}</td>
+
+            <td>{{ caso.distrito }}</td>
+
+            <td>{{ caso.nivel_riesgo }}</td>
+
+            <td>
+
+                <button class="btn editar">
+                    ✏️ Editar
+                </button>
+
+                <button class="btn archivar">
+                    📁 Archivar
+                </button>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+
+</html>

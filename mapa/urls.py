@@ -1,7 +1,11 @@
 from django.urls import path
 
-from .views import nuevo_caso, casos_json, cerrar_sesion
-
+from .views import (
+    nuevo_caso,
+    casos_json,
+    cerrar_sesion,
+    gestion_casos,
+)
 
 urlpatterns = [
 
@@ -10,5 +14,7 @@ urlpatterns = [
     path("casos-json/", casos_json, name="casos_json"),
 
     path("cerrar-sesion/", cerrar_sesion, name="cerrar_sesion"),
+
+    path("gestion-casos/", gestion_casos, name="gestion_casos"),
 
 ]
