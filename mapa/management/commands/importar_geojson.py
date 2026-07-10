@@ -61,31 +61,44 @@ class Command(BaseCommand):
                     continue
 
                 Caso.objects.create(
+    beneficiario=texto(propiedades.get("BENEFICIARIO")),
+    domicilio=texto(propiedades.get("DOMICILIO")),
+    nivel_riesgo=texto(propiedades.get("NIVEL RIESGO")).upper(),
+    distrito=texto(propiedades.get("DISTRITO")).upper(),
+    comisaria=texto(propiedades.get("COMISARIA DE LA JURISDICCIÓN")),
+    efectivo=texto(propiedades.get("EFECTIVO")),
+    folder=texto(propiedades.get("FOLDER")),
+    expediente=texto(propiedades.get("EXP.")),
+    agresor=texto(propiedades.get("AGRESOR")),
+    telefono=texto(propiedades.get("TELEFONO")),
 
-                    beneficiario=texto(propiedades.get("BENEFICIARIO")),
-                    domicilio=texto(propiedades.get("DOMICILIO")),
-                    nivel_riesgo=texto(propiedades.get("NIVEL RIESGO")).upper(),
-                    distrito=texto(propiedades.get("Distrito")).upper(),
-                    comisaria=texto(propiedades.get("COMISARIA DE LA JURISDICCIÓN")),
-                    efectivo=texto(propiedades.get("EFECTIVO")),
-                    folder=texto(propiedades.get("FOLDER")),
-                    expediente=texto(propiedades.get("EXP.")),
-                    agresor=texto(propiedades.get("AGRES.")),
-                    telefono=texto(propiedades.get("TELEFONO")),
+    fecha_registro=fecha(propiedades.get("fecha_registro")),
+    ultima_visita=fecha(propiedades.get("ULTIMA VISITA")),
+    fecha_limite=fecha(propiedades.get("FECHA LIMITE DE SEGUIMIENTO")),
 
-                    fecha_registro=fecha(propiedades.get("fecha_registro")),
-                    ultima_visita=fecha(propiedades.get("ULTIMA VISITA")),
-                    fecha_limite=fecha(propiedades.get("FECHA LIMITE DE SEGUIMIENTO")),
+    notificacion_beneficiario=(
+        texto(propiedades.get("NOTIFICACION BENEFICIARIO")).upper()
+        or "PENDIENTE"
+    ),
 
-                    notificacion=(
-                        "SI"
-                        if texto(propiedades.get("NOTIFICACIÓN")).upper() == "SI"
-                        else "NO"
-                    ),
+    fecha_notificacion_beneficiario=fecha(
+        propiedades.get("FECHA NOTIFICACION BENEFICIARIO")
+    ),
 
-                    latitud=float(coordenadas[1]),
-                    longitud=float(coordenadas[0]),
-                )
+    notificacion_agresor=(
+        texto(propiedades.get("NOTIFICACION AGRESOR")).upper()
+        or "PENDIENTE"
+    ),
+
+    fecha_notificacion_agresor=fecha(
+        propiedades.get("FECHA NOTIFICACION AGRESOR")
+    ),
+
+    latitud=float(coordenadas[1]),
+    longitud=float(coordenadas[0]),
+
+    estado="ACTIVO",
+)
 
                 importados += 1
 
