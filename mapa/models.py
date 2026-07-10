@@ -4,17 +4,17 @@ from django.db import models
 class Caso(models.Model):
 
     RIESGOS = [
-        ("LEVE", "LEVE"),
-        ("MODERADO", "MODERADO"),
-        ("SEVERO1", "SEVERO1"),
-        ("SEVERO2", "SEVERO2"),
-        ("NO DETERMINADO", "NO DETERMINADO"),
-    ]
+    ("LEVE", "Leve"),
+    ("MODERADO", "Moderado"),
+    ("SEVERO", "Severo"),
+    ("SEVERO EXTREMO", "Severo extremo"),
+    ("NO DETERMINADO", "No determinado"),
+]
 
     NOTIFICACION = [
-        ("SI", "SI"),
-        ("NO", "NO"),
-    ]
+    ("PENDIENTE", "Pendiente"),
+    ("NOTIFICADO", "Notificado"),
+]
 
     DISTRITOS = [
         ("EL AGUSTINO", "EL AGUSTINO"),
@@ -27,6 +27,11 @@ class Caso(models.Model):
     ]
 
     beneficiario = models.CharField(max_length=200, blank=True)
+    
+    dni_beneficiario = models.CharField(
+    max_length=8,
+    blank=True
+)
 
     domicilio = models.CharField(max_length=300, blank=True)
 
@@ -51,6 +56,11 @@ class Caso(models.Model):
     expediente = models.CharField(max_length=100, blank=True)
 
     agresor = models.CharField(max_length=200, blank=True)
+   
+    dni_agresor = models.CharField(
+    max_length=8,
+    blank=True
+)
 
     telefono = models.CharField(max_length=50, blank=True)
 
@@ -60,13 +70,33 @@ class Caso(models.Model):
 
     fecha_limite = models.DateField(null=True, blank=True)
 
-    notificacion = models.CharField(max_length=100)
+    notificacion_beneficiario = models.CharField(
+    max_length=15,
+    choices=NOTIFICACION,
+    default="PENDIENTE"
+)
+
+    fecha_notificacion_beneficiario = models.DateField(
+    null=True,
+    blank=True
+)
+
+    notificacion_agresor = models.CharField(
+    max_length=15,
+    choices=NOTIFICACION,
+    default="PENDIENTE"
+)
+
+    fecha_notificacion_agresor = models.DateField(
+    null=True,
+    blank=True
+)
 
     estado = models.CharField(
         max_length=15,
         default="ACTIVO"
     )
-    
+
     latitud = models.FloatField(
         null=True,
         blank=True

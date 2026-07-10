@@ -42,7 +42,7 @@ def nuevo_caso(request):
 @login_required
 def gestion_casos(request):
 
-    casos = Caso.objects.filter(estado="ACTIVO").order_by("-id")
+    casos = Caso.objects.all().order_by("-id")
 
     return render(
         request,
@@ -59,6 +59,9 @@ def casos_json(request):
     features = []
 
     for caso in Caso.objects.all():
+
+        if caso.latitud is None or caso.longitud is None:
+            continue
 
         features.append({
             "type": "Feature",
@@ -80,9 +83,19 @@ def casos_json(request):
                 "fecha_registro": str(caso.fecha_registro) if caso.fecha_registro else "",
                 "ULTIMA VISITA": str(caso.ultima_visita) if caso.ultima_visita else "",
                 "FECHA LIMITE DE SEGUIMIENTO": str(caso.fecha_limite) if caso.fecha_limite else "",
-                "NOTIFICACIÓN": caso.notificacion,
+
+                "NOTIFICACION BENEFICIARIO": caso.notificacion_beneficiario,
+                "FECHA NOTIFICACION BENEFICIARIO": str(caso.fecha_notificacion_beneficiario) if caso.fecha_notificacion_beneficiario else "",
+
+                "NOTIFICACION AGRESOR": caso.notificacion_agresor,
+                "FECHA NOTIFICACION AGRESOR": str(caso.fecha_notificacion_agresor) if caso.fecha_notificacion_agresor else "",
             }
-            })
+        })
+
+    return JsonResponse({
+        "type": "FeatureCollection",
+        "features": features
+    })
 
     return JsonResponse({
         "type": "FeatureCollection",
@@ -110,34 +123,41 @@ def editar_caso(request, id):
         "form": form
     })
 
-def cerrar_sesion(request):
-    logout(request)
-    return redirect("/accounts/login/")
-
+@login_required
 def archivar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
-
     caso.estado = "ARCHIVADO"
     caso.save()
 
     return redirect("gestion_casos")
 
+
+@login_required
+def casos_archivados(request):
+
+    casos = Caso.objects.filter(
+        estado="ARCHIVADO"
+    ).order_by("-id")
+
+    return render(
+        request,
+        "mapa/casos_archivados.html",
+        {
+            "casos": casos
+        }
+    )
+
+
 @login_required
 def restaurar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
-
     caso.estado = "ACTIVO"
     caso.save()
 
     return redirect("casos_archivados")
 
-@login_required
-def casos_archivados(request):
-
-    casos = Caso.objects.filter(estado="ARCHIVADO").order_by("-id")
-
-    return render(request, "mapa/casos_archivados.html", {
-        "casos": casos
-    })
+def cerrar_sesion(request):
+    logout(request)
+    return redirect("/accounts/login/")
