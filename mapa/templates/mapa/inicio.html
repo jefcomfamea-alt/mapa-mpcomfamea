@@ -80,14 +80,46 @@ USUARIO
     text-align:right;
 }
 
+#usuario strong{
+    display:block;
+    font-size:15px;
+}
+
 #usuario button{
     margin-top:8px;
-    background:#dc3545;
-    color:white;
     border:none;
     padding:8px 15px;
     border-radius:6px;
     cursor:pointer;
+    color:white;
+}
+
+.btnBuzon{
+    background:#0d6efd;
+    display:inline-block;
+    text-decoration:none;
+    padding:8px 15px;
+    border-radius:6px;
+    color:white;
+    margin-bottom:8px;
+}
+
+.contador{
+    display:inline-block;
+    background:red;
+    color:white;
+    border-radius:50%;
+    min-width:22px;
+    height:22px;
+    line-height:22px;
+    text-align:center;
+    font-size:12px;
+    font-weight:bold;
+    margin-left:5px;
+}
+
+.btnSalir{
+    background:#dc3545;
 }
 
 /*=========================
@@ -171,11 +203,26 @@ MAPA
 
         <strong>{{ request.user.get_full_name|default:request.user.username }}</strong><br>
 
-        Administrador
+        {{ request.user.groups.all.0.name|default:"Administrador" }}
 
-        <br>
+        <br><br>
 
-        <button onclick="location.href='/cerrar-sesion/'">
+        {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" %}
+
+            <a href="{% url 'mensajes' %}" class="btnBuzon">
+                ✉️ Buzón
+
+                {% if pendientes > 0 %}
+                    <span class="contador">{{ pendientes }}</span>
+                {% endif %}
+            </a>
+
+            <br>
+
+        {% endif %}
+
+        <button class="btnSalir"
+                onclick="location.href='/cerrar-sesion/'">
             🚪 Cerrar sesión
         </button>
 
@@ -203,53 +250,6 @@ MAPA
 
 </div>
 
-    <button id="btnNuevoCaso" style="
-    background:#198754;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    font-size:16px;
-    border-radius:6px;
-    cursor:pointer;
-">
-    ➕ Registrar Nuevo Caso
-</button>
-
-<button
-    onclick="window.location.href='/gestion-casos/'"
-    style="
-    background:#0d6efd;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    font-size:16px;
-    border-radius:6px;
-    cursor:pointer;
-    margin-top:10px;
-    display:block;
-">
-    📋 Gestión de Casos
-</button>
-
-<button
-    onclick="window.location.href='/cerrar-sesion/'"
-    style="
-        background:#dc3545;
-        color:white;
-        border:none;
-        padding:12px 20px;
-        font-size:16px;
-        border-radius:6px;
-        cursor:pointer;
-        margin-left:10px;
-    ">
-    🚪 Cerrar Sesión
-</button>
-
-</div>
-
-<div id="map"></div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
@@ -259,11 +259,13 @@ MAPA
 // ====================================
 
 var map = L.map('map').setView([-12.02224, -77.00984], 14);
+
 let modoNuevoCaso = false;
 let marcadorTemporal = null;
 
 // Al hacer clic en el botón
-document.getElementById("btnNuevoCaso").addEventListener("click", function () {
+
+document.getElementById("btnNuevoCaso").addEventListener("click", function(){
 
     modoNuevoCaso = true;
 
@@ -272,6 +274,7 @@ document.getElementById("btnNuevoCaso").addEventListener("click", function () {
 });
 
 // Cuando el usuario haga clic en el mapa
+
 map.on("click", function(e){
 
     if(!modoNuevoCaso){
@@ -280,15 +283,14 @@ map.on("click", function(e){
 
     modoNuevoCaso = false;
 
-    // Elimina el marcador anterior si existía
     if(marcadorTemporal){
         map.removeLayer(marcadorTemporal);
     }
 
-    // Coloca un marcador temporal
     marcadorTemporal = L.marker(e.latlng).addTo(map);
 
     // Redirige al formulario con las coordenadas
+
     window.location.href =
         "/nuevo-caso/?lat=" +
         e.latlng.lat +
@@ -298,27 +300,27 @@ map.on("click", function(e){
 });
 
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "© OpenStreetMap"
+    maxZoom:19,
+    attribution:"© OpenStreetMap"
 }).addTo(map);
 
 
-// ====================================
+//=====================================
 // CAPA COMISARÍAS
-// ====================================
+//=====================================
 
 fetch("/static/mapa/comisarias.geojson")
 .then(response => response.json())
 .then(data => {
 
-    L.geoJSON(data, {
+    L.geoJSON(data,{
 
-        onEachFeature: function(feature, layer){
+        onEachFeature:function(feature,layer){
 
-            let popup = "<h3>COMISARÍA</h3><hr>";
+            let popup="<h3>COMISARÍA</h3><hr>";
 
             for(let campo in feature.properties){
-                popup += "<b>" + campo + ":</b> " + feature.properties[campo] + "<br>";
+                popup += "<b>"+campo+":</b> "+feature.properties[campo]+"<br>";
             }
 
             layer.bindPopup(popup);
@@ -330,50 +332,48 @@ fetch("/static/mapa/comisarias.geojson")
 });
 
 
-// ====================================
-// CAPA MONITOREO CASOS
-// ====================================
+//=====================================
+// CAPA CASOS
+//=====================================
 
 fetch("/casos-json/")
 .then(response => response.json())
 .then(data => {
 
-    const capaCasos = L.geoJSON(data, {
+    L.geoJSON(data,{
 
         pointToLayer: function(feature, latlng){
 
-            console.log(feature.properties);
-            
-            let riesgo = feature.properties["NIVEL RIESGO"];
+    let riesgo = feature.properties["NIVEL RIESGO"];
 
-            let color = "gray";
+    let color = "gray";
 
-            if(riesgo=="LEVE"){
-                color="#00b050";
-}
-else if(riesgo=="MODERADO"){
-    color="#ffd966";
-}
-else if(riesgo=="SEVERO1"){
-    color="#ff0000";
-}
-else if(riesgo=="SEVERO2"){
-    color="#990000";
-}
-else if(riesgo=="NO DETERMINADO"){
-    color="#808080";
-            }
+    if (riesgo == "LEVE") {
+        color = "#00b050";
+    }
+    else if (riesgo == "MODERADO") {
+        color = "#ffd966";
+    }
+    else if (riesgo == "SEVERO" || riesgo == "SEVERO1") {
+        color = "#ff0000";
+    }
+    else if (riesgo == "SEVERO EXTREMO" || riesgo == "SEVERO2") {
+        color = "#990000";
+    }
+    else if (riesgo == "NO DETERMINADO") {
+        color = "#808080";
+    }
 
-            return L.circleMarker(latlng,{
-                radius:7,
-                fillColor:color,
-                color:"#000",
-                weight:1,
-                opacity:1,
-                fillOpacity:0.9
-            });
+    return L.circleMarker(latlng, {
+        radius: 7,
+        fillColor: color,
+        color: "#000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.9
+    });
 
-        },
+},
 
         onEachFeature:function(feature,layer){
 
@@ -381,6 +381,7 @@ else if(riesgo=="NO DETERMINADO"){
 
             for(let campo in feature.properties){
                 texto += "<b>"+campo+":</b> "+feature.properties[campo]+"<br>";
+
             }
 
             layer.bindPopup(texto);
@@ -391,12 +392,13 @@ else if(riesgo=="NO DETERMINADO"){
 
 });
 
-//==============================
+
+//=====================================
 // CAMARAS DE VIDEOVIGILANCIA
-//==============================
+//=====================================
 
 fetch("/static/mapa/camaras de videovigilancia.geojson")
-.then(response => response.json())
+.then(response=>response.json())
 .then(data=>{
 
     L.geoJSON(data,{
@@ -409,7 +411,7 @@ fetch("/static/mapa/camaras de videovigilancia.geojson")
                 color:"#000",
                 weight:1,
                 opacity:1,
-                fillOpacity:0.9
+                fillOpacity:.9
             });
 
         },
@@ -419,7 +421,9 @@ fetch("/static/mapa/camaras de videovigilancia.geojson")
             let texto="";
 
             for(let campo in feature.properties){
-                texto+="<b>"+campo+":</b> "+feature.properties[campo]+"<br>";
+
+                texto += "<b>"+campo+":</b> "+feature.properties[campo]+"<br>";
+
             }
 
             layer.bindPopup(texto);
@@ -428,12 +432,12 @@ fetch("/static/mapa/camaras de videovigilancia.geojson")
 
     }).addTo(map);
 
-    });
+});
 
-    //==============================
+
+//=====================================
 // LIMITE DISTRITAL
-//==============================
-
+//=====================================
 
 fetch("/static/mapa/limite_distrital inei 2025.geojson")
 .then(response=>response.json())
@@ -449,11 +453,12 @@ fetch("/static/mapa/limite_distrital inei 2025.geojson")
 
     }).addTo(map);
 
-    });
+});
 
-    //==============================
+
+//=====================================
 // LIMITE DE COMISARIAS
-//==============================
+//=====================================
 
 fetch("/static/mapa/limite de comisarias.geojson")
 .then(response=>response.json())
@@ -467,24 +472,11 @@ fetch("/static/mapa/limite de comisarias.geojson")
             fill:false
         }
 
-    });
-
-capaCasos.addTo(map);
+    }).addTo(map);
 
 });
-
-
-// Botón Registrar Nuevo Caso
-document.getElementById("btnNuevoCaso").onclick = function () {
-    alert("Primero haz clic sobre el mapa para elegir la ubicación del caso.");
-};
-
-
-// Ya no es necesario.
-// El formulario envía el POST automáticamente.
 
 </script>
 
 </body>
-
 </html>

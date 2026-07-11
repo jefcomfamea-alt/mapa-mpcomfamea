@@ -8,11 +8,23 @@ from .models import Caso
 from .decorators import grupo_requerido
 from .models import Caso, SolicitudModificacion
 from .forms_solicitudes import SolicitudModificacionForm
+from .models import SolicitudModificacion
 
 
 @login_required
 def inicio(request):
-    return render(request, "mapa/inicio.html")
+
+    pendientes = SolicitudModificacion.objects.filter(
+        estado="PENDIENTE"
+    ).count()
+
+    return render(
+        request,
+        "mapa/inicio.html",
+        {
+            "pendientes": pendientes
+        }
+    )
 
 
 @login_required
@@ -194,6 +206,22 @@ def solicitar_modificacion(request, id):
         {
             "form": form,
             "caso": caso
+        }
+    )
+
+@login_required
+@grupo_requerido("Administrador", "Jefe_MP")
+def mensajes(request):
+
+    solicitudes = SolicitudModificacion.objects.filter(
+        estado="PENDIENTE"
+    ).order_by("-fecha")
+
+    return render(
+        request,
+        "mapa/mensajes.html",
+        {
+            "solicitudes": solicitudes
         }
     )
 
