@@ -74,7 +74,7 @@ def casos_json(request):
 
     features = []
 
-    for caso in Caso.objects.all():
+    for caso in Caso.objects.filter(estado="ACTIVO"):
 
         if caso.latitud is None or caso.longitud is None:
             continue
