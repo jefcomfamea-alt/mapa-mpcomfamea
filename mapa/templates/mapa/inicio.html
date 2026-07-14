@@ -411,19 +411,47 @@ LEYENDA
 
     <div id="menu">
 
-        <button
-            class="botonMenu azul"
-            onclick="window.location.href='/gestion-casos/'">
-
-            📋 Gestión de Casos
-
-        </button>
-
-        <button
+                <button
             class="botonMenu verde"
             id="btnNuevoCaso">
 
             ➕ Registrar Nuevo Caso
+
+        </button>
+
+        <hr style="margin:20px 0;">
+
+<h3 style="color:white; text-align:center; margin-bottom:10px;">
+    🔎 Buscar Caso
+</h3>
+
+<select id="tipoBusqueda" style="width:100%; padding:8px; margin-bottom:10px;">
+    <option value="expediente">Expediente</option>
+    <option value="folder">Folder</option>
+    <option value="dni">DNI Beneficiario</option>
+    <option value="beneficiario">Beneficiario</option>
+    <option value="agresor">Agresor</option>
+</select>
+
+<input
+    type="text"
+    id="textoBusqueda"
+    placeholder="Ingrese el dato..."
+    style="width:100%; padding:8px; margin-bottom:10px;"
+>
+
+<button
+    class="botonMenu azul"
+    onclick="buscarCaso()"
+    style="margin-bottom:25px;">
+    🔍 Buscar
+</button>
+
+<button
+            class="botonMenu azul"
+            onclick="window.location.href='/gestion-casos/'">
+
+            📋 Gestión de Casos
 
         </button>
 
@@ -436,6 +464,8 @@ LEYENDA
 <script>
 
 var map = L.map("map").setView([-12.0478,-76.9983],13);
+
+var marcadoresCasos = [];
 
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
 
@@ -515,6 +545,13 @@ L.geoJSON(data,{
 
         let p=feature.properties;
 
+        layer.datos = p;
+        
+        layer.latitud = layer.getLatLng().lat;
+        layer.longitud = layer.getLatLng().lng;
+       
+        marcadoresCasos.push(layer);
+
         layer.bindPopup(
 
             "<b>Beneficiario:</b> "+(p["BENEFICIARIO"]||"")+"<br>"+
@@ -574,6 +611,101 @@ return div;
 };
 
 legend.addTo(map);
+
+function buscarCaso(){
+
+    let texto = document.getElementById("textoBusqueda").value.trim();
+
+    if(texto==""){
+        alert("Ingrese un dato para buscar.");
+        return;
+    }
+
+    fetch("/buscar-caso/?q=" + encodeURIComponent(texto))
+    .then(response => response.json())
+    .then(data => {
+
+        if(!data.encontrado){
+            alert("No se encontró ningún caso.");
+            return;
+        }
+
+        map.setView([data.latitud, data.longitud], 18);
+
+let marcadorEncontrado = null;
+
+marcadoresCasos.forEach(function(layer){
+
+    if(
+        Math.abs(layer.latitud - data.latitud) < 0.000001 &&
+        Math.abs(layer.longitud - data.longitud) < 0.000001
+    ){
+        marcadorEncontrado = layer;
+    }
+
+});
+
+if(marcadorEncontrado){
+
+    marcadorEncontrado.setStyle({
+
+        radius:14,
+        fillColor:"#00BFFF",
+        color:"#ffffff",
+        weight:3,
+        fillOpacity:1
+
+    });
+
+    marcadorEncontrado.openPopup();
+
+    setTimeout(function(){
+
+        let riesgo = (marcadorEncontrado.datos["NIVEL RIESGO"] || "")
+                        .trim()
+                        .toUpperCase();
+
+        let color = "gray";
+
+        if(riesgo=="LEVE"){
+            color="#00b050";
+        }
+        else if(riesgo=="MODERADO"){
+            color="#ffd966";
+        }
+        else if(riesgo=="SEVERO" || riesgo=="SEVERO1"){
+            color="#ff0000";
+        }
+        else if(riesgo=="SEVERO EXTREMO" || riesgo=="SEVERO2"){
+            color="#990000";
+        }
+        else if(riesgo=="NO DETERMINADO"){
+            color="#808080";
+        }
+
+        marcadorEncontrado.setStyle({
+
+            radius:7,
+            fillColor:color,
+            color:"#000",
+            weight:1,
+            fillOpacity:0.9
+
+        });
+
+    },8000);
+
+}
+
+    })
+    .catch(error => {
+
+        console.error(error);
+        alert("Error al realizar la búsqueda.");
+
+    });
+
+}
 
 </script>
 
