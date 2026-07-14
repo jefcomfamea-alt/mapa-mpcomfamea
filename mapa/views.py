@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.db.models import Q
 
 from .forms import CasoForm
 from .models import Caso
@@ -14,9 +15,7 @@ from .models import SolicitudModificacion
 @login_required
 def inicio(request):
 
-    pendientes = SolicitudModificacion.objects.filter(
-        estado="PENDIENTE"
-    ).count()
+    pendientes = SolicitudModificacion.objects.count()
 
     return render(
         request,
@@ -25,7 +24,6 @@ def inicio(request):
             "pendientes": pendientes
         }
     )
-
 
 @login_required
 def nuevo_caso(request):
@@ -228,3 +226,43 @@ def mensajes(request):
 def cerrar_sesion(request):
     logout(request)
     return redirect("/accounts/login/")
+
+@login_required
+def buscar_caso(request):
+
+    texto = request.GET.get("q", "").strip()
+
+    if texto == "":
+        return JsonResponse({
+            "encontrado": False
+        })
+
+    caso = Caso.objects.filter(
+
+        Q(beneficiario__icontains=texto) |
+        Q(expediente__icontains=texto) |
+        Q(folder__icontains=texto) |
+        Q(dni_beneficiario__icontains=texto) |
+        Q(agresor__icontains=texto) |
+        Q(dni_agresor__icontains=texto)
+
+    ).first()
+
+    if caso is None:
+        return JsonResponse({
+            "encontrado": False
+        })
+
+    return JsonResponse({
+
+        "encontrado": True,
+
+        "latitud": caso.latitud,
+        "longitud": caso.longitud,
+
+        "beneficiario": caso.beneficiario,
+        "expediente": caso.expediente,
+        "folder": caso.folder,
+        "riesgo": caso.nivel_riesgo
+
+    })
