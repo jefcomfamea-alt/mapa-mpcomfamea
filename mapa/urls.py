@@ -27,6 +27,12 @@ urlpatterns = [
     # Buzón de mensajes
     path("mensajes/", views.mensajes, name="mensajes"),
 
+    path(
+        "aprobar-solicitud/<int:id>/",
+        views.aprobar_solicitud,
+        name="aprobar_solicitud"
+    ),
+
     # Buscar casos
     path("buscar-caso/", views.buscar_caso, name="buscar_caso"),
 

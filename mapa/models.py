@@ -119,6 +119,10 @@ class Caso(models.Model):
         blank=True
     )
 
+    edicion_autorizada = models.BooleanField(
+        default=False
+    )
+
     def save(self, *args, **kwargs):
 
         if self.ultima_visita:

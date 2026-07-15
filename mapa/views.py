@@ -3,6 +3,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Q
+from django.utils import timezone
 
 from .forms import CasoForm
 from .models import Caso
@@ -266,3 +267,24 @@ def buscar_caso(request):
         "riesgo": caso.nivel_riesgo
 
     })
+
+
+@login_required
+@grupo_requerido("Administrador", "Jefe_MP")
+def aprobar_solicitud(request, id):
+
+    solicitud = get_object_or_404(
+        SolicitudModificacion,
+        pk=id
+    )
+
+    solicitud.estado = "APROBADA"
+    solicitud.autorizado_por = request.user
+    solicitud.fecha_autorizacion = timezone.now()
+    solicitud.save()
+
+    caso = solicitud.caso
+    caso.edicion_autorizada = True
+    caso.save()
+
+    return redirect("mensajes")

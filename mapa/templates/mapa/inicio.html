@@ -333,6 +333,55 @@ LEYENDA
 
 }
 
+@keyframes parpadeoLento{
+
+    0%{
+        opacity:1;
+    }
+
+    50%{
+        opacity:0.2;
+    }
+
+    100%{
+        opacity:1;
+    }
+
+}
+
+.parpadea{
+
+    animation:parpadeoLento 1s infinite;
+
+}
+
+@keyframes parpadeoRapido{
+
+    0%{
+        opacity:1;
+    }
+
+    50%{
+        opacity:0.2;
+    }
+
+    100%{
+        opacity:1;
+    }
+
+}
+
+.parpadeaUrgente{
+
+    animation:parpadeoRapido .35s infinite;
+
+}
+.parpadea {
+
+    animation: parpadeo 1s infinite;
+
+}
+
 </style>
 
 </head>
@@ -508,38 +557,84 @@ L.geoJSON(data,{
 
     pointToLayer:function(feature,latlng){
 
-        let riesgo=(feature.properties["NIVEL RIESGO"] || "")
-                        .trim()
-                        .toUpperCase();
+    let p = feature.properties;
 
-        let color="gray";
+    let riesgo = (p["NIVEL RIESGO"] || "")
+                    .trim()
+                    .toUpperCase();
 
-        if(riesgo=="LEVE"){
-            color="#00b050";
-        }
-        else if(riesgo=="MODERADO"){
-            color="#ffd966";
-        }
-        else if(riesgo=="SEVERO" || riesgo=="SEVERO1"){
-            color="#ff0000";
-        }
-        else if(riesgo=="SEVERO EXTREMO" || riesgo=="SEVERO2"){
-            color="#990000";
-        }
-        else if(riesgo=="NO DETERMINADO"){
-            color="#808080";
+    let color = "gray";
+
+    if(riesgo=="LEVE"){
+        color="#00b050";
+    }
+    else if(riesgo=="MODERADO"){
+        color="#ffd966";
+    }
+    else if(riesgo=="SEVERO" || riesgo=="SEVERO1"){
+        color="#ff0000";
+    }
+    else if(riesgo=="SEVERO EXTREMO" || riesgo=="SEVERO2"){
+        color="#990000";
+    }
+    else if(riesgo=="NO DETERMINADO"){
+        color="#808080";
+    }
+
+    let marcador = L.circleMarker(latlng,{
+        radius:7,
+        fillColor:color,
+        color:"#000",
+        weight:1,
+        opacity:1,
+        fillOpacity:0.9
+    });
+
+    let fecha = p["FECHA LIMITE DE SEGUIMIENTO"];
+
+    if(fecha){
+
+        let hoy = new Date();
+
+        let seguimiento = new Date(fecha);
+
+        let dias = Math.ceil(
+            (seguimiento - hoy) / (1000*60*60*24)
+        );
+
+        if(dias >= 0 && dias <= 15){
+
+    marcador.on("add",function(){
+
+        let elemento=marcador.getElement();
+
+        if(elemento){
+            elemento.classList.add("parpadea");
         }
 
-        return L.circleMarker(latlng,{
-            radius:7,
-            fillColor:color,
-            color:"#000",
-            weight:1,
-            opacity:1,
-            fillOpacity:0.9
-        });
+    });
 
-    },
+}
+
+else if(dias < 0){
+
+    marcador.on("add",function(){
+
+        let elemento=marcador.getElement();
+
+        if(elemento){
+            elemento.classList.add("parpadeaUrgente");
+        }
+
+    });
+
+}
+
+}
+
+return marcador;
+
+},
 
     onEachFeature:function(feature,layer){
 
