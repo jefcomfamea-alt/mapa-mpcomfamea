@@ -1,21 +1,22 @@
 from django.db import models
 from django.contrib.auth.models import User
+from dateutil.relativedelta import relativedelta
 
 
 class Caso(models.Model):
 
     RIESGOS = [
-    ("LEVE", "Leve"),
-    ("MODERADO", "Moderado"),
-    ("SEVERO", "Severo"),
-    ("SEVERO EXTREMO", "Severo extremo"),
-    ("NO DETERMINADO", "No determinado"),
-]
+        ("LEVE", "Leve"),
+        ("MODERADO", "Moderado"),
+        ("SEVERO", "Severo"),
+        ("SEVERO EXTREMO", "Severo extremo"),
+        ("NO DETERMINADO", "No determinado"),
+    ]
 
     NOTIFICACION = [
-    ("PENDIENTE", "Pendiente"),
-    ("NOTIFICADO", "Notificado"),
-]
+        ("PENDIENTE", "Pendiente"),
+        ("NOTIFICADO", "Notificado"),
+    ]
 
     DISTRITOS = [
         ("EL AGUSTINO", "EL AGUSTINO"),
@@ -28,11 +29,11 @@ class Caso(models.Model):
     ]
 
     beneficiario = models.CharField(max_length=200, blank=True)
-    
+
     dni_beneficiario = models.CharField(
-    max_length=8,
-    blank=True
-)
+        max_length=8,
+        blank=True
+    )
 
     domicilio = models.CharField(max_length=300, blank=True)
 
@@ -57,41 +58,51 @@ class Caso(models.Model):
     expediente = models.CharField(max_length=100, blank=True)
 
     agresor = models.CharField(max_length=200, blank=True)
-   
+
     dni_agresor = models.CharField(
-    max_length=8,
-    blank=True
-)
+        max_length=8,
+        blank=True
+    )
 
     telefono = models.CharField(max_length=50, blank=True)
 
-    fecha_registro = models.DateField(null=True, blank=True)
+    fecha_registro = models.DateField(
+        null=True,
+        blank=True
+    )
 
-    ultima_visita = models.DateField(null=True, blank=True)
+    ultima_visita = models.DateField(
+        null=True,
+        blank=True
+    )
 
-    fecha_limite = models.DateField(null=True, blank=True)
+    fecha_limite = models.DateField(
+        "Próximo seguimiento",
+        null=True,
+        blank=True
+)
 
     notificacion_beneficiario = models.CharField(
-    max_length=15,
-    choices=NOTIFICACION,
-    default="PENDIENTE"
-)
+        max_length=15,
+        choices=NOTIFICACION,
+        default="PENDIENTE"
+    )
 
     fecha_notificacion_beneficiario = models.DateField(
-    null=True,
-    blank=True
-)
+        null=True,
+        blank=True
+    )
 
     notificacion_agresor = models.CharField(
-    max_length=15,
-    choices=NOTIFICACION,
-    default="PENDIENTE"
-)
+        max_length=15,
+        choices=NOTIFICACION,
+        default="PENDIENTE"
+    )
 
     fecha_notificacion_agresor = models.DateField(
-    null=True,
-    blank=True
-)
+        null=True,
+        blank=True
+    )
 
     estado = models.CharField(
         max_length=15,
@@ -107,6 +118,18 @@ class Caso(models.Model):
         null=True,
         blank=True
     )
+
+    def save(self, *args, **kwargs):
+
+        if self.ultima_visita:
+
+            if self.nivel_riesgo in ["SEVERO", "SEVERO EXTREMO"]:
+                self.fecha_limite = self.ultima_visita + relativedelta(months=3)
+
+            else:
+                self.fecha_limite = self.ultima_visita + relativedelta(months=6)
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.beneficiario

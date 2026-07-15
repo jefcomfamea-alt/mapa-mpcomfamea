@@ -118,6 +118,7 @@
             <th>Beneficiario</th>
             <th>Distrito</th>
             <th>Riesgo</th>
+            <th>📅 Próximo seguimiento</th>
             <th>Acciones</th>
 
         </tr>
@@ -135,6 +136,16 @@
             <td>{{ caso.nivel_riesgo }}</td>
 
             <td>
+
+                {% if caso.fecha_limite %}
+                    {{ caso.fecha_limite|date:"d/m/Y" }}
+                {% else %}
+        -
+                 {% endif %}
+
+<           /td>
+
+           <td>
 
                 {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
 
@@ -174,7 +185,7 @@
 
         <tr>
 
-            <td colspan="5">
+            <td colspan="6">
                 No hay casos registrados.
             </td>
 
