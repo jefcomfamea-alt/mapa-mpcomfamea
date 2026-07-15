@@ -78,25 +78,43 @@ USUARIO
 =========================*/
 
 #usuario{
+
     position:absolute;
+
     right:20px;
+
     top:50%;
+
     transform:translateY(-50%);
+
     display:flex;
+
     flex-direction:column;
+
     align-items:flex-end;
+
     text-align:right;
+
 }
 
 #usuario strong{
-    font-size:15px;
-    margin-bottom:2px;
+
+    font-size:16px;
+
+    color:white;
+
+    margin-bottom:4px;
+
 }
 
 .rol{
+
     font-size:13px;
-    color:#f0f0f0;
-    margin-bottom:8px;
+
+    color:#FFD700;
+
+    margin-bottom:10px;
+
 }
 
 .accionesUsuario{
@@ -152,13 +170,6 @@ USUARIO
 /*=========================
 USUARIO
 =========================*/
-
-#usuario{
-    position:absolute;
-    right:20px;
-    top:10px;
-    text-align:right;
-}
 
 #usuario strong{
     display:block;
@@ -386,7 +397,7 @@ LEYENDA
 
 </head>
 
-<body style="background:red;">
+<body>
 
 <div id="encabezado">
 
@@ -559,6 +570,8 @@ L.geoJSON(data,{
 
     let p = feature.properties;
 
+    console.log(p);
+
     let riesgo = (p["NIVEL RIESGO"] || "")
                     .trim()
                     .toUpperCase();
@@ -592,43 +605,57 @@ L.geoJSON(data,{
 
     let fecha = p["FECHA LIMITE DE SEGUIMIENTO"];
 
-    if(fecha){
+    let ultimaVisita = p["ULTIMA VISITA"];
 
-        let hoy = new Date();
+if(fecha){
 
-        let seguimiento = new Date(fecha);
+    let hoy = new Date();
 
-        let dias = Math.ceil(
-            (seguimiento - hoy) / (1000*60*60*24)
-        );
+    let seguimiento = new Date(fecha);
 
+    let dias = Math.ceil(
+        (seguimiento - hoy) / (1000*60*60*24)
+    );
+
+    let fechaMinima = new Date("2026-01-01");
+
+    let visita = new Date(ultimaVisita);
+
+    if(visita >= fechaMinima){
+
+    let ultimaVisita = p["ULTIMA VISITA"];
+
+    console.log(ultimaVisita);   
+       
         if(dias >= 0 && dias <= 15){
 
-    marcador.on("add",function(){
+            marcador.on("add", function(){
 
-        let elemento=marcador.getElement();
+                let elemento = marcador.getElement();
 
-        if(elemento){
-            elemento.classList.add("parpadea");
+                if(elemento){
+                    elemento.classList.add("parpadea");
+                }
+
+            });
+
         }
 
-    });
+        else if(dias < 0){
 
-}
+            marcador.on("add", function(){
 
-else if(dias < 0){
+                let elemento = marcador.getElement();
 
-    marcador.on("add",function(){
+                if(elemento){
+                    elemento.classList.add("parpadeaUrgente");
+                }
 
-        let elemento=marcador.getElement();
+            });
 
-        if(elemento){
-            elemento.classList.add("parpadeaUrgente");
         }
 
-    });
-
-}
+    }
 
 }
 
