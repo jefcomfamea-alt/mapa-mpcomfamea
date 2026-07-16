@@ -138,6 +138,17 @@ class Caso(models.Model):
     def __str__(self):
         return self.beneficiario
 
+    class Meta:
+        permissions = [
+            ("modificar_directo", "Puede modificar casos directamente"),
+            ("aprobar_modificacion", "Puede aprobar modificaciones"),
+            ("archivar_directo", "Puede archivar casos directamente"),
+            ("aprobar_archivado", "Puede aprobar archivados"),
+            ("eliminar_directo", "Puede eliminar casos directamente"),
+            ("aprobar_eliminacion", "Puede aprobar eliminaciones"),
+            ("administrar_usuarios", "Puede administrar usuarios"),
+        ]
+
 
 class SolicitudModificacion(models.Model):
 

@@ -27,6 +27,7 @@ def inicio(request):
     )
 
 @login_required
+@grupo_requerido("Administrador", "Jefe_MP", "Usuario_MP")
 def nuevo_caso(request):
 
     if request.method == "POST":
@@ -116,7 +117,7 @@ def casos_json(request):
 
 
 @login_required
-@grupo_requerido("Administrador", "Jefe_MP")
+@grupo_requerido("Administrador")
 def editar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
@@ -177,7 +178,7 @@ def restaurar_caso(request, id):
     return redirect("casos_archivados")
 
 @login_required
-@grupo_requerido("Efectivo_MP")
+@grupo_requerido("Jefe_MP", "Usuario_MP")
 def solicitar_modificacion(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
