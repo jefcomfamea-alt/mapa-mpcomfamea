@@ -153,10 +153,11 @@ class Caso(models.Model):
 class SolicitudModificacion(models.Model):
 
     ESTADOS = [
-        ("PENDIENTE", "Pendiente"),
-        ("APROBADA", "Aprobada"),
-        ("RECHAZADA", "Rechazada"),
-    ]
+    ("PENDIENTE", "Pendiente"),
+    ("APROBADA", "Aprobada"),
+    ("UTILIZADA", "Utilizada"),
+    ("RECHAZADA", "Rechazada"),
+]
 
     caso = models.ForeignKey(
         Caso,
@@ -191,6 +192,11 @@ class SolicitudModificacion(models.Model):
     fecha_autorizacion = models.DateTimeField(
         null=True,
         blank=True
+    )
+
+    fecha_utilizacion = models.DateTimeField(
+    null=True,
+    blank=True
     )
 
     def __str__(self):

@@ -426,7 +426,7 @@ LEYENDA
 
         <img
             class="escudo"
-            src="{% static 'mapa/img/2. EscudoDIRFAM.png' %}"
+            src="{% static 'mapa/img/EscudoDIRFAM.png' %}"
             alt="Escudo DIRFAM">
 
     </div>
@@ -441,25 +441,22 @@ LEYENDA
 
     <div class="accionesUsuario">
 
-        {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" %}
-
-        <a href="{% url 'mensajes' %}" class="btnBuzon">
-
-            ✉️ Buzón
-
-            {% if pendientes > 0 %}
-                <span class="contador">{{ pendientes }}</span>
-            {% endif %}
-
-        </a>
-
+    {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" or request.user.groups.all.0.name == "Usuario_MP" %}
+    <a href="{% url 'mensajes' %}" class="btnBuzon">
+        ✉️ Buzón
+        {% if pendientes > 0 %}
+            <span class="contador">{{ pendientes }}</span>
         {% endif %}
+    </a>
+{% endif %}
 
-        <button
-    class="btnSalir"
-    onclick="location.href='{% url 'cerrar_sesion' %}'">
-    🚪 Cerrar sesión
-</button>
+    <button
+        class="btnSalir"
+        onclick="location.href='{% url 'cerrar_sesion' %}'">
+        🚪 Cerrar sesión
+    </button>
+
+</div>
 
     </div>
 
@@ -514,6 +511,16 @@ LEYENDA
              📂 Gestión de Casos
 
         </button>
+
+    {% if es_admin %}
+<button
+    class="botonMenu azul"
+    onclick="window.location.href='/administrar-usuarios/'">
+
+    👥 Administrar Usuarios
+
+</button>
+{% endif %}
 
     </div>
 

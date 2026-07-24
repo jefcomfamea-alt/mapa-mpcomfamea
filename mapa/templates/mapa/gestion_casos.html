@@ -143,41 +143,41 @@
         -
                  {% endif %}
 
-<           /td>
+        </td>
 
-           <td>
+         <td>
 
-                {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
+    {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
 
-                    <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
-                        ✏️ Editar
-                    </a>
+        <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
+            ✏️ Editar
+        </a>
 
-                    <a href="{% url 'archivar_caso' caso.id %}"
-                       class="btn archivar"
-                       onclick="return confirm('¿Desea archivar este caso?');">
-                        📁 Archivar
-                    </a>
+        <a href="{% url 'archivar_caso' caso.id %}"
+           class="btn archivar"
+           onclick="return confirm('¿Desea archivar este caso?');">
+            📁 Archivar
+        </a>
 
-                {% elif request.user.groups.all.0.name == "Jefe_MP" %}
+    {% elif request.user.groups.all.0.name == "Jefe_MP" %}
 
-                    <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
-                        ✏️ Editar
-                    </a>
+        <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
+            ✏️ Editar
+        </a>
 
-                    <a href="#" class="btn archivar">
-                        📩 Solicitar Archivo
-                    </a>
+        <a href="#" class="btn archivar">
+            📩 Solicitar Archivo
+        </a>
 
-                {% elif request.user.groups.all.0.name == "Efectivo_MP" %}
+    {% elif request.user.groups.all.0.name == "Usuario_MP" %}
 
-                    <a href="{% url 'solicitar_modificacion' caso.id %}" class="btn editar">
-                📨 Solicitar Modificación
-                    </a>
+        <a href="{% url 'solicitar_modificacion' caso.id %}" class="btn editar">
+            📨 Solicitar Modificación
+        </a>
 
-                {% endif %}
+    {% endif %}
 
-            </td>
+</td>  
 
         </tr>
 

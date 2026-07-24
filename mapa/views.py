@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Q
@@ -18,11 +19,37 @@ def inicio(request):
 
     pendientes = SolicitudModificacion.objects.count()
 
+    es_admin = (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name="Administrador"
+        ).exists()
+    )
+
     return render(
         request,
         "mapa/inicio.html",
         {
-            "pendientes": pendientes
+            "pendientes": pendientes,
+            "es_admin": es_admin
+        }
+    )
+
+
+@login_required
+@grupo_requerido("Administrador")
+def administrar_usuarios(request):
+
+    usuarios = User.objects.all().order_by("username")
+
+    grupos = Group.objects.all().order_by("name")
+
+    return render(
+        request,
+        "mapa/administrar_usuarios.html",
+        {
+            "usuarios": usuarios,
+            "grupos": grupos
         }
     )
 
@@ -210,7 +237,11 @@ def solicitar_modificacion(request, id):
     )
 
 @login_required
-@grupo_requerido("Administrador", "Jefe_MP")
+@grupo_requerido(
+    "Administrador",
+    "Jefe_MP",
+    "Usuario_MP"
+)
 def mensajes(request):
 
     solicitudes = SolicitudModificacion.objects.filter(

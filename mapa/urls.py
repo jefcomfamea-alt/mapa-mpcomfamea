@@ -38,4 +38,11 @@ urlpatterns = [
 
     # Cerrar sesión
     path("cerrar-sesion/", views.cerrar_sesion, name="cerrar_sesion"),
+
+    # Administración de usuarios - Solo Administrador
+    path(
+        "administrar-usuarios/",
+        views.administrar_usuarios,
+        name="administrar_usuarios"
+    ),
 ]
