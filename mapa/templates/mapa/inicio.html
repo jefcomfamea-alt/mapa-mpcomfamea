@@ -481,7 +481,12 @@ LEYENDA
                 📅 {{ caso.fecha_limite|date:"d/m/Y" }}<br>
 
                 👮 Responsable:
-                {{ caso.responsable.get_full_name|default:caso.responsable.username }}
+
+        {% if caso.responsable %}
+            {{ caso.responsable.get_full_name|default:caso.responsable.username }}
+        {% else %}
+            Sin asignar
+        {% endif %}
 
                 <br><br>
 
