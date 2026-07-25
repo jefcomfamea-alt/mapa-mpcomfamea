@@ -11,7 +11,7 @@ urlpatterns = [
     path("gestion-casos/", views.gestion_casos, name="gestion_casos"),
     path("casos-json/", views.casos_json, name="casos_json"),
 
-    # Editar y archivar
+    # Editar y archivar casos
     path("editar-caso/<int:id>/", views.editar_caso, name="editar_caso"),
     path("archivar-caso/<int:id>/", views.archivar_caso, name="archivar_caso"),
     path("casos-archivados/", views.casos_archivados, name="casos_archivados"),
@@ -21,17 +21,16 @@ urlpatterns = [
     path(
         "solicitar-modificacion/<int:id>/",
         views.solicitar_modificacion,
-        name="solicitar_modificacion"
+        name="solicitar_modificacion",
+    ),
+    path(
+        "aprobar-solicitud/<int:id>/",
+        views.aprobar_solicitud,
+        name="aprobar_solicitud",
     ),
 
     # Buzón de mensajes
     path("mensajes/", views.mensajes, name="mensajes"),
-
-    path(
-        "aprobar-solicitud/<int:id>/",
-        views.aprobar_solicitud,
-        name="aprobar_solicitud"
-    ),
 
     # Buscar casos
     path("buscar-caso/", views.buscar_caso, name="buscar_caso"),
@@ -39,10 +38,15 @@ urlpatterns = [
     # Cerrar sesión
     path("cerrar-sesion/", views.cerrar_sesion, name="cerrar_sesion"),
 
-    # Administración de usuarios - Solo Administrador
+    # Administración de usuarios
     path(
         "administrar-usuarios/",
         views.administrar_usuarios,
-        name="administrar_usuarios"
+        name="administrar_usuarios",
+    ),
+    path(
+        "administrar-usuarios/editar/<int:pk>/",
+        views.editar_usuario,
+        name="editar_usuario",
     ),
 ]

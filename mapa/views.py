@@ -54,12 +54,29 @@ def administrar_usuarios(request):
     )
 
 @login_required
+@grupo_requerido("Administrador")
+def editar_usuario(request, pk):
+
+    usuario = get_object_or_404(User, pk=pk)
+
+    return render(
+        request,
+        "mapa/editar_usuario.html",
+        {
+            "usuario": usuario
+        }
+    )
+
+@login_required
 @grupo_requerido("Administrador", "Jefe_MP", "Usuario_MP")
 def nuevo_caso(request):
 
     if request.method == "POST":
 
-        form = CasoForm(request.POST)
+        form = CasoForm(
+            request.POST,
+            usuario=request.user
+        )
 
         if form.is_valid():
             form.save()
@@ -72,14 +89,21 @@ def nuevo_caso(request):
         lat = request.GET.get("lat")
         lng = request.GET.get("lng")
 
-        form = CasoForm(initial={
-            "latitud": lat,
-            "longitud": lng,
-        })
+        form = CasoForm(
+            usuario=request.user,
+            initial={
+                "latitud": lat,
+                "longitud": lng,
+            }
+        )
 
-    return render(request, "mapa/nuevo_caso.html", {
-        "form": form
-    })
+    return render(
+        request,
+        "mapa/nuevo_caso.html",
+        {
+            "form": form
+        }
+    )
 
 
 @login_required

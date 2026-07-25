@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Usuario</title>
+</head>
+<body>
+
+    <h2>Editar Usuario</h2>
+
+    <p><strong>Usuario:</strong> {{ usuario.username }}</p>
+
+    <p><strong>Nombre:</strong> {{ usuario.first_name }}</p>
+
+    <p><strong>Apellido:</strong> {{ usuario.last_name }}</p>
+
+    <p><strong>Correo:</strong> {{ usuario.email }}</p>
+
+    <br>
+
+    <a href="{% url 'administrar_usuarios' %}">
+        ← Volver
+    </a>
+
+</body>
+</html>
