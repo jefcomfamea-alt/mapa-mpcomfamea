@@ -240,33 +240,100 @@ def casos_json(request):
 
 
 @login_required
-@grupo_requerido("Administrador")
 def editar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
 
+    es_admin = (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name="Administrador"
+        ).exists()
+    )
+
+    es_jefe = request.user.groups.filter(
+        name="Jefe_MP"
+    ).exists()
+
+    es_usuario = request.user.groups.filter(
+        name="Usuario_MP"
+    ).exists()
+
+    if not (es_admin or es_jefe or (es_usuario and caso.edicion_autorizada)):
+        return redirect("gestion_casos")
+
     if request.method == "POST":
 
-        form = CasoForm(request.POST, instance=caso)
+        form = CasoForm(
+            request.POST,
+            instance=caso
+        )
 
         if form.is_valid():
+
             form.save()
+
+            if es_usuario:
+
+                caso.edicion_autorizada = False
+                caso.save()
+
+                solicitud = SolicitudModificacion.objects.filter(
+                    caso=caso,
+                    solicitante=request.user,
+                    estado="APROBADA"
+                ).order_by("-fecha_autorizacion").first()
+
+                if solicitud:
+
+                    solicitud.estado = "UTILIZADA"
+                    solicitud.fecha_utilizacion = timezone.now()
+                    solicitud.save()
+
             return redirect("gestion_casos")
 
     else:
 
-        form = CasoForm(instance=caso)
+        form = CasoForm(
+            instance=caso
+        )
 
-    return render(request, "mapa/nuevo_caso.html", {
-        "form": form
-    })
-
+    return render(
+        request,
+        "mapa/nuevo_caso.html",
+        {
+            "form": form
+        }
+    )
 
 @login_required
 @grupo_requerido("Administrador")
 def archivar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
+
+    caso.estado = "ARCHIVADO"
+    caso.save()
+
+    return redirect("gestion_casos")
+
+
+@login_required
+@grupo_requerido("Administrador")
+def restaurar_caso(request, id):
+
+    caso = get_object_or_404(Caso, pk=id)
+    caso.estado = "ACTIVO"
+    caso.save()
+
+    return redirect("casos_archivados")
+
+@login_required
+@grupo_requerido("Administrador")
+def archivar_caso(request, id):
+
+    caso = get_object_or_404(Caso, pk=id)
+
     caso.estado = "ARCHIVADO"
     caso.save()
 
@@ -295,6 +362,7 @@ def casos_archivados(request):
 def restaurar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
+
     caso.estado = "ACTIVO"
     caso.save()
 

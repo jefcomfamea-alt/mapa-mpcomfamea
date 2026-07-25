@@ -171,11 +171,25 @@
 
     {% elif request.user.groups.all.0.name == "Usuario_MP" %}
 
+    {% if caso.edicion_autorizada %}
+
+        <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
+            ✏️ Modificar Caso
+        </a>
+
+        <span style="color:green; font-weight:bold;">
+            ✅ Autorizado
+        </span>
+
+    {% else %}
+
         <a href="{% url 'solicitar_modificacion' caso.id %}" class="btn editar">
             📨 Solicitar Modificación
         </a>
 
     {% endif %}
+
+{% endif %}
 
 </td>  
 
