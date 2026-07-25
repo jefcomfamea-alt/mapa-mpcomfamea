@@ -330,12 +330,13 @@ tr:hover{
 
             </a>
 
-            <button
+            <a
+                href="{% url 'nuevo_usuario' %}"
                 class="btn btn-nuevo">
 
                 ➕ Nuevo Usuario
 
-            </button>
+            </a>
 
         </div>
 
@@ -417,17 +418,21 @@ tr:hover{
 
                     <td>
 
-                        <button class="btn btn-editar">
+                        <a
+                            href="{% url 'editar_usuario' usuario.id %}"
+                            class="btn btn-editar">
 
                             ✏️ Editar
 
-                        </button>
+                        </a>
 
-                        <button class="btn btn-desactivar">
+                        <a
+                            href="{% url 'desactivar_usuario' usuario.id %}"
+                            class="btn btn-desactivar">
 
                             🚫 Desactivar
 
-                        </button>
+                        </a>
 
                     </td>
 

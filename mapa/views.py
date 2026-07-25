@@ -59,13 +59,85 @@ def editar_usuario(request, pk):
 
     usuario = get_object_or_404(User, pk=pk)
 
+    if request.method == "POST":
+
+        usuario.username = request.POST.get("username")
+        usuario.first_name = request.POST.get("first_name")
+        usuario.last_name = request.POST.get("last_name")
+        usuario.email = request.POST.get("email")
+
+        password = request.POST.get("password")
+
+        if password:
+            usuario.set_password(password)
+
+        usuario.save()
+
+        rol = request.POST.get("rol")
+
+        if rol:
+
+            grupo = Group.objects.get(name=rol)
+
+            usuario.groups.clear()
+
+            usuario.groups.add(grupo)
+
+        return redirect("administrar_usuarios")
+
+    grupo_actual = usuario.groups.first()
+
     return render(
         request,
         "mapa/editar_usuario.html",
         {
-            "usuario": usuario
+            "usuario": usuario,
+            "grupo_actual": grupo_actual,
         }
     )
+
+@login_required
+@grupo_requerido("Administrador")
+def nuevo_usuario(request):
+
+    if request.method == "POST":
+
+        username = request.POST.get("username")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        rol = request.POST.get("rol")
+
+        usuario = User.objects.create_user(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=password
+        )
+
+        grupo = Group.objects.get(name=rol)
+
+        usuario.groups.add(grupo)
+
+        return redirect("administrar_usuarios")
+
+    return render(
+        request,
+        "mapa/nuevo_usuario.html"
+    )
+
+@login_required
+@grupo_requerido("Administrador")
+def desactivar_usuario(request, pk):
+
+    usuario = get_object_or_404(User, pk=pk)
+
+    usuario.is_active = False
+    usuario.save()
+
+    return redirect("administrar_usuarios")
 
 @login_required
 @grupo_requerido("Administrador", "Jefe_MP", "Usuario_MP")

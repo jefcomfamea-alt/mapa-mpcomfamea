@@ -39,14 +39,27 @@ urlpatterns = [
     path("cerrar-sesion/", views.cerrar_sesion, name="cerrar_sesion"),
 
     # Administración de usuarios
-    path(
-        "administrar-usuarios/",
-        views.administrar_usuarios,
-        name="administrar_usuarios",
-    ),
-    path(
-        "administrar-usuarios/editar/<int:pk>/",
-        views.editar_usuario,
-        name="editar_usuario",
-    ),
+path(
+    "administrar-usuarios/",
+    views.administrar_usuarios,
+    name="administrar_usuarios",
+),
+
+path(
+    "administrar-usuarios/nuevo/",
+    views.nuevo_usuario,
+    name="nuevo_usuario",
+),
+
+path(
+    "administrar-usuarios/editar/<int:pk>/",
+    views.editar_usuario,
+    name="editar_usuario",
+),
+
+path(
+    "administrar-usuarios/desactivar/<int:pk>/",
+    views.desactivar_usuario,
+    name="desactivar_usuario",
+),
 ]

@@ -1,0 +1,180 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Nuevo Usuario - SIGESMP</title>
+
+    <style>
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .contenedor {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            color: #1f3c5b;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .botones {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button,
+        a {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button {
+            background: #1f3c5b;
+            color: white;
+        }
+
+        a {
+            background: #777;
+            color: white;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <h2>➕ Crear Nuevo Usuario</h2>
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <label>Nombre de usuario</label>
+
+            <input
+                type="text"
+                name="username"
+                required
+            >
+
+            <label>Nombres</label>
+
+            <input
+                type="text"
+                name="first_name"
+            >
+
+            <label>Apellidos</label>
+
+            <input
+                type="text"
+                name="last_name"
+            >
+
+            <label>Correo electrónico</label>
+
+            <input
+                type="email"
+                name="email"
+            >
+
+            <label>Contraseña</label>
+
+            <input
+                type="password"
+                name="password"
+                required
+            >
+
+            <label>Rol / Grupo</label>
+
+            <select name="rol" required>
+
+                <option value="">
+                    Seleccione un rol
+                </option>
+
+                <option value="Administrador">
+                    Administrador
+                </option>
+
+                <option value="Jefe_MP">
+                    Jefe de Medidas de Protección
+                </option>
+
+                <option value="Usuario_MP">
+                    Usuario de Medidas de Protección
+                </option>
+
+                <option value="Efectivo_COMFAMEA">
+                    Efectivo COMFAMEA
+                </option>
+
+            </select>
+            
+            <div class="botones">
+
+                <button type="submit">
+                    💾 Crear Usuario
+                </button>
+
+                <a href="{% url 'administrar_usuarios' %}">
+                    ↩️ Cancelar
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</body>
+
+</html>
