@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import User
 from .models import Caso
 
 
@@ -14,6 +15,7 @@ class CasoForm(forms.ModelForm):
     "distrito",
     "comisaria",
     "efectivo",
+    "responsable",
     "folder",
     "expediente",
     "agresor",
@@ -52,7 +54,23 @@ class CasoForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+
+        self.usuario = kwargs.pop("usuario", None)
+
         super().__init__(*args, **kwargs)
+
+        self.fields["responsable"].queryset = User.objects.filter(
+            groups__name="Usuario_MP",
+            is_active=True
+        ).order_by("first_name", "last_name", "username")
+
+        self.fields["responsable"].required = False
+
+        if (
+            self.usuario
+            and self.usuario.groups.filter(name="Usuario_MP").exists()
+        ):
+            self.fields.pop("responsable")
 
         self.fields["fecha_registro"].input_formats = ["%Y-%m-%d", "%d/%m/%Y"]
         self.fields["ultima_visita"].input_formats = ["%Y-%m-%d", "%d/%m/%Y"]

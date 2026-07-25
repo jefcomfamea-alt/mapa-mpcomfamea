@@ -53,6 +53,14 @@ class Caso(models.Model):
 
     efectivo = models.CharField(max_length=100, blank=True)
 
+    responsable = models.ForeignKey(
+    User,
+    null=True,
+    blank=True,
+    on_delete=models.SET_NULL,
+    related_name="casos_asignados"
+)
+
     folder = models.CharField(max_length=100, blank=True)
 
     expediente = models.CharField(max_length=100, blank=True)
