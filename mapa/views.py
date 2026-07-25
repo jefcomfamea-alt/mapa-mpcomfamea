@@ -4,6 +4,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Q
+from datetime import timedelta
 from django.utils import timezone
 
 from .forms import CasoForm
@@ -19,6 +20,31 @@ def inicio(request):
 
     pendientes = SolicitudModificacion.objects.count()
 
+    hoy = timezone.now().date()
+    limite = hoy + timedelta(days=3)
+
+    if (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name__in=["Administrador", "Jefe_MP"]
+        ).exists()
+    ):
+
+        notificaciones = Caso.objects.filter(
+            estado="ACTIVO",
+            fecha_limite__isnull=False,
+            fecha_limite__lte=limite
+        ).order_by("fecha_limite")
+
+    else:
+
+        notificaciones = Caso.objects.filter(
+            estado="ACTIVO",
+            responsable=request.user,
+            fecha_limite__isnull=False,
+            fecha_limite__lte=limite
+        ).order_by("fecha_limite")
+
     es_admin = (
         request.user.is_superuser
         or request.user.groups.filter(
@@ -31,10 +57,47 @@ def inicio(request):
         "mapa/inicio.html",
         {
             "pendientes": pendientes,
-            "es_admin": es_admin
+            "es_admin": es_admin,
+            "notificaciones": notificaciones,
         }
     )
 
+@login_required
+def notificaciones(request):
+
+    hoy = timezone.now().date()
+    limite = hoy + timedelta(days=3)
+
+    if (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name__in=["Administrador", "Jefe_MP"]
+        ).exists()
+    ):
+
+        notificaciones = Caso.objects.filter(
+            estado="ACTIVO",
+            fecha_limite__isnull=False,
+            fecha_limite__lte=limite
+        ).order_by("fecha_limite")
+
+    else:
+
+        notificaciones = Caso.objects.filter(
+            estado="ACTIVO",
+            responsable=request.user,
+            fecha_limite__isnull=False,
+            fecha_limite__lte=limite
+        ).order_by("fecha_limite")
+
+    return render(
+        request,
+        "mapa/notificaciones.html",
+        {
+            "notificaciones": notificaciones,
+            "hoy": hoy,
+        }
+    )
 
 @login_required
 @grupo_requerido("Administrador")
@@ -406,17 +469,31 @@ def solicitar_modificacion(request, id):
     "Jefe_MP",
     "Usuario_MP"
 )
+
 def mensajes(request):
 
     solicitudes = SolicitudModificacion.objects.filter(
         estado="PENDIENTE"
     ).order_by("-fecha")
 
+
+    hoy = timezone.now().date()
+    limite = hoy + timedelta(days=3)
+
+
+    casos_por_vencer = Caso.objects.filter(
+        estado="ACTIVO",
+        fecha_limite__isnull=False,
+        fecha_limite__lte=limite
+    ).order_by("fecha_limite")
+
+
     return render(
         request,
         "mapa/mensajes.html",
         {
-            "solicitudes": solicitudes
+            "solicitudes": solicitudes,
+            "casos_por_vencer": casos_por_vencer,
         }
     )
 
@@ -482,5 +559,21 @@ def aprobar_solicitud(request, id):
     caso = solicitud.caso
     caso.edicion_autorizada = True
     caso.save()
+
+    return redirect("mensajes")
+
+@login_required
+@grupo_requerido("Administrador", "Jefe_MP")
+def rechazar_solicitud(request, id):
+
+    solicitud = get_object_or_404(
+        SolicitudModificacion,
+        pk=id
+    )
+
+    solicitud.estado = "RECHAZADA"
+    solicitud.autorizado_por = request.user
+    solicitud.fecha_autorizacion = timezone.now()
+    solicitud.save()
 
     return redirect("mensajes")

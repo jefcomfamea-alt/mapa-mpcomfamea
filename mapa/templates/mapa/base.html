@@ -1,0 +1,64 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>SIGESMP</title>
+
+    <link rel="stylesheet" href="{% static 'mapa/style.css' %}">
+
+</head>
+
+
+<body>
+
+<header>
+
+    <h1>SIGESMP - Sistema de Gestión de Medidas de Protección</h1>
+
+</header>
+
+
+<nav>
+
+    <a href="{% url 'inicio' %}">
+        Inicio
+    </a>
+
+    <a href="{% url 'gestion_casos' %}">
+        Gestión de Casos
+    </a>
+
+    <a href="{% url 'mensajes' %}">
+        Mensajes
+    </a>
+
+    <a href="{% url 'notificaciones' %}">
+    🔔 Notificaciones
+    </a>
+
+    <a href="{% url 'cerrar_sesion' %}">
+        Cerrar sesión
+    </a>
+
+</nav>
+
+
+<hr>
+
+
+<main>
+
+{% block content %}
+
+{% endblock %}
+
+</main>
+
+
+</body>
+
+</html>

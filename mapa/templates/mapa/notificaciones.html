@@ -1,0 +1,67 @@
+{% extends "mapa/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<h2>🔔 Centro de Notificaciones</h2>
+
+<hr>
+
+{% if notificaciones %}
+
+    {% for caso in notificaciones %}
+
+        <div class="notificacion">
+
+            <p>
+                <strong>DNI:</strong>
+                {{ caso.dni_beneficiario }}
+            </p>
+
+            <p>
+                <strong>Beneficiario:</strong>
+                {{ caso.beneficiario }}
+            </p>
+
+            <p>
+                <strong>Próximo seguimiento:</strong>
+                {{ caso.fecha_limite|date:"d/m/Y" }}
+            </p>
+
+            <p>
+
+                <strong>Estado:</strong>
+
+                {% if caso.fecha_limite < hoy %}
+
+                    Venció
+
+                {% elif caso.fecha_limite == hoy %}
+
+                    Vence hoy
+
+                {% else %}
+
+                    Próximo a vencer
+
+                {% endif %}
+
+            </p>
+
+            <a href="{% url 'editar_caso' caso.id %}">
+                Ver caso
+            </a>
+
+        </div>
+
+        <hr>
+
+    {% endfor %}
+
+{% else %}
+
+    <p>No existen casos próximos a vencer.</p>
+
+{% endif %}
+
+{% endblock %}

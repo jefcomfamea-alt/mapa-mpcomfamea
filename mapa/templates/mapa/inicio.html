@@ -441,14 +441,77 @@ LEYENDA
 
     <div class="accionesUsuario">
 
-    {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" or request.user.groups.all.0.name == "Usuario_MP" %}
-    <a href="{% url 'mensajes' %}" class="btnBuzon">
-        ✉️ Buzón
-        {% if pendientes > 0 %}
-            <span class="contador">{{ pendientes }}</span>
-        {% endif %}
-    </a>
+{% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" or request.user.groups.all.0.name == "Usuario_MP" %}
+
+<a href="{% url 'mensajes' %}" class="btnBuzon">
+    ✉️ Buzón
+    {% if pendientes > 0 %}
+        <span class="contador">{{ pendientes }}</span>
+    {% endif %}
+</a>
+
+<div class="btnNotificaciones" id="btnNotificaciones">
+
+    🔔
+
+    {% if notificaciones|length > 0 %}
+        <span class="contador">
+            {{ notificaciones|length }}
+        </span>
+    {% endif %}
+
+</div>
+
+<div id="panelNotificaciones" style="display:none;">
+
+    <h3>Casos próximos a vencer</h3>
+
+    {% if notificaciones %}
+
+        {% for caso in notificaciones %}
+
+            <div class="itemNotificacion">
+
+                <strong>📁 {{ caso.expediente }}</strong><br>
+
+                👤 {{ caso.beneficiario }}<br>
+
+                ⚠️ {{ caso.agresor }}<br>
+
+                📅 {{ caso.fecha_limite|date:"d/m/Y" }}<br>
+
+                👮 Responsable:
+                {{ caso.responsable.get_full_name|default:caso.responsable.username }}
+
+                <br><br>
+
+                <a href="{% url 'editar_caso' caso.id %}">
+                    Ver caso
+                </a>
+
+            </div>
+
+            <hr>
+
+        {% endfor %}
+
+    {% else %}
+
+        No existen casos próximos a vencer.
+
+    {% endif %}
+
+</div>
+
 {% endif %}
+
+<button
+    class="btnSalir"
+    onclick="location.href='{% url 'cerrar_sesion' %}'">
+    🚪 Cerrar sesión
+</button>
+
+</div>
 
     <button
         class="btnSalir"

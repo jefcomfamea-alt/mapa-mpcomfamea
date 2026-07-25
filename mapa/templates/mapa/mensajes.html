@@ -150,6 +150,58 @@ tr:hover{
 
 {% else %}
 
+<hr>
+
+<h2>🔔 Casos próximos a vencer</h2>
+
+{% if casos_por_vencer %}
+
+<table>
+
+<tr>
+    <th>Beneficiario</th>
+    <th>DNI</th>
+    <th>Fecha límite</th>
+    <th>Responsable</th>
+</tr>
+
+
+{% for caso in casos_por_vencer %}
+
+<tr>
+
+<td>
+{{ caso.beneficiario }}
+</td>
+
+<td>
+{{ caso.dni_beneficiario }}
+</td>
+
+<td>
+{{ caso.fecha_limite }}
+</td>
+
+<td>
+{{ caso.responsable.username }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% else %}
+
+<div class="sin">
+
+✅ No existen casos próximos a vencer.
+
+</div>
+
+{% endif %}
+
 <div class="sin">
 
 📭 No existen mensajes pendientes.

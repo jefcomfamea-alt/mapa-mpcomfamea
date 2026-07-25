@@ -28,9 +28,21 @@ urlpatterns = [
         views.aprobar_solicitud,
         name="aprobar_solicitud",
     ),
+    path(
+        "rechazar-solicitud/<int:id>/",
+        views.rechazar_solicitud,
+        name="rechazar_solicitud",
+    ),
 
     # Buzón de mensajes
     path("mensajes/", views.mensajes, name="mensajes"),
+
+    # Notificaciones de casos por vencer
+    path(
+        "notificaciones/",
+        views.notificaciones,
+        name="notificaciones",
+    ),
 
     # Buscar casos
     path("buscar-caso/", views.buscar_caso, name="buscar_caso"),
