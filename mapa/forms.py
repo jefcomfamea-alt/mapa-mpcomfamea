@@ -14,7 +14,6 @@ class CasoForm(forms.ModelForm):
     "nivel_riesgo",
     "distrito",
     "comisaria",
-    "efectivo",
     "responsable",
     "folder",
     "expediente",
@@ -63,6 +62,12 @@ class CasoForm(forms.ModelForm):
             groups__name="Usuario_MP",
             is_active=True
         ).order_by("first_name", "last_name", "username")
+
+        self.fields["responsable"].label_from_instance = lambda obj: (
+            f"{obj.first_name} {obj.last_name}".strip()
+            if obj.first_name or obj.last_name
+            else obj.username
+        )
 
         self.fields["responsable"].required = False
 
