@@ -59,7 +59,7 @@ class Caso(models.Model):
     blank=True,
     on_delete=models.SET_NULL,
     related_name="casos_asignados"
-)
+    )
 
     folder = models.CharField(max_length=100, blank=True)
 
@@ -209,3 +209,34 @@ class SolicitudModificacion(models.Model):
 
     def __str__(self):
         return f"Solicitud #{self.id} - Caso {self.caso.id}"
+    
+class Mensaje(models.Model):
+
+    destinatario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="mensajes_recibidos"
+    )
+
+    caso = models.ForeignKey(
+        Caso,
+        on_delete=models.CASCADE,
+        related_name="mensajes"
+    )
+
+    asunto = models.CharField(
+        max_length=200
+    )
+
+    contenido = models.TextField()
+
+    leido = models.BooleanField(
+        default=False
+    )
+
+    fecha = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return f"{self.asunto} - {self.destinatario.username}"

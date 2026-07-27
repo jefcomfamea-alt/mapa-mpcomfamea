@@ -8,11 +8,9 @@ from datetime import timedelta
 from django.utils import timezone
 
 from .forms import CasoForm
-from .models import Caso
+from .models import Caso, SolicitudModificacion, Mensaje
 from .decorators import grupo_requerido
-from .models import Caso, SolicitudModificacion
 from .forms_solicitudes import SolicitudModificacionForm
-from .models import SolicitudModificacion
 
 
 @login_required
@@ -32,6 +30,7 @@ def inicio(request):
 
         notificaciones = Caso.objects.filter(
             estado="ACTIVO",
+            ultima_visita__year__gte=2026,
             fecha_limite__isnull=False,
             fecha_limite__lte=limite
         ).order_by("fecha_limite")
@@ -40,6 +39,7 @@ def inicio(request):
 
         notificaciones = Caso.objects.filter(
             estado="ACTIVO",
+            ultima_visita__year__gte=2026,
             responsable=request.user,
             fecha_limite__isnull=False,
             fecha_limite__lte=limite
@@ -214,8 +214,33 @@ def nuevo_caso(request):
         )
 
         if form.is_valid():
-            form.save()
+
+            caso = form.save(commit=False)
+
+            if caso.responsable:
+                caso.edicion_autorizada = True
+
+            caso.save()
+
+            form.save_m2m()
+
+            if caso.responsable:
+
+                Mensaje.objects.create(
+                    destinatario=caso.responsable,
+                    caso=caso,
+                    asunto="🔔 Nuevo caso asignado",
+                    contenido=(
+                        f"Se le comunica que se le ha asignado "
+                        f"el expediente N.° "
+                        f"{caso.expediente or caso.folder} "
+                        f"para realizar la ejecución y seguimiento "
+                        f"de las medidas de protección."
+        )
+    )
+
             return redirect("inicio")
+
         else:
             print(form.errors)
 
@@ -330,8 +355,29 @@ def editar_caso(request, id):
         name="Usuario_MP"
     ).exists()
 
-    if not (es_admin or es_jefe or (es_usuario and caso.edicion_autorizada)):
-        return redirect("gestion_casos")
+    es_responsable = (
+        caso.responsable == request.user
+    )
+
+    # Administrador y Jefe siempre pueden editar
+    if es_admin or es_jefe:
+        pass
+
+    # El responsable puede editar si tiene autorización
+    elif es_responsable and caso.edicion_autorizada:
+        pass
+
+    # Si llegó desde un mensaje que le pertenece, se habilita la primera edición
+    elif Mensaje.objects.filter(
+        caso=caso,
+        destinatario=request.user
+    ).exists():
+
+        caso.edicion_autorizada = True
+        caso.save()
+
+    else:
+    return redirect("gestion_casos")
 
     if request.method == "POST":
 
@@ -342,12 +388,18 @@ def editar_caso(request, id):
 
         if form.is_valid():
 
-            form.save()
+            caso = form.save(commit=False)
 
-            if es_usuario:
+            caso.ultima_visita = timezone.now().date()
+
+            caso.save()
+
+            if es_responsable:
 
                 caso.edicion_autorizada = False
                 caso.save()
+
+            elif es_usuario:
 
                 solicitud = SolicitudModificacion.objects.filter(
                     caso=caso,
@@ -360,6 +412,9 @@ def editar_caso(request, id):
                     solicitud.estado = "UTILIZADA"
                     solicitud.fecha_utilizacion = timezone.now()
                     solicitud.save()
+
+                    caso.edicion_autorizada = False
+                    caso.save()
 
             return redirect("gestion_casos")
 
@@ -477,8 +532,11 @@ def solicitar_modificacion(request, id):
     "Jefe_MP",
     "Usuario_MP"
 )
-
 def mensajes(request):
+
+    mensajes_recibidos = Mensaje.objects.filter(
+        destinatario=request.user
+    ).order_by("-fecha")
 
     solicitudes = SolicitudModificacion.objects.filter(
         estado="PENDIENTE"
@@ -488,18 +546,19 @@ def mensajes(request):
     hoy = timezone.now().date()
     limite = hoy + timedelta(days=3)
 
-
     casos_por_vencer = Caso.objects.filter(
         estado="ACTIVO",
+        fecha_registro__year__gte=2026,
         fecha_limite__isnull=False,
+        fecha_limite__gte=hoy,
         fecha_limite__lte=limite
     ).order_by("fecha_limite")
-
 
     return render(
         request,
         "mapa/mensajes.html",
         {
+            "mensajes_recibidos": mensajes_recibidos,
             "solicitudes": solicitudes,
             "casos_por_vencer": casos_por_vencer,
         }
