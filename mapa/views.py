@@ -16,7 +16,10 @@ from .forms_solicitudes import SolicitudModificacionForm
 @login_required
 def inicio(request):
 
-    pendientes = SolicitudModificacion.objects.count()
+    pendientes_mensajes = Mensaje.objects.filter(
+        destinatario=request.user,
+        leido=False
+    ).count()
 
     hoy = timezone.now().date()
     limite = hoy + timedelta(days=3)
@@ -30,20 +33,30 @@ def inicio(request):
 
         notificaciones = Caso.objects.filter(
             estado="ACTIVO",
-            ultima_visita__year__gte=2026,
             fecha_limite__isnull=False,
             fecha_limite__lte=limite
+        ).filter(
+            Q(fecha_registro__year__gte=2026) |
+            Q(ultima_visita__year__gte=2026)
         ).order_by("fecha_limite")
 
     else:
 
         notificaciones = Caso.objects.filter(
             estado="ACTIVO",
-            ultima_visita__year__gte=2026,
             responsable=request.user,
             fecha_limite__isnull=False,
             fecha_limite__lte=limite
+        ).filter(
+            Q(fecha_registro__year__gte=2026) |
+            Q(ultima_visita__year__gte=2026)
         ).order_by("fecha_limite")
+
+
+    pendientes_casos = notificaciones.count()
+
+    pendientes = pendientes_mensajes + pendientes_casos
+
 
     es_admin = (
         request.user.is_superuser
@@ -51,6 +64,7 @@ def inicio(request):
             name="Administrador"
         ).exists()
     )
+
 
     return render(
         request,
@@ -79,6 +93,9 @@ def notificaciones(request):
             estado="ACTIVO",
             fecha_limite__isnull=False,
             fecha_limite__lte=limite
+        ).filter(
+            Q(fecha_registro__year__gte=2026) |
+            Q(ultima_visita__year__gte=2026)
         ).order_by("fecha_limite")
 
     else:
@@ -88,6 +105,9 @@ def notificaciones(request):
             responsable=request.user,
             fecha_limite__isnull=False,
             fecha_limite__lte=limite
+        ).filter(
+            Q(fecha_registro__year__gte=2026) |
+            Q(ultima_visita__year__gte=2026)
         ).order_by("fecha_limite")
 
     return render(
@@ -222,7 +242,7 @@ def nuevo_caso(request):
                 nombre = f"{caso.responsable.first_name} {caso.responsable.last_name}".strip()
                 caso.efectivo = nombre if nombre else caso.responsable.username
 
-                caso.edicion_autorizada = True
+                caso.edicion_autorizada = False
 
             caso.save()
 
@@ -343,6 +363,16 @@ def casos_json(request):
 def editar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
+
+    # Marcar como leído el mensaje del usuario para este caso
+    Mensaje.objects.filter(
+        destinatario=request.user,
+        caso=caso,
+        leido=False
+    ).update(
+        leido=True,
+        fecha_lectura=timezone.now()
+    )
 
     es_admin = (
         request.user.is_superuser
@@ -542,9 +572,15 @@ def solicitar_modificacion(request, id):
 )
 def mensajes(request):
 
-    mensajes_recibidos = Mensaje.objects.filter(
-        destinatario=request.user
+    mensajes_nuevos = Mensaje.objects.filter(
+        destinatario=request.user,
+        leido=False
     ).order_by("-fecha")
+
+    historial_mensajes = Mensaje.objects.filter(
+        destinatario=request.user,
+        leido=True
+    ).order_by("-fecha_lectura", "-fecha")
 
     solicitudes = SolicitudModificacion.objects.filter(
         estado="PENDIENTE"
@@ -556,22 +592,24 @@ def mensajes(request):
 
     casos_por_vencer = Caso.objects.filter(
         estado="ACTIVO",
-        fecha_registro__year__gte=2026,
         fecha_limite__isnull=False,
         fecha_limite__gte=hoy,
         fecha_limite__lte=limite
+    ).filter(
+        Q(fecha_registro__year__gte=2026) |
+        Q(ultima_visita__year__gte=2026)
     ).order_by("fecha_limite")
 
     return render(
         request,
         "mapa/mensajes.html",
         {
-            "mensajes_recibidos": mensajes_recibidos,
+            "mensajes_nuevos": mensajes_nuevos,
+            "historial_mensajes": historial_mensajes,
             "solicitudes": solicitudes,
             "casos_por_vencer": casos_por_vencer,
         }
     )
-
 def cerrar_sesion(request):
     logout(request)
     return redirect("/accounts/login/")

@@ -103,7 +103,7 @@ tr:hover{
 
 <h2>📬 Mensajes recibidos</h2>
 
-{% if mensajes_recibidos %}
+{% if mensajes_nuevos %}
 
 <table>
 
@@ -115,7 +115,7 @@ tr:hover{
     <th>Acciones</th>
 </tr>
 
-{% for mensaje in mensajes_recibidos %}
+{% for mensaje in mensajes_nuevos %}
 
 <tr>
 
@@ -158,55 +158,6 @@ tr:hover{
 </div>
 
 {% endif %}
-
-{% if solicitudes %}
-
-<table>
-
-<tr>
-
-<th>ID</th>
-<th>Beneficiario</th>
-<th>Solicitante</th>
-<th>Motivo</th>
-<th>Fecha</th>
-<th>Acciones</th>
-
-</tr>
-
-{% for solicitud in solicitudes %}
-
-<tr>
-
-<td>{{ solicitud.id }}</td>
-
-<td>{{ solicitud.caso.beneficiario }}</td>
-
-<td>{{ solicitud.solicitante.username }}</td>
-
-<td>{{ solicitud.motivo }}</td>
-
-<td>{{ solicitud.fecha }}</td>
-
-<td>
-
-<a href="{% url 'aprobar_solicitud' solicitud.id %}" class="btn aprobar">
-✅ Aprobar
-</a>
-
-<a href="#" class="btn aprobar">
-❌ Rechazar
-</a>
-
-</td>
-
-</tr>
-
-{% endfor %}
-
-</table>
-
-{% else %}
 
 <hr>
 
@@ -260,9 +211,116 @@ tr:hover{
 
 {% endif %}
 
+<hr>
+
+<h2>📚 Historial de mensajes</h2>
+
+{% if historial_mensajes %}
+
+<table>
+
+<tr>
+    <th>Asunto</th>
+    <th>Contenido</th>
+    <th>Enviado</th>
+    <th>Leído</th>
+    <th>Acción</th>
+</tr>
+
+{% for mensaje in historial_mensajes %}
+
+<tr>
+
+<td>{{ mensaje.asunto }}</td>
+
+<td>{{ mensaje.contenido }}</td>
+
+<td>{{ mensaje.fecha|date:"d/m/Y H:i" }}</td>
+
+<td>{{ mensaje.fecha_lectura|date:"d/m/Y H:i" }}</td>
+
+<td>
+
+<a href="{% url 'editar_caso' mensaje.caso.id %}" class="btn volver">
+
+📍 Ver caso
+
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% else %}
+
 <div class="sin">
 
-📭 No existen mensajes pendientes.
+📚 No existen mensajes en el historial.
+
+</div>
+
+{% endif %}
+
+<hr>
+
+<h2>📝 Solicitudes de modificación</h2>
+
+{% if solicitudes %}
+
+<table>
+
+<tr>
+
+<th>ID</th>
+<th>Beneficiario</th>
+<th>Solicitante</th>
+<th>Motivo</th>
+<th>Fecha</th>
+<th>Acciones</th>
+
+</tr>
+
+{% for solicitud in solicitudes %}
+
+<tr>
+
+<td>{{ solicitud.id }}</td>
+
+<td>{{ solicitud.caso.beneficiario }}</td>
+
+<td>{{ solicitud.solicitante.username }}</td>
+
+<td>{{ solicitud.motivo }}</td>
+
+<td>{{ solicitud.fecha|date:"d/m/Y H:i" }}</td>
+
+<td>
+
+<a href="{% url 'aprobar_solicitud' solicitud.id %}" class="btn aprobar">
+✅ Aprobar
+</a>
+
+<a href="{% url 'rechazar_solicitud' solicitud.id %}" class="btn rechazar">
+❌ Rechazar
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% else %}
+
+<div class="sin">
+
+✅ No existen solicitudes de modificación pendientes.
 
 </div>
 

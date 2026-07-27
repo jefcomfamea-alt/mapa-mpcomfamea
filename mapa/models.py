@@ -234,6 +234,11 @@ class Mensaje(models.Model):
         default=False
     )
 
+    fecha_lectura = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
     fecha = models.DateTimeField(
         auto_now_add=True
     )
