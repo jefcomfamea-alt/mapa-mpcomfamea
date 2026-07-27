@@ -244,9 +244,17 @@ def nuevo_caso(request):
 @login_required
 def gestion_casos(request):
 
+    from django.core.paginator import Paginator
+
     casos = Caso.objects.filter(
         estado="ACTIVO"
     ).order_by("-id")
+
+    paginador = Paginator(casos, 20)
+
+    pagina = request.GET.get("page")
+
+    casos = paginador.get_page(pagina)
 
     return render(
         request,

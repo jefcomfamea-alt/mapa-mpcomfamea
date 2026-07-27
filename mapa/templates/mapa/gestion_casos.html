@@ -209,6 +209,34 @@
 
     </table>
 
+    <br>
+
+<div style="text-align:center;">
+
+    {% if casos.has_previous %}
+        <a href="?page=1">⏮ Primero</a>
+
+        <a href="?page={{ casos.previous_page_number }}">
+            ◀ Anterior
+        </a>
+    {% endif %}
+
+    <strong>
+        Página {{ casos.number }} de {{ casos.paginator.num_pages }}
+    </strong>
+
+    {% if casos.has_next %}
+        <a href="?page={{ casos.next_page_number }}">
+            Siguiente ▶
+        </a>
+
+        <a href="?page={{ casos.paginator.num_pages }}">
+            Último ⏭
+        </a>
+    {% endif %}
+
+</div>
+
 </div>
 
 </body>
