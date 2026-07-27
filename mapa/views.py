@@ -377,7 +377,7 @@ def editar_caso(request, id):
         caso.save()
 
     else:
-    return redirect("gestion_casos")
+        return redirect("gestion_casos")
 
     if request.method == "POST":
 
