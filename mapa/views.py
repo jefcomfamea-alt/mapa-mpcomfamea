@@ -218,6 +218,10 @@ def nuevo_caso(request):
             caso = form.save(commit=False)
 
             if caso.responsable:
+
+                nombre = f"{caso.responsable.first_name} {caso.responsable.last_name}".strip()
+                caso.efectivo = nombre if nombre else caso.responsable.username
+
                 caso.edicion_autorizada = True
 
             caso.save()
@@ -389,6 +393,10 @@ def editar_caso(request, id):
         if form.is_valid():
 
             caso = form.save(commit=False)
+
+            if caso.responsable:
+                nombre = f"{caso.responsable.first_name} {caso.responsable.last_name}".strip()
+                caso.efectivo = nombre if nombre else caso.responsable.username
 
             caso.ultima_visita = timezone.now().date()
 
