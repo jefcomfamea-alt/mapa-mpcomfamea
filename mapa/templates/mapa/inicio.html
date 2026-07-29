@@ -393,6 +393,51 @@ LEYENDA
 
 }
 
+.contenedorBusqueda {
+    position: relative;
+    width: 100%;
+}
+
+/*=========================
+DESPLEGABLE DE BÚSQUEDA
+=========================*/
+
+.contenedorBusqueda {
+    position: relative;
+    width: 100%;
+}
+
+#resultadosBusqueda {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 9999;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,.25);
+}
+
+.resultadoBusqueda {
+    padding: 10px;
+    cursor: pointer;
+    color: #222;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.resultadoBusqueda:hover {
+    background: #e8f5e9;
+}
+
+.resultadoBusqueda strong {
+    color: #1B5E20;
+}
+
 </style>
 
 </head>
@@ -450,75 +495,15 @@ LEYENDA
     {% endif %}
 </a>
 
-<div class="btnNotificaciones" id="btnNotificaciones">
-
-    🔔
-
-    {% if notificaciones|length > 0 %}
-        <span class="contador">
-            {{ notificaciones|length }}
-        </span>
-    {% endif %}
-
-</div>
-
-<div id="panelNotificaciones" style="display:none;">
-
-    <h3>Casos próximos a vencer</h3>
-
-    {% if notificaciones %}
-
-        {% for caso in notificaciones %}
-
-            <div class="itemNotificacion">
-
-                <strong>📁 {{ caso.expediente }}</strong><br>
-
-                👤 {{ caso.beneficiario }}<br>
-
-                ⚠️ {{ caso.agresor }}<br>
-
-                📅 {{ caso.fecha_limite|date:"d/m/Y" }}<br>
-
-                👮 Responsable:
-
-        {% if caso.responsable %}
-            {{ caso.responsable.get_full_name|default:caso.responsable.username }}
-        {% else %}
-            Sin asignar
-        {% endif %}
-
-                <br><br>
-
-                <a href="{% url 'editar_caso' caso.id %}">
-                    Ver caso
-                </a>
-
-            </div>
-
-            <hr>
-
-        {% endfor %}
-
-    {% else %}
-
-        No existen casos próximos a vencer.
-
-    {% endif %}
-
-</div>
-
 {% endif %}
 
-    <button
-        class="btnSalir"
-        onclick="location.href='{% url 'cerrar_sesion' %}'">
-        🚪 Cerrar sesión
-    </button>
+<button
+    class="btnSalir"
+    onclick="location.href='{% url 'cerrar_sesion' %}'">
+    🚪 Cerrar sesión
+</button>
 
 </div>
-
-    </div>
 
 </div>
 
@@ -550,12 +535,19 @@ LEYENDA
     <option value="agresor">Agresor</option>
 </select>
 
-<input
-    type="text"
-    id="textoBusqueda"
-    placeholder="Ingrese el dato..."
-    style="width:100%; padding:8px; margin-bottom:10px;"
->
+<div class="contenedorBusqueda">
+
+    <input
+        type="text"
+        id="textoBusqueda"
+        placeholder="Ingrese el dato..."
+        autocomplete="off"
+        style="width:100%; padding:8px; margin-bottom:10px;"
+    >
+
+    <div id="resultadosBusqueda"></div>
+
+</div>
 
 <button
     class="botonMenu azul"
@@ -801,95 +793,310 @@ return div;
 
 legend.addTo(map);
 
-function buscarCaso(){
+/*=========================
+BUSCADOR DE CASOS
+=========================*/
 
-    let texto = document.getElementById("textoBusqueda").value.trim();
+let resultadosBusqueda = document.getElementById("resultadosBusqueda");
+let textoBusqueda = document.getElementById("textoBusqueda");
+let tipoBusqueda = document.getElementById("tipoBusqueda");
 
-    if(texto==""){
-        alert("Ingrese un dato para buscar.");
+
+/*--------------------------------
+BUSQUEDA AUTOMATICA AL ESCRIBIR
+--------------------------------*/
+
+textoBusqueda.addEventListener("input", function(){
+
+    let texto = textoBusqueda.value.trim();
+    let tipo = tipoBusqueda.value;
+
+    resultadosBusqueda.innerHTML = "";
+    resultadosBusqueda.style.display = "none";
+
+    if(texto === ""){
         return;
     }
 
-    fetch("/buscar-caso/?q=" + encodeURIComponent(texto))
+    fetch(
+        "/buscar-caso/?tipo=" +
+        encodeURIComponent(tipo) +
+        "&q=" +
+        encodeURIComponent(texto)
+    )
     .then(response => response.json())
     .then(data => {
 
-        if(!data.encontrado){
-            alert("No se encontró ningún caso.");
+        if(!data.encontrado || !data.casos || data.casos.length === 0){
             return;
         }
 
-        map.setView([data.latitud, data.longitud], 18);
+        resultadosBusqueda.style.display = "block";
 
-let marcadorEncontrado = null;
+        data.casos.forEach(function(caso){
 
-marcadoresCasos.forEach(function(layer){
+            let opcion = document.createElement("div");
 
-    if(
-        Math.abs(layer.latitud - data.latitud) < 0.000001 &&
-        Math.abs(layer.longitud - data.longitud) < 0.000001
-    ){
-        marcadorEncontrado = layer;
-    }
+            opcion.className = "resultadoBusqueda";
 
-});
+            opcion.innerHTML =
+                "<strong>" +
+                (caso.beneficiario || "Sin beneficiario") +
+                "</strong>" +
+                "<br>" +
+                "<small>" +
+                "Folder: " + (caso.folder || "-") +
+                " | Expediente: " + (caso.expediente || "-") +
+                "</small>";
 
-if(marcadorEncontrado){
+            opcion.onclick = function(){
 
-    marcadorEncontrado.setStyle({
+                seleccionarCaso(caso);
 
-        radius:14,
-        fillColor:"#00BFFF",
-        color:"#ffffff",
-        weight:3,
-        fillOpacity:1
+            };
 
-    });
-
-    marcadorEncontrado.openPopup();
-
-    setTimeout(function(){
-
-        let riesgo = (marcadorEncontrado.datos["NIVEL RIESGO"] || "")
-                        .trim()
-                        .toUpperCase();
-
-        let color = "gray";
-
-        if(riesgo=="LEVE"){
-            color="#00b050";
-        }
-        else if(riesgo=="MODERADO"){
-            color="#ffd966";
-        }
-        else if(riesgo=="SEVERO" || riesgo=="SEVERO1"){
-            color="#ff0000";
-        }
-        else if(riesgo=="SEVERO EXTREMO" || riesgo=="SEVERO2"){
-            color="#990000";
-        }
-        else if(riesgo=="NO DETERMINADO"){
-            color="#808080";
-        }
-
-        marcadorEncontrado.setStyle({
-
-            radius:7,
-            fillColor:color,
-            color:"#000",
-            weight:1,
-            fillOpacity:0.9
+            resultadosBusqueda.appendChild(opcion);
 
         });
 
-    },8000);
+    })
+    .catch(error => {
+
+        console.error("Error en búsqueda:", error);
+
+    });
+
+});
+
+
+/*--------------------------------
+CAMBIO DEL TIPO DE BÚSQUEDA
+--------------------------------*/
+
+tipoBusqueda.addEventListener("change", function(){
+
+    textoBusqueda.value = "";
+
+    resultadosBusqueda.innerHTML = "";
+
+    resultadosBusqueda.style.display = "none";
+
+    textoBusqueda.focus();
+
+});
+
+
+/*--------------------------------
+SELECCIONAR UN CASO
+--------------------------------*/
+
+function seleccionarCaso(caso){
+
+    resultadosBusqueda.style.display = "none";
+
+    textoBusqueda.value = caso.beneficiario || "";
+
+    if(caso.latitud == null || caso.longitud == null){
+
+        alert("Este caso no tiene coordenadas registradas.");
+
+        return;
+
+    }
+
+    map.setView(
+        [caso.latitud, caso.longitud],
+        18
+    );
+
+
+    let marcadorEncontrado = null;
+
+
+    marcadoresCasos.forEach(function(layer){
+
+        if(
+            Math.abs(layer.latitud - caso.latitud) < 0.000001 &&
+            Math.abs(layer.longitud - caso.longitud) < 0.000001
+        ){
+
+            marcadorEncontrado = layer;
+
+        }
+
+    });
+
+
+    if(marcadorEncontrado){
+
+        marcadorEncontrado.setStyle({
+
+            radius:14,
+            fillColor:"#00BFFF",
+            color:"#ffffff",
+            weight:3,
+            fillOpacity:1
+
+        });
+
+        marcadorEncontrado.openPopup();
+
+
+        setTimeout(function(){
+
+            let riesgo =
+                (marcadorEncontrado.datos["NIVEL RIESGO"] || "")
+                .trim()
+                .toUpperCase();
+
+            let color = "gray";
+
+
+            if(riesgo == "LEVE"){
+
+                color = "#00b050";
+
+            }
+            else if(riesgo == "MODERADO"){
+
+                color = "#ffd966";
+
+            }
+            else if(
+                riesgo == "SEVERO" ||
+                riesgo == "SEVERO1"
+            ){
+
+                color = "#ff0000";
+
+            }
+            else if(
+                riesgo == "SEVERO EXTREMO" ||
+                riesgo == "SEVERO2"
+            ){
+
+                color = "#990000";
+
+            }
+            else if(riesgo == "NO DETERMINADO"){
+
+                color = "#808080";
+
+            }
+
+
+            marcadorEncontrado.setStyle({
+
+                radius:7,
+                fillColor:color,
+                color:"#000",
+                weight:1,
+                fillOpacity:0.9
+
+            });
+
+        },8000);
+
+    }
 
 }
+
+
+/*--------------------------------
+BOTÓN BUSCAR
+--------------------------------*/
+
+function buscarCaso(){
+
+    let texto = textoBusqueda.value.trim();
+
+    if(texto === ""){
+
+        alert("Ingrese un dato para buscar.");
+
+        return;
+
+    }
+
+
+    let tipo = tipoBusqueda.value;
+
+
+    fetch(
+        "/buscar-caso/?tipo=" +
+        encodeURIComponent(tipo) +
+        "&q=" +
+        encodeURIComponent(texto)
+    )
+    .then(response => response.json())
+    .then(data => {
+
+        if(
+            !data.encontrado ||
+            !data.casos ||
+            data.casos.length === 0
+        ){
+
+            alert("No se encontró ningún caso.");
+
+            return;
+
+        }
+
+
+        /* Si hay un solo resultado,
+           lo seleccionamos directamente */
+
+        if(data.casos.length === 1){
+
+            seleccionarCaso(data.casos[0]);
+
+            return;
+
+        }
+
+
+        /* Si hay varios,
+           mostramos todos */
+
+        resultadosBusqueda.innerHTML = "";
+
+        resultadosBusqueda.style.display = "block";
+
+
+        data.casos.forEach(function(caso){
+
+            let opcion = document.createElement("div");
+
+            opcion.className = "resultadoBusqueda";
+
+            opcion.innerHTML =
+                "<strong>" +
+                (caso.beneficiario || "Sin beneficiario") +
+                "</strong>" +
+                "<br>" +
+                "<small>" +
+                "Folder: " + (caso.folder || "-") +
+                " | Expediente: " + (caso.expediente || "-") +
+                "</small>";
+
+
+            opcion.onclick = function(){
+
+                seleccionarCaso(caso);
+
+            };
+
+
+            resultadosBusqueda.appendChild(opcion);
+
+        });
 
     })
     .catch(error => {
 
         console.error(error);
+
         alert("Error al realizar la búsqueda.");
 
     });
@@ -900,4 +1107,3 @@ if(marcadorEncontrado){
 
 </body>
 </html>
-

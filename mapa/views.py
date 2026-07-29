@@ -618,40 +618,54 @@ def cerrar_sesion(request):
 def buscar_caso(request):
 
     texto = request.GET.get("q", "").strip()
+    tipo = request.GET.get("tipo", "").strip()
 
     if texto == "":
         return JsonResponse({
-            "encontrado": False
+            "encontrado": False,
+            "casos": []
         })
 
-    caso = Caso.objects.filter(
+    filtros = {
+        "beneficiario": Q(beneficiario__icontains=texto),
+        "agresor": Q(agresor__icontains=texto),
+        "dni": Q(dni_beneficiario__icontains=texto),
+        "expediente": Q(expediente__icontains=texto),
+        "folder": Q(folder__icontains=texto),
+    }
 
-        Q(beneficiario__icontains=texto) |
-        Q(expediente__icontains=texto) |
-        Q(folder__icontains=texto) |
-        Q(dni_beneficiario__icontains=texto) |
-        Q(agresor__icontains=texto) |
-        Q(dni_agresor__icontains=texto)
+    if tipo in filtros:
+        casos = Caso.objects.filter(
+            filtros[tipo]
+        ).order_by("beneficiario")
+    else:
+        casos = Caso.objects.filter(
+            Q(beneficiario__icontains=texto) |
+            Q(agresor__icontains=texto) |
+            Q(dni_beneficiario__icontains=texto) |
+            Q(dni_agresor__icontains=texto) |
+            Q(expediente__icontains=texto) |
+            Q(folder__icontains=texto)
+        ).order_by("beneficiario")
 
-    ).first()
+    resultados = []
 
-    if caso is None:
-        return JsonResponse({
-            "encontrado": False
+    for caso in casos:
+
+        resultados.append({
+            "id": caso.id,
+            "beneficiario": caso.beneficiario,
+            "agresor": caso.agresor,
+            "expediente": caso.expediente,
+            "folder": caso.folder,
+            "latitud": caso.latitud,
+            "longitud": caso.longitud,
+            "riesgo": caso.nivel_riesgo,
         })
 
     return JsonResponse({
-
-        "encontrado": True,
-
-        "latitud": caso.latitud,
-        "longitud": caso.longitud,
-
-        "beneficiario": caso.beneficiario,
-        "expediente": caso.expediente,
-        "folder": caso.folder,
-        "riesgo": caso.nivel_riesgo
-
+        "encontrado": len(resultados) > 0,
+        "casos": resultados
     })
 
 
