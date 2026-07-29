@@ -417,7 +417,8 @@ def editar_caso(request, id):
 
         form = CasoForm(
             request.POST,
-            instance=caso
+            instance=caso,
+            usuario=request.user
         )
 
         if form.is_valid():
@@ -427,8 +428,6 @@ def editar_caso(request, id):
             if caso.responsable:
                 nombre = f"{caso.responsable.first_name} {caso.responsable.last_name}".strip()
                 caso.efectivo = nombre if nombre else caso.responsable.username
-
-            caso.ultima_visita = timezone.now().date()
 
             caso.save()
 
@@ -459,7 +458,8 @@ def editar_caso(request, id):
     else:
 
         form = CasoForm(
-            instance=caso
+            instance=caso,
+            usuario=request.user
         )
 
     return render(
