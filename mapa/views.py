@@ -98,13 +98,28 @@ def inicio(request):
         ).exists()
     )
 
+    es_jefe = request.user.groups.filter(
+        name="Jefe_MP"
+    ).exists()
 
+    es_usuario_mp = request.user.groups.filter(
+        name="Usuario_MP"
+    ).exists()
+
+    es_efectivo_comfamea = request.user.groups.filter(
+        name="Efectivo_COMFAMEA"
+    ).exists()
+
+    
     return render(
         request,
         "mapa/inicio.html",
         {
             "pendientes": pendientes,
             "es_admin": es_admin,
+            "es_jefe": es_jefe,
+            "es_usuario_mp": es_usuario_mp,
+            "es_efectivo_comfamea": es_efectivo_comfamea,
             "notificaciones": notificaciones,
         }
     )
@@ -377,6 +392,7 @@ def casos_json(request):
                 "coordinates": [caso.longitud, caso.latitud]
             },
             "properties": {
+                "id": caso.id,
                 "BENEFICIARIO": caso.beneficiario,
                 "DOMICILIO": caso.domicilio,
                 "NIVEL RIESGO": caso.nivel_riesgo,
@@ -386,6 +402,7 @@ def casos_json(request):
                 "COMISARIA MEDIDA": caso.comisaria_medida,
 
                 "EFECTIVO": caso.efectivo,
+                "RESPONSABLE_ID": caso.responsable.id if caso.responsable else None,
                 "FOLDER": caso.folder,
                 "EXP.": caso.expediente,
 
@@ -439,10 +456,17 @@ def editar_caso(request, id):
         name="Usuario_MP"
     ).exists()
 
+    es_efectivo_comfamea = request.user.groups.filter(
+        name="Efectivo_COMFAMEA"
+    ).exists()
+
     es_responsable = (
         caso.responsable == request.user
     )
 
+    if es_efectivo_comfamea:
+        return redirect("gestion_casos")
+    
     # Administrador y Jefe siempre pueden editar
     if es_admin or es_jefe:
         pass
@@ -452,15 +476,12 @@ def editar_caso(request, id):
         pass
 
     # Si llegó desde un mensaje que le pertenece, se habilita la primera edición
-    elif Mensaje.objects.filter(
-        caso=caso,
-        destinatario=request.user
-    ).exists():
+    elif es_responsable:
 
-        caso.edicion_autorizada = True
-        caso.save()
+        return redirect("solicitar_modificacion", id=caso.id)
 
     else:
+
         return redirect("gestion_casos")
 
     if request.method == "POST":

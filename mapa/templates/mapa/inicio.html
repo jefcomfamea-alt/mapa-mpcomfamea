@@ -582,6 +582,13 @@ DESPLEGABLE DE BÚSQUEDA
 
 <script>
 
+const usuarioId = {{ request.user.id }};
+const esAdmin = {{ es_admin|yesno:"true,false" }};
+const esJefe = {{ es_jefe|yesno:"true,false" }};
+const esUsuarioMP = {{ es_usuario_mp|yesno:"true,false" }};
+const esEfectivoComfamea = {{ es_efectivo_comfamea|yesno:"true,false" }};
+
+
 var map = L.map("map").setView([-12.0478,-76.9983],13);
 
 var marcadoresCasos = [];
@@ -623,7 +630,7 @@ fetch("/casos-json/")
 
 .then(data=>{
 
-L.geoJSON(data,{
+    L.geoJSON(data,{
 
     pointToLayer:function(feature,latlng){
 
@@ -733,7 +740,7 @@ return marcador;
        
         marcadoresCasos.push(layer);
 
-        layer.bindPopup(
+                layer.bindPopup(
 
             "<b>Beneficiario:</b> "+(p["BENEFICIARIO"]||"")+"<br>"+
             "<b>Agresor:</b> "+(p["AGRESOR"]||"")+"<br>"+
@@ -751,9 +758,23 @@ return marcador;
             "<b>Notif. Beneficiario:</b> "+(p["NOTIFICACION BENEFICIARIO"]||"")+"<br>"+
             "<b>Fec. Notif. Beneficiario:</b> "+(p["FECHA NOTIFICACION BENEFICIARIO"]||"")+"<br>"+
             "<b>Notif. Agresor:</b> "+(p["NOTIFICACION AGRESOR"]||"")+"<br>"+
-            "<b>Fec. Notif. Agresor:</b> "+(p["FECHA NOTIFICACION AGRESOR"]||"")
+            "<b>Fec. Notif. Agresor:</b> "+(p["FECHA NOTIFICACION AGRESOR"]||"")+"<br>"+
 
-    );
+            (
+                esAdmin || esJefe
+                ?
+                "<br><a href='/editar-caso/"+p["id"]+"/'>Editar caso</a>"
+                :
+                (
+                    esUsuarioMP && p["RESPONSABLE_ID"] == usuarioId
+                    ?
+                    "<br><a href='/solicitar-modificacion/"+p["id"]+"/'>Solicitar modificación</a>"
+                    :
+                    ""
+                )
+            )
+
+        );
 
 },
 
