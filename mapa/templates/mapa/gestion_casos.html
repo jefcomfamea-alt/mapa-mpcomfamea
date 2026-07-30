@@ -93,6 +93,28 @@
 <header>
 
     <h1>Gestión de Casos</h1>
+    
+    <form method="GET" style="margin-bottom:20px;">
+
+    <input 
+        type="text" 
+        name="q" 
+        value="{{ busqueda }}"
+        placeholder="Buscar por DNI, beneficiario o expediente"
+        style="padding:8px; width:350px;"
+    >
+
+    <button type="submit">
+        Buscar
+    </button>
+
+    {% if busqueda %}
+        <a href="{% url 'gestion_casos' %}">
+            Limpiar
+        </a>
+    {% endif %}
+
+</form>
 
 </header>
 

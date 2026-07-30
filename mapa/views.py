@@ -327,10 +327,22 @@ def nuevo_caso(request):
 def gestion_casos(request):
 
     from django.core.paginator import Paginator
+    from django.db.models import Q
+
+    busqueda = request.GET.get("q", "")
 
     casos = Caso.objects.filter(
         estado="ACTIVO"
-    ).order_by("-id")
+    )
+
+    if busqueda:
+        casos = casos.filter(
+            Q(beneficiario__icontains=busqueda) |
+            Q(dni_beneficiario__icontains=busqueda) |
+            Q(expediente__icontains=busqueda)
+        )
+
+    casos = casos.order_by("-id")
 
     paginador = Paginator(casos, 20)
 
@@ -342,7 +354,8 @@ def gestion_casos(request):
         request,
         "mapa/gestion_casos.html",
         {
-            "casos": casos
+            "casos": casos,
+            "busqueda": busqueda
         }
     )
 
