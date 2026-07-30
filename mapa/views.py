@@ -8,10 +8,43 @@ from datetime import timedelta
 from django.utils import timezone
 
 from .forms import CasoForm
-from .models import Caso, SolicitudModificacion, Mensaje
+from .models import Caso, SolicitudModificacion, Mensaje, Region, Provincia, Distrito
 from .decorators import grupo_requerido
 from .forms_solicitudes import SolicitudModificacionForm
 
+def cargar_provincias(request):
+    region_id = request.GET.get("region_id")
+
+    provincias = Provincia.objects.filter(
+        region_id=region_id
+    ).order_by("nombre")
+
+    data = [
+        {
+            "id": provincia.id,
+            "nombre": provincia.nombre
+        }
+        for provincia in provincias
+    ]
+
+    return JsonResponse(data, safe=False)
+
+def cargar_distritos(request):
+    provincia_id = request.GET.get("provincia_id")
+
+    distritos = Distrito.objects.filter(
+        provincia_id=provincia_id
+    ).order_by("nombre")
+
+    data = [
+        {
+            "id": distrito.id,
+            "nombre": distrito.nombre
+        }
+        for distrito in distritos
+    ]
+
+    return JsonResponse(data, safe=False)
 
 @login_required
 def inicio(request):
@@ -334,11 +367,15 @@ def casos_json(request):
                 "BENEFICIARIO": caso.beneficiario,
                 "DOMICILIO": caso.domicilio,
                 "NIVEL RIESGO": caso.nivel_riesgo,
-                "DISTRITO": caso.distrito,
-                "COMISARIA DE LA JURISDICCIÓN": caso.comisaria,
+                "DISTRITO": str(caso.distrito_denuncia) if caso.distrito_denuncia else "",
+
+                "COMISARIA DENUNCIA": caso.comisaria_denuncia,
+                "COMISARIA MEDIDA": caso.comisaria_medida,
+
                 "EFECTIVO": caso.efectivo,
                 "FOLDER": caso.folder,
                 "EXP.": caso.expediente,
+
                 "AGRESOR": caso.agresor,
                 "TELEFONO": caso.telefono,
                 "fecha_registro": str(caso.fecha_registro) if caso.fecha_registro else "",

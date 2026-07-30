@@ -4,6 +4,84 @@ from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 
 
+class Region(models.Model):
+
+    id_ubigeo = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
+    )
+
+    codigo_ubigeo = models.CharField(
+        max_length=10,
+        blank=True
+    )
+
+    nombre = models.CharField(
+        max_length=100,
+        unique=True
+    )
+
+    def __str__(self):
+        return self.nombre
+
+
+class Provincia(models.Model):
+
+    id_ubigeo = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
+    )
+
+    codigo_ubigeo = models.CharField(
+        max_length=10,
+        blank=True
+    )
+
+    region = models.ForeignKey(
+        Region,
+        on_delete=models.CASCADE,
+        related_name="provincias"
+    )
+
+    nombre = models.CharField(
+        max_length=100
+    )
+
+    def __str__(self):
+        return self.nombre
+
+
+class Distrito(models.Model):
+
+    id_ubigeo = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
+    )
+
+    codigo_ubigeo = models.CharField(
+        max_length=10,
+        blank=True
+    )
+
+    provincia = models.ForeignKey(
+        Provincia,
+        on_delete=models.CASCADE,
+        related_name="distritos"
+    )
+
+    nombre = models.CharField(
+        max_length=100
+    )
+
+    def __str__(self):
+        return self.nombre
+
 class Caso(models.Model):
 
     RIESGOS = [
@@ -19,14 +97,11 @@ class Caso(models.Model):
         ("NOTIFICADO", "Notificado"),
     ]
 
-    DISTRITOS = [
-        ("EL AGUSTINO", "EL AGUSTINO"),
-        ("ATE", "ATE"),
-        ("SANTA ANITA", "SANTA ANITA"),
-        ("SAN LUIS", "SAN LUIS"),
-        ("LA VICTORIA", "LA VICTORIA"),
-        ("RIMAC", "RIMAC"),
-        ("CERCADO DE LIMA", "CERCADO DE LIMA"),
+    TIPO_VIOLENCIA = [
+        ("FISICA", "Física"),
+        ("PSICOLOGICA", "Psicológica"),
+        ("SEXUAL", "Sexual"),
+        ("ECONOMICA", "Económica o Patrimonial"),
     ]
 
     beneficiario = models.CharField(max_length=200, blank=True)
@@ -44,13 +119,65 @@ class Caso(models.Model):
         blank=True
     )
 
-    distrito = models.CharField(
-        max_length=100,
-        choices=DISTRITOS,
-        blank=True
+    # Ubicación de la denuncia
+    region_denuncia = models.ForeignKey(
+        Region,
+        on_delete=models.PROTECT,
+        related_name="casos_denuncia_region",
+        null=True,
+        blank=True,
     )
 
-    comisaria = models.CharField(max_length=200, blank=True)
+    provincia_denuncia = models.ForeignKey(
+        Provincia,
+        on_delete=models.PROTECT,
+        related_name="casos_denuncia_provincia",
+        null=True,
+        blank=True,
+    )
+
+    distrito_denuncia = models.ForeignKey(
+        Distrito,
+        on_delete=models.PROTECT,
+        related_name="casos_denuncia_distrito",
+        null=True,
+        blank=True,
+    )
+
+    # Ubicación de la medida
+    region_medida = models.ForeignKey(
+        Region,
+        on_delete=models.PROTECT,
+        related_name="casos_medida_region",
+        null=True,
+        blank=True,
+    )
+
+    provincia_medida = models.ForeignKey(
+        Provincia,
+        on_delete=models.PROTECT,
+        related_name="casos_medida_provincia",
+        null=True,
+        blank=True,
+    )
+
+    distrito_medida = models.ForeignKey(
+        Distrito,
+        on_delete=models.PROTECT,
+        related_name="casos_medida_distrito",
+        null=True,
+        blank=True,
+)
+    
+    comisaria_denuncia = models.CharField(
+        max_length=150,
+        verbose_name="Comisaría donde se interpuso la denuncia"
+    )
+
+    comisaria_medida = models.CharField(
+        max_length=150,
+        verbose_name="Comisaría de Familia responsable"
+    )
 
     efectivo = models.CharField(max_length=100, blank=True)
 
@@ -94,6 +221,32 @@ class Caso(models.Model):
         blank=True
     )
 
+    fecha_denuncia = models.DateField(
+        "Fecha de la denuncia",
+        null=True,
+        blank=True
+    )
+
+    violencia_fisica = models.BooleanField(
+        "Violencia física",
+        default=False
+    )
+
+    violencia_psicologica = models.BooleanField(
+        "Violencia psicológica",
+        default=False
+    )
+
+    violencia_sexual = models.BooleanField(
+        "Violencia sexual",
+        default=False
+    ) 
+
+    violencia_economica = models.BooleanField(
+        "Violencia económica o patrimonial",
+        default=False
+    )
+    
     fecha_registro = models.DateField(
         null=True,
         blank=True

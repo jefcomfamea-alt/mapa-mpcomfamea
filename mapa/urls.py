@@ -50,6 +50,19 @@ urlpatterns = [
     # Cerrar sesión
     path("cerrar-sesion/", views.cerrar_sesion, name="cerrar_sesion"),
 
+    # Ubigeo
+    path(
+        "cargar-provincias/",
+        views.cargar_provincias,
+        name="cargar_provincias",
+    ),
+
+    path(
+        "cargar-distritos/",
+        views.cargar_distritos,
+        name="cargar_distritos",
+    ),
+
     # Administración de usuarios
 path(
     "administrar-usuarios/",

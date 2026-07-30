@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Caso
+from .models import Caso, Region, Provincia, Distrito
 
 
 class CasoForm(forms.ModelForm):
@@ -12,8 +12,18 @@ class CasoForm(forms.ModelForm):
             "dni_beneficiario",
             "domicilio",
             "nivel_riesgo",
-            "distrito",
-            "comisaria",
+
+            "region_denuncia",
+            "provincia_denuncia",
+            "distrito_denuncia",
+
+            "region_medida",
+            "provincia_medida",
+            "distrito_medida",
+
+            "comisaria_denuncia",
+            "comisaria_medida",
+
             "responsable",
             "folder",
             "expediente",
@@ -22,6 +32,14 @@ class CasoForm(forms.ModelForm):
             "telefono",
             "telefono_agresor",
             "direccion_agresor",
+
+            "fecha_denuncia",
+
+            "violencia_fisica",
+            "violencia_psicologica",
+            "violencia_sexual",
+            "violencia_economica",
+
             "fecha_registro",
             "ultima_visita",
             "notificacion_beneficiario",
@@ -38,6 +56,11 @@ class CasoForm(forms.ModelForm):
 
         widgets = {
 
+            "fecha_denuncia": forms.DateInput(
+                attrs={"type": "date"},
+                format="%Y-%m-%d"
+            ),
+            
             "fecha_registro": forms.DateInput(
                 attrs={"type": "date"},
                 format="%Y-%m-%d"
@@ -84,6 +107,194 @@ class CasoForm(forms.ModelForm):
         self.usuario = kwargs.pop("usuario", None)
 
         super().__init__(*args, **kwargs)
+        self.fields["comisaria_medida"].label = "Comisaría del sector"
+
+                # ==================================
+        # UBIGEOS EN CASCADA
+        # ==================================
+
+        # Regiones
+        self.fields["region_denuncia"].queryset = (
+            Region.objects.all().order_by("nombre")
+        )
+
+        self.fields["region_medida"].queryset = (
+            Region.objects.all().order_by("nombre")
+        )
+
+        # Inicialmente no mostrar todas las provincias
+        self.fields["provincia_denuncia"].queryset = (
+            Provincia.objects.none()
+        )
+
+        self.fields["provincia_medida"].queryset = (
+            Provincia.objects.none()
+        )
+
+        # Inicialmente no mostrar todos los distritos
+        self.fields["distrito_denuncia"].queryset = (
+            Distrito.objects.none()
+        )
+
+        self.fields["distrito_medida"].queryset = (
+            Distrito.objects.none()
+        )
+
+        # ==================================
+        # UBICACIÓN DE LA DENUNCIA
+        # ==================================
+
+        if "region_denuncia" in self.data:
+
+            try:
+
+                region_id = int(
+                    self.data.get(
+                        "region_denuncia"
+                    )
+                )
+
+                self.fields[
+                    "provincia_denuncia"
+                ].queryset = (
+                    Provincia.objects.filter(
+                        region_id=region_id
+                    ).order_by("nombre")
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                pass
+
+        elif self.instance.pk and (
+            self.instance.region_denuncia
+        ):
+
+            self.fields[
+                "provincia_denuncia"
+            ].queryset = (
+                Provincia.objects.filter(
+                    region=self.instance.region_denuncia
+                ).order_by("nombre")
+            )
+
+        if "provincia_denuncia" in self.data:
+
+            try:
+
+                provincia_id = int(
+                    self.data.get(
+                        "provincia_denuncia"
+                    )
+                )
+
+                self.fields[
+                    "distrito_denuncia"
+                ].queryset = (
+                    Distrito.objects.filter(
+                        provincia_id=provincia_id
+                    ).order_by("nombre")
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                pass
+
+        elif self.instance.pk and (
+            self.instance.provincia_denuncia
+        ):
+
+            self.fields[
+                "distrito_denuncia"
+            ].queryset = (
+                Distrito.objects.filter(
+                    provincia=self.instance.provincia_denuncia
+                ).order_by("nombre")
+            )
+
+        # ==================================
+        # UBICACIÓN DE LA MEDIDA
+        # ==================================
+
+        if "region_medida" in self.data:
+
+            try:
+
+                region_id = int(
+                    self.data.get(
+                        "region_medida"
+                    )
+                )
+
+                self.fields[
+                    "provincia_medida"
+                ].queryset = (
+                    Provincia.objects.filter(
+                        region_id=region_id
+                    ).order_by("nombre")
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                pass
+
+        elif self.instance.pk and (
+            self.instance.region_medida
+        ):
+
+            self.fields[
+                "provincia_medida"
+            ].queryset = (
+                Provincia.objects.filter(
+                    region=self.instance.region_medida
+                ).order_by("nombre")
+            )
+
+        if "provincia_medida" in self.data:
+
+            try:
+
+                provincia_id = int(
+                    self.data.get(
+                        "provincia_medida"
+                    )
+                )
+
+                self.fields[
+                    "distrito_medida"
+                ].queryset = (
+                    Distrito.objects.filter(
+                        provincia_id=provincia_id
+                    ).order_by("nombre")
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                pass
+
+        elif self.instance.pk and (
+            self.instance.provincia_medida
+        ):
+
+            self.fields[
+                "distrito_medida"
+            ].queryset = (
+                Distrito.objects.filter(
+                    provincia=self.instance.provincia_medida
+                ).order_by("nombre")
+            )
 
         self.fields["responsable"].queryset = User.objects.filter(
             groups__name="Usuario_MP",
@@ -104,6 +315,10 @@ class CasoForm(forms.ModelForm):
         ):
             self.fields.pop("responsable")
 
+        self.fields["fecha_denuncia"].input_formats = [
+            "%Y-%m-%d",
+            "%d/%m/%Y"
+        ]
         self.fields["fecha_registro"].input_formats = ["%Y-%m-%d", "%d/%m/%Y"]
         self.fields["ultima_visita"].input_formats = ["%Y-%m-%d", "%d/%m/%Y"]
         self.fields["fecha_notificacion_beneficiario"].input_formats = ["%Y-%m-%d", "%d/%m/%Y"]

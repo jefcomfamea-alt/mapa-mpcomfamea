@@ -11,7 +11,6 @@
         {% endif %}
     </title>
 
-```
 <style>
 
     *{
@@ -149,8 +148,36 @@
 
     }
 
+    .violencias{
+
+        display:grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap:15px 40px;
+
+        padding:15px 0;
+
+    }
+
+
+    .violencias label{
+
+        display:flex;
+        align-items:center;
+        gap:10px;
+
+        font-weight:normal;
+
+    }
+
+
+    .violencias input[type="checkbox"]{
+
+        width:18px;
+        height:18px;
+
+    }
+
 </style>
-```
 
 </head>
 
@@ -158,7 +185,6 @@
 
 <div class="contenedor">
 
-```
 <h2>
 
     {% if form.instance.pk %}
@@ -260,16 +286,7 @@
 
             </div>
 
-
-            <div class="campo">
-
-                {{ form.nivel_riesgo.label_tag }}
-
-                {{ form.nivel_riesgo }}
-
-            </div>
-
-
+            
             <div class="campo" id="campo_notificacion_beneficiario">
 
                 {{ form.notificacion_beneficiario.label_tag }}
@@ -387,85 +404,174 @@
     <section class="seccion">
 
         <h3 class="titulo-seccion">
-            DATOS DEL CASO
+            DATOS DE LA DENUNCIA
         </h3>
 
         <div class="grid">
 
             <div class="campo">
 
-                {{ form.distrito.label_tag }}
+                {{ form.fecha_denuncia.label_tag }}
 
-                {{ form.distrito }}
+                {{ form.fecha_denuncia }}
 
             </div>
-
-
+            
             <div class="campo">
 
-                {{ form.comisaria.label_tag }}
+                {{ form.comisaria_denuncia.label_tag }}
 
-                {{ form.comisaria }}
+                {{ form.comisaria_denuncia }}
 
             </div>
 
+            
+            <div class="campo">
+                {{ form.region_denuncia.label_tag }}
+                {{ form.region_denuncia }}
+            </div>
 
             <div class="campo">
-
-                {{ form.responsable.label_tag }}
-
-                {{ form.responsable }}
-
+                {{ form.provincia_denuncia.label_tag }}
+                {{ form.provincia_denuncia }}
             </div>
-
 
             <div class="campo">
-
-                {{ form.folder.label_tag }}
-
-                {{ form.folder }}
-
+                {{ form.distrito_denuncia.label_tag }}
+                {{ form.distrito_denuncia }}
             </div>
 
+             
+            <div class="campo campo-completo">
 
-            <div class="campo">
+                <label>
+                    Tipo de violencia
+                </label>
 
-                {{ form.expediente.label_tag }}
+                <div class="violencias">
 
-                {{ form.expediente }}
+                    <label>
+                        {{ form.violencia_fisica }}
+                        Violencia física
+                    </label>
 
-            </div>
+                    <label>
+                        {{ form.violencia_psicologica }}
+                         Violencia psicológica
+                    </label>
 
+                    <label>
+                        {{ form.violencia_sexual }}
+                         Violencia sexual
+                    </label>
 
-            <div class="campo">
+                    <label>
+                        {{ form.violencia_economica }}
+                        Violencia económica o patrimonial
+                    </label>
 
-                {{ form.fecha_registro.label_tag }}
-
-                {{ form.fecha_registro }}
-
-            </div>
-
-
-            <div class="campo">
-
-                {{ form.ultima_visita.label_tag }}
-
-                {{ form.ultima_visita }}
-
-            </div>
-
-
-            <div class="campo">
-
-                {{ form.estado.label_tag }}
-
-                {{ form.estado }}
+                </div>
 
             </div>
-
+            
         </div>
 
     </section>
+
+        <section class="seccion">
+
+<h3 class="titulo-seccion">
+    DATOS DE LA MEDIDA DE PROTECCIÓN
+</h3>
+
+<div class="grid">
+
+    <div class="campo">
+
+        {{ form.comisaria_medida.label_tag }}
+
+        {{ form.comisaria_medida }}
+    </div>
+
+        <div class="campo">
+            {{ form.region_medida.label_tag }}
+            {{ form.region_medida }}
+        </div>
+
+        <div class="campo">
+            {{ form.provincia_medida.label_tag }}
+            {{ form.provincia_medida }}
+        </div>
+
+        <div class="campo">
+            {{ form.distrito_medida.label_tag }}
+            {{ form.distrito_medida }}
+        </div>
+
+    <div class="campo">
+
+    {{ form.nivel_riesgo.label_tag }}
+
+    {{ form.nivel_riesgo }}
+
+</div>        
+
+    <div class="campo">
+
+        <label>
+            Efectivo responsable
+        </label>
+
+        {{ form.responsable }}
+
+    </div>
+
+
+    <div class="campo">
+
+        {{ form.folder.label_tag }}
+
+        {{ form.folder }}
+
+    </div>
+
+
+    <div class="campo">
+
+        {{ form.expediente.label_tag }}
+
+        {{ form.expediente }}
+
+    </div>
+
+
+    <div class="campo">
+
+        {{ form.fecha_registro.label_tag }}
+
+        {{ form.fecha_registro }}
+
+    </div>
+
+
+    <div class="campo">
+
+        {{ form.ultima_visita.label_tag }}
+
+        {{ form.ultima_visita }}
+
+    </div>
+
+
+    <div class="campo">
+
+        {{ form.estado.label_tag }}
+
+        {{ form.estado }}
+
+    </div>
+
+</section>
 
 
     <!-- CAMPOS OCULTOS DEL MAPA -->
@@ -559,6 +665,169 @@ document
 .addEventListener("change", actualizarNotificacion);
 
 actualizarNotificacion();
+
+// ==========================================
+// UBIGEO EN CASCADA
+// DENUNCIA + MEDIDA
+// ==========================================
+
+function cargarProvincias(regionSelectId, provinciaSelectId, distritoSelectId) {
+
+    const region = document.getElementById(regionSelectId);
+    const provincia = document.getElementById(provinciaSelectId);
+    const distrito = document.getElementById(distritoSelectId);
+
+    if (!region || !provincia || !distrito) {
+        return;
+    }
+
+    region.addEventListener("change", function () {
+
+        const regionId = this.value;
+
+        provincia.innerHTML =
+            '<option value="">Seleccione una provincia</option>';
+
+        distrito.innerHTML =
+            '<option value="">Seleccione un distrito</option>';
+
+        distrito.disabled = true;
+
+        if (!regionId) {
+
+            provincia.disabled = true;
+            return;
+
+        }
+
+        provincia.disabled = true;
+
+        fetch(
+            "{% url 'cargar_provincias' %}?region_id=" + regionId
+        )
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error("Error al cargar provincias");
+            }
+
+            return response.json();
+
+        })
+        .then(data => {
+
+            provincia.innerHTML =
+                '<option value="">Seleccione una provincia</option>';
+
+            data.forEach(function (item) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value = item.id;
+                option.textContent = item.nombre;
+
+                provincia.appendChild(option);
+
+            });
+
+            provincia.disabled = false;
+
+        })
+        .catch(error => {
+
+            console.error(error);
+
+            provincia.innerHTML =
+                '<option value="">Error al cargar provincias</option>';
+
+        });
+
+    });
+
+
+    provincia.addEventListener("change", function () {
+
+        const provinciaId = this.value;
+
+        distrito.innerHTML =
+            '<option value="">Seleccione un distrito</option>';
+
+        if (!provinciaId) {
+
+            distrito.disabled = true;
+            return;
+
+        }
+
+        distrito.disabled = true;
+
+        fetch(
+            "{% url 'cargar_distritos' %}?provincia_id=" + provinciaId
+        )
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error("Error al cargar distritos");
+            }
+
+            return response.json();
+
+        })
+        .then(data => {
+
+            distrito.innerHTML =
+                '<option value="">Seleccione un distrito</option>';
+
+            data.forEach(function (item) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value = item.id;
+                option.textContent = item.nombre;
+
+                distrito.appendChild(option);
+
+            });
+
+            distrito.disabled = false;
+
+        })
+        .catch(error => {
+
+            console.error(error);
+
+            distrito.innerHTML =
+                '<option value="">Error al cargar distritos</option>';
+
+        });
+
+    });
+
+}
+
+
+// ==========================================
+// UBIGEO DE LA DENUNCIA
+// ==========================================
+
+cargarProvincias(
+    "id_region_denuncia",
+    "id_provincia_denuncia",
+    "id_distrito_denuncia"
+);
+
+
+// ==========================================
+// UBIGEO DE LA MEDIDA
+// ==========================================
+
+cargarProvincias(
+    "id_region_medida",
+    "id_provincia_medida",
+    "id_distrito_medida"
+);
 
 </script>
 
