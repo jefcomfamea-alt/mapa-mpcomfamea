@@ -26,31 +26,56 @@ class CasoForm(forms.ModelForm):
             "ultima_visita",
             "notificacion_beneficiario",
             "fecha_notificacion_beneficiario",
+            "motivo_notificacion_beneficiario_pendiente",
+
             "notificacion_agresor",
             "fecha_notificacion_agresor",
+            "motivo_notificacion_agresor_pendiente",
             "estado",
             "latitud",
             "longitud",
         ]
 
         widgets = {
+
             "fecha_registro": forms.DateInput(
                 attrs={"type": "date"},
                 format="%Y-%m-%d"
             ),
+
             "ultima_visita": forms.DateInput(
                 attrs={"type": "date"},
                 format="%Y-%m-%d"
             ),
+
             "fecha_notificacion_beneficiario": forms.DateInput(
                 attrs={"type": "date"},
                 format="%Y-%m-%d"
             ),
+
             "fecha_notificacion_agresor": forms.DateInput(
                 attrs={"type": "date"},
                 format="%Y-%m-%d"
             ),
+
+            "motivo_notificacion_beneficiario_pendiente": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Indique por qué no se logró la notificación de la persona beneficiaria",
+                    "id": "motivo_beneficiario"
+                }
+            ),
+
+            "motivo_notificacion_agresor_pendiente": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Indique por qué no se logró la notificación de la persona agresora",
+                    "id": "motivo_agresor"
+                }
+            ),
+
             "latitud": forms.HiddenInput(),
+
             "longitud": forms.HiddenInput(),
         }
 
@@ -83,3 +108,43 @@ class CasoForm(forms.ModelForm):
         self.fields["ultima_visita"].input_formats = ["%Y-%m-%d", "%d/%m/%Y"]
         self.fields["fecha_notificacion_beneficiario"].input_formats = ["%Y-%m-%d", "%d/%m/%Y"]
         self.fields["fecha_notificacion_agresor"].input_formats = ["%Y-%m-%d", "%d/%m/%Y"]
+
+    def clean(self):
+
+        cleaned_data = super().clean()
+
+        notificacion_beneficiario = cleaned_data.get(
+            "notificacion_beneficiario"
+        )  
+
+        motivo_beneficiario = cleaned_data.get(
+            "motivo_notificacion_beneficiario_pendiente"
+        )
+
+        notificacion_agresor = cleaned_data.get(
+            "notificacion_agresor"
+        )
+
+        motivo_agresor = cleaned_data.get(
+            "motivo_notificacion_agresor_pendiente"
+        )
+
+        if (
+            notificacion_beneficiario == "PENDIENTE"
+            and not motivo_beneficiario
+        ):
+            self.add_error(
+                "motivo_notificacion_beneficiario_pendiente",
+                "Debe indicar el motivo de la notificación pendiente."
+            )
+
+        if (
+            notificacion_agresor == "PENDIENTE"
+            and not motivo_agresor
+        ):
+            self.add_error(
+            "   motivo_notificacion_agresor_pendiente",
+                "Debe indicar el motivo de la notificación pendiente."
+            )
+
+        return cleaned_data

@@ -270,11 +270,22 @@
             </div>
 
 
-            <div class="campo">
+            <div class="campo" id="campo_notificacion_beneficiario">
 
                 {{ form.notificacion_beneficiario.label_tag }}
 
                 {{ form.notificacion_beneficiario }}
+
+            </div>
+
+            <div
+                class="campo campo-completo"
+                id="contenedor_motivo_beneficiario"
+            >
+
+                {{ form.motivo_notificacion_beneficiario_pendiente.label_tag }}
+
+                {{ form.motivo_notificacion_beneficiario_pendiente }}
 
             </div>
 
@@ -338,11 +349,22 @@
             </div>
 
 
-            <div class="campo">
+            <div class="campo" id="campo_notificacion_agresor">
 
                 {{ form.notificacion_agresor.label_tag }}
 
                 {{ form.notificacion_agresor }}
+
+            </div>
+
+            <div
+                class="campo campo-completo"
+                id="contenedor_motivo_agresor"
+            >
+
+                {{ form.motivo_notificacion_agresor_pendiente.label_tag }}
+
+                {{ form.motivo_notificacion_agresor_pendiente }}
 
             </div>
 
@@ -475,6 +497,70 @@
 ```
 
 </div>
+
+<script>
+
+function actualizarNotificacion(){
+
+    const estadoBeneficiario =
+        document.getElementById("id_notificacion_beneficiario");
+
+    const estadoAgresor =
+        document.getElementById("id_notificacion_agresor");
+
+    const motivoBeneficiario =
+        document.getElementById("contenedor_motivo_beneficiario");
+
+    const motivoAgresor =
+        document.getElementById("contenedor_motivo_agresor");
+
+
+    if(estadoBeneficiario.value==="PENDIENTE"){
+
+        estadoBeneficiario.style.background="#ffebee";
+        estadoBeneficiario.style.border="2px solid #d32f2f";
+
+        motivoBeneficiario.style.display="flex";
+
+    }else{
+
+        estadoBeneficiario.style.background="#e8f5e9";
+        estadoBeneficiario.style.border="2px solid #2e7d32";
+
+        motivoBeneficiario.style.display="none";
+
+    }
+
+
+    if(estadoAgresor.value==="PENDIENTE"){
+
+        estadoAgresor.style.background="#ffebee";
+        estadoAgresor.style.border="2px solid #d32f2f";
+
+        motivoAgresor.style.display="flex";
+
+    }else{
+
+        estadoAgresor.style.background="#e8f5e9";
+        estadoAgresor.style.border="2px solid #2e7d32";
+
+        motivoAgresor.style.display="none";
+
+    }
+
+}
+
+document
+.getElementById("id_notificacion_beneficiario")
+.addEventListener("change", actualizarNotificacion);
+
+document
+.getElementById("id_notificacion_agresor")
+.addEventListener("change", actualizarNotificacion);
+
+actualizarNotificacion();
+
+</script>
 
 </body>
 </html>

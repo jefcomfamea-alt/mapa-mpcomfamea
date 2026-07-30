@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 
 
 class Caso(models.Model):
@@ -65,13 +66,6 @@ class Caso(models.Model):
 
     expediente = models.CharField(max_length=100, blank=True)
 
-    agresor = models.CharField(max_length=200, blank=True)
-
-    dni_agresor = models.CharField(
-        max_length=8,
-        blank=True
-    )
-
     agresor = models.CharField(
         max_length=200,
         blank=True
@@ -127,6 +121,11 @@ class Caso(models.Model):
         blank=True
     )
 
+    motivo_notificacion_beneficiario_pendiente = models.TextField(
+        "Motivo de notificación pendiente de la persona beneficiaria",
+        blank=True
+    )
+
     notificacion_agresor = models.CharField(
         max_length=15,
         choices=NOTIFICACION,
@@ -135,6 +134,11 @@ class Caso(models.Model):
 
     fecha_notificacion_agresor = models.DateField(
         null=True,
+        blank=True
+    )
+
+    motivo_notificacion_agresor_pendiente = models.TextField(
+        "Motivo de notificación pendiente de la persona agresora",
         blank=True
     )
 
@@ -158,6 +162,22 @@ class Caso(models.Model):
     )
 
     def save(self, *args, **kwargs):
+
+        # Beneficiaria
+        if self.notificacion_beneficiario == "NOTIFICADO":
+            self.motivo_notificacion_beneficiario_pendiente = ""
+            self.fecha_notificacion_beneficiario = (
+                self.fecha_notificacion_beneficiario
+                or timezone.now().date()
+            )
+
+        # Agresor
+        if self.notificacion_agresor == "NOTIFICADO":
+            self.motivo_notificacion_agresor_pendiente = ""
+            self.fecha_notificacion_agresor = (
+                self.fecha_notificacion_agresor
+                or timezone.now().date()
+            )
 
         if self.ultima_visita:
 
