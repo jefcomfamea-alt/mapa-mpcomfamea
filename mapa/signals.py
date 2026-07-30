@@ -9,7 +9,9 @@ def crear_grupos(sender, **kwargs):
     grupos = [
         "Administrador",
         "Jefe_MP",
-        "Efectivo_MP",
+        "Usuario_MP",
+        "Efectivo_COMFAMEA",
+        "Usuario_Investigacion",
     ]
 
     for nombre in grupos:
