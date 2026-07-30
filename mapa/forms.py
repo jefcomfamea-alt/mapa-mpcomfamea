@@ -358,7 +358,7 @@ class CasoForm(forms.ModelForm):
             and not motivo_agresor
         ):
             self.add_error(
-            "   motivo_notificacion_agresor_pendiente",
+            "motivo_notificacion_agresor_pendiente",
                 "Debe indicar el motivo de la notificación pendiente."
             )
 
