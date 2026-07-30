@@ -151,5 +151,15 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "/accounts/login/"
+
+# Cerrar sesión después de 15 minutos sin actividad
+SESSION_COOKIE_AGE = 900
+
+# Reiniciar el contador cada vez que el usuario use el sistema
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Cerrar la sesión cuando se cierre el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
