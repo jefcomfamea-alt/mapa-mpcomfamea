@@ -141,21 +141,13 @@
                     Seleccione un rol
                 </option>
 
-                <option value="Administrador">
-                    Administrador
+                {% for grupo in grupos %}
+
+                <option value="{{ grupo.name }}">
+                    {{ grupo.name }}
                 </option>
 
-                <option value="Jefe_MP">
-                    Jefe de Medidas de Protección
-                </option>
-
-                <option value="Usuario_MP">
-                    Usuario de Medidas de Protección
-                </option>
-
-                <option value="Efectivo_COMFAMEA">
-                    Efectivo COMFAMEA
-                </option>
+                {% endfor %}
 
             </select>
             

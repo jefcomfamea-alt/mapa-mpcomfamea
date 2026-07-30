@@ -521,6 +521,18 @@ DESPLEGABLE DE BÚSQUEDA
 
         </button>
 
+        {% if es_admin or es_usuario_investigacion %}
+
+        <button
+            class="botonMenu azul"
+            onclick="window.location.href='/registrar-ubicacion-preliminar/'">
+
+            📍 Registrar Ubicación Preliminar
+
+        </button>
+
+        {% endif %}
+
         <hr style="margin:20px 0;">
 
 <h3 style="color:white; text-align:center; margin-bottom:10px;">
@@ -782,6 +794,77 @@ return marcador;
 
 });
 
+/*=========================
+UBICACIONES PRELIMINARES
+=========================*/
+
+fetch("/ubicaciones-preliminares-json/")
+
+.then(response => response.json())
+
+.then(data => {
+
+
+    L.geoJSON(data, {
+
+        pointToLayer:function(feature, latlng){
+
+            return L.circleMarker(
+                latlng,
+                {
+                    radius:8,
+                    fillColor:"#0066ff",
+                    color:"#003399",
+                    weight:1,
+                    fillOpacity:0.9
+                }
+            );
+
+        },
+
+
+        onEachFeature:function(feature, layer){
+
+            let p = feature.properties;
+
+
+            layer.bindPopup(
+
+                "<b>🔵 Ubicación preliminar</b><br><br>"+
+
+                "<b>Beneficiaria:</b> "+
+                (p["BENEFICIARIA"] || "")+
+                "<br>"+
+
+                "<b>DNI:</b> "+
+                (p["DNI"] || "")+
+                "<br>"+
+
+                "<b>Domicilio:</b> "+
+                (p["DOMICILIO"] || "")+
+                "<br>"+
+
+                "<b>Referencia:</b> "+
+                (p["REFERENCIA"] || "")+
+                "<br>"+
+
+                "<b>Fecha registro:</b> "+
+                (p["FECHA"] || "")+
+                "<br><br>"+
+
+                "<a href='/convertir-preliminar-caso/" + p["id"] + "/'>"+
+                "➡️ Convertir en Caso"+
+                "</a>"
+
+            );
+
+        }
+
+
+    }).addTo(map);
+
+
+});
 
 
 /*=========================
@@ -806,7 +889,11 @@ div.innerHTML=
 
 '<i style="background:#990000"></i> SEVERO EXTREMO<br>'+
 
-'<i style="background:#808080"></i> NO DETERMINADO';
+'<i style="background:#808080"></i> NO DETERMINADO<br><br>'+
+
+"<b>Denuncias sin medida</b><br><br>"+
+
+'<i style="background:#0066ff"></i> UBICACIÓN PRELIMINAR';
 
 return div;
 

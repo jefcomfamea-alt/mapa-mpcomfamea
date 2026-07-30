@@ -356,6 +356,40 @@ class Caso(models.Model):
             ("administrar_usuarios", "Puede administrar usuarios"),
         ]
 
+class UbicacionPreliminar(models.Model):
+
+    beneficiaria = models.CharField(
+        max_length=150
+    )
+
+    dni_beneficiaria = models.CharField(
+        max_length=8
+    )
+
+    domicilio = models.TextField()
+
+    referencia = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    latitud = models.FloatField()
+
+    longitud = models.FloatField()
+
+    fecha_registro = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    registrado_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="ubicaciones_preliminares"
+    )
+
+    def __str__(self):
+        return f"{self.beneficiaria} - {self.dni_beneficiaria}"
 
 class SolicitudModificacion(models.Model):
 

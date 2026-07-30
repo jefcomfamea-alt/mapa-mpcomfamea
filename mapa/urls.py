@@ -10,6 +10,13 @@ urlpatterns = [
     path("nuevo-caso/", views.nuevo_caso, name="nuevo_caso"),
     path("gestion-casos/", views.gestion_casos, name="gestion_casos"),
     path("casos-json/", views.casos_json, name="casos_json"),
+    
+    # Ubicaciones preliminares para mapa
+    path(
+        "ubicaciones-preliminares-json/",
+        views.ubicaciones_preliminares_json,
+        name="ubicaciones_preliminares_json",
+    ),
 
     # Editar y archivar casos
     path("editar-caso/<int:id>/", views.editar_caso, name="editar_caso"),
@@ -63,12 +70,31 @@ urlpatterns = [
         name="cargar_distritos",
     ),
 
+     # Ubicación preliminar de denuncia
+    path(
+        "registrar-ubicacion-preliminar/",
+        views.registrar_ubicacion_preliminar,
+        name="registrar_ubicacion_preliminar",
+    ),
+
+    path(
+        "convertir-preliminar-caso/<int:id>/",
+        views.convertir_preliminar_caso,
+        name="convertir_preliminar_caso",
+    ),
+
+    path(
+        "convertir-preliminar-caso/<int:id>/",
+        views.convertir_preliminar_caso,
+        name="convertir_preliminar_caso",
+    ),
+
     # Administración de usuarios
-path(
-    "administrar-usuarios/",
-    views.administrar_usuarios,
-    name="administrar_usuarios",
-),
+    path(
+        "administrar-usuarios/",
+        views.administrar_usuarios,
+        name="administrar_usuarios",
+    ),
 
 path(
     "administrar-usuarios/nuevo/",

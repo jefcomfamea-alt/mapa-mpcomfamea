@@ -363,3 +363,53 @@ class CasoForm(forms.ModelForm):
             )
 
         return cleaned_data
+    
+from .models import UbicacionPreliminar
+
+
+class UbicacionPreliminarForm(forms.ModelForm):
+
+    class Meta:
+        model = UbicacionPreliminar
+
+        fields = [
+            "beneficiaria",
+            "dni_beneficiaria",
+            "domicilio",
+            "referencia",
+            "latitud",
+            "longitud",
+        ]
+
+        widgets = {
+
+            "beneficiaria": forms.TextInput(
+                attrs={
+                    "class": "form-control"
+                }
+            ),
+
+            "dni_beneficiaria": forms.TextInput(
+                attrs={
+                    "class": "form-control"
+                }
+            ),
+
+            "domicilio": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 2
+                }
+            ),
+
+            "referencia": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 2
+                }
+            ),
+
+            "latitud": forms.HiddenInput(),
+
+            "longitud": forms.HiddenInput(),
+        }

@@ -7,8 +7,8 @@ from django.db.models import Q
 from datetime import timedelta
 from django.utils import timezone
 
-from .forms import CasoForm
-from .models import Caso, SolicitudModificacion, Mensaje, Region, Provincia, Distrito
+from .forms import CasoForm, UbicacionPreliminarForm
+from .models import Caso, SolicitudModificacion, Mensaje, Region, Provincia, Distrito, UbicacionPreliminar
 from .decorators import grupo_requerido
 from .forms_solicitudes import SolicitudModificacionForm
 
@@ -110,7 +110,10 @@ def inicio(request):
         name="Efectivo_COMFAMEA"
     ).exists()
 
-    
+    es_usuario_investigacion = request.user.groups.filter(
+        name="Usuario_Investigacion"
+    ).exists()
+
     return render(
         request,
         "mapa/inicio.html",
@@ -120,6 +123,7 @@ def inicio(request):
             "es_jefe": es_jefe,
             "es_usuario_mp": es_usuario_mp,
             "es_efectivo_comfamea": es_efectivo_comfamea,
+            "es_usuario_investigacion": es_usuario_investigacion,
             "notificaciones": notificaciones,
         }
     )
@@ -254,9 +258,14 @@ def nuevo_usuario(request):
 
         return redirect("administrar_usuarios")
 
+    grupos = Group.objects.all().order_by("name")
+
     return render(
         request,
-        "mapa/nuevo_usuario.html"
+        "mapa/nuevo_usuario.html",
+        {
+            "grupos": grupos
+        }
     )
 
 @login_required
@@ -337,6 +346,92 @@ def nuevo_caso(request):
         }
     )
 
+@login_required
+@grupo_requerido("Administrador", "Usuario_Investigacion")
+def registrar_ubicacion_preliminar(request):
+
+    if request.method == "POST":
+
+        form = UbicacionPreliminarForm(request.POST)
+
+        if form.is_valid():
+
+            ubicacion = form.save(commit=False)
+
+            ubicacion.registrado_por = request.user
+
+            ubicacion.save()
+
+            return redirect("inicio")
+
+    else:
+
+        form = UbicacionPreliminarForm()
+
+    return render(
+        request,
+        "mapa/registrar_ubicacion_preliminar.html",
+        {
+            "form": form
+        }
+    )
+
+@login_required
+@grupo_requerido("Administrador", "Jefe_MP")
+def convertir_preliminar_caso(request, id):
+
+    ubicacion = get_object_or_404(
+        UbicacionPreliminar,
+        pk=id
+    )
+
+    if request.method == "POST":
+
+        form = CasoForm(
+            request.POST,
+            usuario=request.user
+        )
+
+        if form.is_valid():
+
+            caso = form.save(commit=False)
+
+            # Pasar datos de ubicación preliminar
+            caso.beneficiario = ubicacion.beneficiaria
+            caso.dni_beneficiario = ubicacion.dni_beneficiaria
+            caso.domicilio = ubicacion.domicilio
+            caso.latitud = ubicacion.latitud
+            caso.longitud = ubicacion.longitud
+
+            caso.save()
+
+            form.save_m2m()
+
+            # ELIMINA definitivamente la ubicación preliminar
+            ubicacion.delete()
+
+            return redirect("gestion_casos")
+
+    else:
+
+        form = CasoForm(
+            usuario=request.user,
+            initial={
+                "beneficiario": ubicacion.beneficiaria,
+                "dni_beneficiario": ubicacion.dni_beneficiaria,
+                "domicilio": ubicacion.domicilio,
+                "latitud": ubicacion.latitud,
+                "longitud": ubicacion.longitud,
+            }
+        )
+
+    return render(
+        request,
+        "mapa/nuevo_caso.html",
+        {
+            "form": form
+        }
+    )
 
 @login_required
 def gestion_casos(request):
@@ -425,6 +520,54 @@ def casos_json(request):
         "features": features
     })
 
+@login_required
+def ubicaciones_preliminares_json(request):
+
+    features = []
+
+    for ubicacion in UbicacionPreliminar.objects.all():
+
+        if ubicacion.latitud is None or ubicacion.longitud is None:
+            continue
+
+        features.append({
+
+            "type": "Feature",
+
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    ubicacion.longitud,
+                    ubicacion.latitud
+                ]
+            },
+
+            "properties": {
+
+                "id": ubicacion.id,
+                
+                "BENEFICIARIA": ubicacion.beneficiaria,
+
+                "DNI": ubicacion.dni_beneficiaria,
+
+                "DOMICILIO": ubicacion.domicilio,
+
+                "REFERENCIA": ubicacion.referencia,
+
+                "FECHA": str(ubicacion.fecha_registro),
+
+            }
+
+        })
+
+
+    return JsonResponse({
+
+        "type":"FeatureCollection",
+
+        "features":features
+
+    })
 
 @login_required
 def editar_caso(request, id):
@@ -458,6 +601,10 @@ def editar_caso(request, id):
 
     es_efectivo_comfamea = request.user.groups.filter(
         name="Efectivo_COMFAMEA"
+    ).exists()
+
+    es_usuario_investigacion = request.user.groups.filter(
+        name="Usuario_Investigacion"
     ).exists()
 
     es_responsable = (

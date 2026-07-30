@@ -1,0 +1,128 @@
+{% extends "mapa/base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>📍 Registro de Ubicación Preliminar</h2>
+
+<p>
+Registrar ubicación de la víctima antes de la medida de protección.
+</p>
+
+
+<form method="POST">
+
+{% csrf_token %}
+
+
+{{ form.beneficiaria.label_tag }}
+{{ form.beneficiaria }}
+
+
+{{ form.dni_beneficiaria.label_tag }}
+{{ form.dni_beneficiaria }}
+
+
+{{ form.domicilio.label_tag }}
+{{ form.domicilio }}
+
+
+{{ form.referencia.label_tag }}
+{{ form.referencia }}
+
+
+<div class="mt-3">
+
+<h5>
+Seleccione la ubicación en el mapa
+</h5>
+
+<div id="map" style="height:400px;"></div>
+
+</div>
+
+
+{{ form.latitud }}
+{{ form.longitud }}
+
+
+<button 
+type="submit" 
+class="btn btn-success mt-3">
+
+Guardar ubicación
+
+</button>
+
+
+</form>
+
+</div>
+
+
+
+<link 
+rel="stylesheet" 
+href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+<script>
+
+var mapa = L.map('map').setView(
+    [-12.02224, -77.00984],
+    14
+);
+
+
+L.tileLayer(
+'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+    attribution:'OpenStreetMap'
+}
+).addTo(mapa);
+
+
+
+var marcador;
+
+
+
+mapa.on(
+'click',
+function(e){
+
+    var lat = e.latlng.lat;
+    var lng = e.latlng.lng;
+
+
+    if(marcador){
+        mapa.removeLayer(marcador);
+    }
+
+
+    marcador = L.marker(
+        [lat,lng]
+    ).addTo(mapa);
+
+
+
+    document.getElementById(
+        'id_latitud'
+    ).value = lat;
+
+
+    document.getElementById(
+        'id_longitud'
+    ).value = lng;
+
+});
+
+</script>
+
+
+{% endblock %}
