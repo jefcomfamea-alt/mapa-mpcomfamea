@@ -20,6 +20,8 @@ class CasoForm(forms.ModelForm):
             "agresor",
             "dni_agresor",
             "telefono",
+            "telefono_agresor",
+            "direccion_agresor",
             "fecha_registro",
             "ultima_visita",
             "notificacion_beneficiario",

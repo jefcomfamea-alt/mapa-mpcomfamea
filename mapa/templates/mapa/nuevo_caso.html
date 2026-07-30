@@ -1,68 +1,480 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Nuevo Caso</title>
+    <title>
+        {% if form.instance.pk %}
+            Editar Caso
+        {% else %}
+            Registrar Nuevo Caso
+        {% endif %}
+    </title>
 
-    <style>
+```
+<style>
+
+    *{
+        box-sizing:border-box;
+    }
+
+    body{
+        font-family:Arial, Helvetica, sans-serif;
+        margin:0;
+        padding:35px;
+        background:#eef2ef;
+    }
+
+    .contenedor{
+        max-width:1000px;
+        margin:auto;
+    }
+
+    h2{
+        color:#1B5E20;
+        text-align:center;
+        margin-bottom:25px;
+    }
+
+    form{
+        background:white;
+        padding:30px;
+        border-radius:12px;
+        box-shadow:0 3px 12px rgba(0,0,0,0.12);
+    }
+
+    .seccion{
+        margin-bottom:30px;
+        padding:22px;
+        border:1px solid #d8e2d9;
+        border-radius:10px;
+        background:#f9fbf9;
+    }
+
+    .titulo-seccion{
+        margin:0 0 20px 0;
+        padding:12px 15px;
+        color:white;
+        background:#1B5E20;
+        border-radius:7px;
+        font-size:18px;
+        font-weight:bold;
+    }
+
+    .grid{
+        display:grid;
+        grid-template-columns:repeat(2, 1fr);
+        gap:18px;
+    }
+
+    .campo{
+        display:flex;
+        flex-direction:column;
+    }
+
+    .campo-completo{
+        grid-column:1 / -1;
+    }
+
+    label{
+        font-weight:bold;
+        color:#263238;
+        margin-bottom:7px;
+    }
+
+    input,
+    select,
+    textarea{
+        width:100%;
+        padding:10px;
+        border:1px solid #b8c7ba;
+        border-radius:6px;
+        font-size:14px;
+        background:white;
+    }
+
+    textarea{
+        min-height:85px;
+        resize:vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus{
+        outline:none;
+        border-color:#1B5E20;
+        box-shadow:0 0 0 2px rgba(27,94,32,0.12);
+    }
+
+    .errores{
+        color:#b71c1c;
+        font-size:13px;
+        margin-top:5px;
+    }
+
+    .botones{
+        display:flex;
+        justify-content:center;
+        margin-top:25px;
+    }
+
+    button{
+        background:#1B5E20;
+        color:white;
+        border:none;
+        padding:13px 35px;
+        cursor:pointer;
+        border-radius:7px;
+        font-size:16px;
+        font-weight:bold;
+    }
+
+    button:hover{
+        background:#13451a;
+    }
+
+    @media(max-width:700px){
 
         body{
-            font-family:Arial, Helvetica, sans-serif;
-            margin:40px;
-            background:#f5f5f5;
-        }
-
-        h2{
-            color:#0d6efd;
+            padding:15px;
         }
 
         form{
-            background:white;
-            padding:20px;
-            border-radius:10px;
-            max-width:700px;
+            padding:18px;
         }
 
-        p{
-            margin-bottom:15px;
+        .grid{
+            grid-template-columns:1fr;
         }
 
-        input,select{
-            width:100%;
-            padding:8px;
-        }
+    }
 
-        button{
-            background:#0d6efd;
-            color:white;
-            border:none;
-            padding:10px 20px;
-            cursor:pointer;
-            border-radius:5px;
-        }
-
-    </style>
+</style>
+```
 
 </head>
 
 <body>
 
-<h2>Registrar Nuevo Caso</h2>
+<div class="contenedor">
+
+```
+<h2>
+
+    {% if form.instance.pk %}
+        Editar Caso
+    {% else %}
+        Registrar Nuevo Caso
+    {% endif %}
+
+</h2>
 
 <form method="post">
 
     {% csrf_token %}
 
-    {{ form.as_p }}
+    {{ form.non_field_errors }}
 
-    <button type="submit">
+    <!-- DATOS DE LA PERSONA BENEFICIARIA -->
 
-        Guardar Caso
+    <section class="seccion">
 
-    </button>
+        <h3 class="titulo-seccion">
+            DATOS DE LA PERSONA BENEFICIARIA
+        </h3>
+
+        <div class="grid">
+
+            <div class="campo campo-completo">
+
+                {{ form.beneficiario.label_tag }}
+
+                {{ form.beneficiario }}
+
+                {% if form.beneficiario.errors %}
+
+                    <div class="errores">
+
+                        {{ form.beneficiario.errors }}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.dni_beneficiario.label_tag }}
+
+                {{ form.dni_beneficiario }}
+
+                {% if form.dni_beneficiario.errors %}
+
+                    <div class="errores">
+
+                        {{ form.dni_beneficiario.errors }}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.telefono.label_tag }}
+
+                {{ form.telefono }}
+
+                {% if form.telefono.errors %}
+
+                    <div class="errores">
+
+                        {{ form.telefono.errors }}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="campo campo-completo">
+
+                {{ form.domicilio.label_tag }}
+
+                {{ form.domicilio }}
+
+                {% if form.domicilio.errors %}
+
+                    <div class="errores">
+
+                        {{ form.domicilio.errors }}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.nivel_riesgo.label_tag }}
+
+                {{ form.nivel_riesgo }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.notificacion_beneficiario.label_tag }}
+
+                {{ form.notificacion_beneficiario }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.fecha_notificacion_beneficiario.label_tag }}
+
+                {{ form.fecha_notificacion_beneficiario }}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- DATOS DE LA PERSONA AGRESORA -->
+
+    <section class="seccion">
+
+        <h3 class="titulo-seccion">
+            DATOS DE LA PERSONA AGRESORA
+        </h3>
+
+        <div class="grid">
+
+            <div class="campo campo-completo">
+
+                {{ form.agresor.label_tag }}
+
+                {{ form.agresor }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.dni_agresor.label_tag }}
+
+                {{ form.dni_agresor }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.telefono_agresor.label_tag }}
+
+                {{ form.telefono_agresor }}
+
+            </div>
+
+
+            <div class="campo campo-completo">
+
+                {{ form.direccion_agresor.label_tag }}
+
+                {{ form.direccion_agresor }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.notificacion_agresor.label_tag }}
+
+                {{ form.notificacion_agresor }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.fecha_notificacion_agresor.label_tag }}
+
+                {{ form.fecha_notificacion_agresor }}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- DATOS DEL CASO -->
+
+    <section class="seccion">
+
+        <h3 class="titulo-seccion">
+            DATOS DEL CASO
+        </h3>
+
+        <div class="grid">
+
+            <div class="campo">
+
+                {{ form.distrito.label_tag }}
+
+                {{ form.distrito }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.comisaria.label_tag }}
+
+                {{ form.comisaria }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.responsable.label_tag }}
+
+                {{ form.responsable }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.folder.label_tag }}
+
+                {{ form.folder }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.expediente.label_tag }}
+
+                {{ form.expediente }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.fecha_registro.label_tag }}
+
+                {{ form.fecha_registro }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.ultima_visita.label_tag }}
+
+                {{ form.ultima_visita }}
+
+            </div>
+
+
+            <div class="campo">
+
+                {{ form.estado.label_tag }}
+
+                {{ form.estado }}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- CAMPOS OCULTOS DEL MAPA -->
+
+    {{ form.latitud }}
+
+    {{ form.longitud }}
+
+
+    <div class="botones">
+
+        <button type="submit">
+
+            {% if form.instance.pk %}
+
+                Guardar Cambios
+
+            {% else %}
+
+                Guardar Caso
+
+            {% endif %}
+
+        </button>
+
+    </div>
 
 </form>
+```
+
+</div>
 
 </body>
-
 </html>

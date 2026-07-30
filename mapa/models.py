@@ -72,7 +72,33 @@ class Caso(models.Model):
         blank=True
     )
 
-    telefono = models.CharField(max_length=50, blank=True)
+    agresor = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    dni_agresor = models.CharField(
+        max_length=8,
+        blank=True
+    )
+
+    telefono_agresor = models.CharField(
+        "Teléfono del agresor",
+        max_length=50,
+        blank=True
+    )
+
+    direccion_agresor = models.CharField(
+        "Dirección del agresor",
+        max_length=300,
+        blank=True
+    )
+
+    telefono = models.CharField(
+        "Teléfono de la beneficiaria",
+        max_length=50,
+        blank=True
+    )
 
     fecha_registro = models.DateField(
         null=True,
