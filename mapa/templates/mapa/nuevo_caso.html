@@ -682,6 +682,8 @@ function cargarProvincias(regionSelectId, provinciaSelectId, distritoSelectId) {
     }
 
     region.addEventListener("change", function () {
+        
+        console.log("Cambio de región:", this.value);
 
         const regionId = this.value;
 
