@@ -350,6 +350,12 @@ def nuevo_caso(request):
 @grupo_requerido("Administrador", "Usuario_Investigacion")
 def registrar_ubicacion_preliminar(request):
 
+    # Eliminar ubicaciones preliminares vencidas
+    UbicacionPreliminar.objects.filter(
+        estado="PRELIMINAR",
+        fecha_vencimiento__lt=timezone.now().date()
+    ).delete()
+
     if request.method == "POST":
 
         form = UbicacionPreliminarForm(request.POST)
@@ -359,6 +365,9 @@ def registrar_ubicacion_preliminar(request):
             ubicacion = form.save(commit=False)
 
             ubicacion.registrado_por = request.user
+
+            ubicacion.latitud = form.cleaned_data["latitud"]
+            ubicacion.longitud = form.cleaned_data["longitud"]
 
             ubicacion.save()
 

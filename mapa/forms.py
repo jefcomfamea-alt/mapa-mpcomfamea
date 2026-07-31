@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Caso, Region, Provincia, Distrito
+from .models import Caso, Region, Provincia, Distrito, UbicacionPreliminar
 
 
 class CasoForm(forms.ModelForm):
@@ -32,6 +32,9 @@ class CasoForm(forms.ModelForm):
             "telefono",
             "telefono_agresor",
             "direccion_agresor",
+            "estado_ubicacion_agresor",
+            "latitud_agresor",
+            "longitud_agresor",
 
             "fecha_denuncia",
 
@@ -100,6 +103,10 @@ class CasoForm(forms.ModelForm):
             "latitud": forms.HiddenInput(),
 
             "longitud": forms.HiddenInput(),
+
+            "latitud_agresor": forms.HiddenInput(),
+
+            "longitud_agresor": forms.HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -364,9 +371,6 @@ class CasoForm(forms.ModelForm):
 
         return cleaned_data
     
-from .models import UbicacionPreliminar
-
-
 class UbicacionPreliminarForm(forms.ModelForm):
 
     class Meta:
@@ -377,22 +381,27 @@ class UbicacionPreliminarForm(forms.ModelForm):
             "dni_beneficiaria",
             "domicilio",
             "referencia",
+
             "latitud",
             "longitud",
-        ]
+
+            "agresor",
+            "dni_agresor",
+            "direccion_agresor",
+            "estado_ubicacion_agresor",
+
+            "latitud_agresor",
+            "longitud_agresor",
+    ]
 
         widgets = {
 
             "beneficiaria": forms.TextInput(
-                attrs={
-                    "class": "form-control"
-                }
+                attrs={"class": "form-control"}
             ),
 
             "dni_beneficiaria": forms.TextInput(
-                attrs={
-                    "class": "form-control"
-                }
+                attrs={"class": "form-control"}
             ),
 
             "domicilio": forms.Textarea(
@@ -404,12 +413,42 @@ class UbicacionPreliminarForm(forms.ModelForm):
 
             "referencia": forms.Textarea(
                 attrs={
-                    "class": "form-control",
-                    "rows": 2
+                    "class":"form-control",
+                    "rows":2
                 }
             ),
 
             "latitud": forms.HiddenInput(),
 
             "longitud": forms.HiddenInput(),
+
+            "agresor": forms.TextInput(),
+
+
+            "agresor": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+
+            "dni_agresor": forms.TextInput(
+                attrs={"class": "form-control"}
+            ),
+
+            "direccion_agresor": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 2
+                }
+            ),
+
+            "estado_ubicacion_agresor": forms.Select(
+                attrs={"class": "form-control"}
+            ),
+
+            "latitud": forms.HiddenInput(),
+
+            "longitud": forms.HiddenInput(),
+
+            "latitud_agresor": forms.HiddenInput(),
+
+            "longitud_agresor": forms.HiddenInput(),
         }

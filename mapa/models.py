@@ -104,6 +104,12 @@ class Caso(models.Model):
         ("ECONOMICA", "Económica o Patrimonial"),
     ]
 
+    ESTADO_UBICACION_AGRESOR = [
+        ("UBICADO", "Ubicado"),
+        ("NO UBICADO", "No ubicado"),
+    ]
+
+
     beneficiario = models.CharField(max_length=200, blank=True)
 
     dni_beneficiario = models.CharField(
@@ -212,6 +218,23 @@ class Caso(models.Model):
     direccion_agresor = models.CharField(
         "Dirección del agresor",
         max_length=300,
+        blank=True
+    )
+
+    estado_ubicacion_agresor = models.CharField(
+        "Estado de ubicación del agresor",
+        max_length=15,
+        choices=ESTADO_UBICACION_AGRESOR,
+        default="NO UBICADO"
+    )
+
+    latitud_agresor = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+    longitud_agresor = models.FloatField(
+        null=True,
         blank=True
     )
 
@@ -358,38 +381,176 @@ class Caso(models.Model):
 
 class UbicacionPreliminar(models.Model):
 
+    TIPO_UBICACION = [
+        ("CONOCIDO", "Agresor con domicilio conocido"),
+        ("DESCONOCIDO", "Agresor sin domicilio conocido"),
+    ]
+
+    ESTADO = [
+        ("PRELIMINAR", "Preliminar"),
+        ("CONVERTIDA", "Convertida en medida"),
+        ("VENCIDA", "Vencida"),
+    ]
+
+
+    # DATOS BENEFICIARIA
+
     beneficiaria = models.CharField(
-        max_length=150
+        max_length=200
     )
 
     dni_beneficiaria = models.CharField(
-        max_length=8
-    )
-
-    domicilio = models.TextField()
-
-    referencia = models.TextField(
+        max_length=15,
         blank=True,
         null=True
     )
 
-    latitud = models.FloatField()
+    domicilio = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
 
-    longitud = models.FloatField()
+    referencia = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    tipo_ubicacion = models.CharField(
+        max_length=20,
+        choices=TIPO_UBICACION,
+        default="CONOCIDO"
+    )
+
+
+    # DATOS AGRESOR
+
+    agresor = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
+    dni_agresor = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True
+    )
+
+    direccion_agresor = models.CharField(
+        max_length=300,
+        blank=True,
+        null=True
+    )
+
+
+    estado_ubicacion_agresor = models.CharField(
+        max_length=20,
+        choices=TIPO_UBICACION,
+        default="CONOCIDO"
+    )
+
+
+    latitud_agresor = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+    longitud_agresor = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+
+    # UBICACIÓN BENEFICIARIA
+
+    latitud = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+    longitud = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+
+    # CONTROL
+
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADO,
+        default="PRELIMINAR"
+    )
+
 
     fecha_registro = models.DateTimeField(
         auto_now_add=True
     )
 
+
+    fecha_vencimiento = models.DateField(
+        null=True,
+        blank=True
+    )
+
+
     registrado_por = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="ubicaciones_preliminares"
+        blank=True
     )
 
+
+    def save(self, *args, **kwargs):
+
+        if not self.fecha_vencimiento:
+            from datetime import timedelta
+
+            self.fecha_vencimiento = (
+                timezone.now().date()
+                + timedelta(days=30)
+            )
+
+        super().save(*args, **kwargs)
+
+
     def __str__(self):
-        return f"{self.beneficiaria} - {self.dni_beneficiaria}"
+        return self.beneficiaria
+    
+    def clean(self):
+
+        estado = self.estado_ubicacion_agresor
+
+        direccion = self.direccion_agresor
+
+        latitud_agresor = self.latitud_agresor
+
+        longitud_agresor = self.longitud_agresor
+
+        from django.core.exceptions import ValidationError
+
+        if estado == "CONOCIDO":
+
+            if not direccion:
+                raise ValidationError({
+                    "direccion_agresor":
+                    "Debe registrar la dirección del agresor cuando se encuentra ubicado."
+                })
+
+            if latitud_agresor is None or longitud_agresor is None:
+                raise ValidationError({
+                    "latitud_agresor":
+                    "Debe ubicar al agresor en el mapa."
+                })
+
+        if estado == "DESCONOCIDO":
+
+            self.direccion_agresor = ""
+            self.latitud_agresor = None
+            self.longitud_agresor = None
 
 class SolicitudModificacion(models.Model):
 
