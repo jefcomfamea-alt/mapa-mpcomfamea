@@ -1,64 +1,74 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
 
-    <meta charset="UTF-8">
-    <title>SIGESMP</title>
+<meta charset="UTF-8">
 
-    <link rel="stylesheet" href="{% static 'mapa/style.css' %}">
+<title>SIGESMP</title>
+
+<link rel="stylesheet" href="{% static 'mapa/style.css' %}">
 
 </head>
 
-
 <body>
 
-<header>
+<header class="encabezado">
 
-    <h1>SIGESMP - Sistema de Gestión de Medidas de Protección</h1>
+    <div class="logo">
+        <img src="{% static 'mapa/img/EscudoPNP.png' %}" alt="PNP">
+    </div>
+
+    <div class="titulo">
+
+        <h1>SIGESMP</h1>
+
+        <p>
+            Sistema Integrado de Gestión para la Ejecución y Seguimiento
+            de Medidas de Protección
+        </p>
+
+        <small>Comisaría de Familia PNP El Agustino</small>
+
+    </div>
+
+    <div class="logo">
+        <img src="{% static 'mapa/img/EscudoDIRFAM.png' %}" alt="DIRFAM">
+    </div>
 
 </header>
-
 
 <nav>
 
     <a href="{% url 'inicio' %}">
-        Inicio
+        🗺 Inicio
     </a>
 
     <a href="{% url 'gestion_casos' %}">
-        Gestión de Casos
+        📂 Casos
     </a>
 
     <a href="{% url 'mensajes' %}">
-        Mensajes
+        ✉ Mensajes
     </a>
 
     <a href="{% url 'notificaciones' %}">
-    🔔 Notificaciones
+        🔔 Alertas
     </a>
 
     <a href="{% url 'cerrar_sesion' %}">
-        Cerrar sesión
+        🚪 Cerrar sesión
     </a>
 
 </nav>
 
-
-<hr>
-
-
 <main>
 
 {% block content %}
-
 {% endblock %}
 
 </main>
 
-
 </body>
-
 </html>
