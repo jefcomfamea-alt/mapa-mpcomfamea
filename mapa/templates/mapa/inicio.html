@@ -293,6 +293,30 @@ USUARIO
     background:#0b5ed7;
 }
 
+.btnMapaAgresores{
+
+    display:inline-flex;
+    align-items:center;
+
+    background:#8B0000;
+    color:#FFD700;
+
+    padding:10px 18px;
+    border-radius:8px;
+
+    text-decoration:none;
+    font-weight:bold;
+
+    margin-left:10px;
+
+}
+
+.btnMapaAgresores:hover{
+
+    background:#B22222;
+
+}
+
 
 /*=========================
 CONTENIDO
@@ -339,6 +363,12 @@ MENU
 .verde{
 
     background:#198754;
+
+}
+
+.rojo{
+
+    background:#8B0000;
 
 }
 
@@ -572,6 +602,14 @@ DESPLEGABLE DE BÚSQUEDA
             onclick="window.location.href='/registrar-ubicacion-preliminar/'">
 
             📍 Registrar Ubicación Preliminar
+
+        </button>
+
+        <button
+            class="botonMenu rojo"
+            onclick="window.location.href='/mapa-agresores/'">
+
+            🟥 Mapa de Agresores
 
         </button>
 

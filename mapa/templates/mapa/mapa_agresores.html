@@ -1,0 +1,88 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Mapa de Agresores</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+
+body{
+    margin:0;
+}
+
+#map{
+    height:100vh;
+    width:100%;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div id="map"></div>
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+<script>
+
+var map = L.map('map').setView(
+    [-12.04318,-77.02824],
+    13
+);
+
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+).addTo(map);
+
+
+
+{% for agresor in agresores %}
+
+L.circleMarker(
+[
+{{ agresor.latitud }},
+{{ agresor.longitud }}
+],
+{
+    radius:10,
+    color:"red",
+    fillColor:"red",
+    fillOpacity:0.8
+}
+)
+.addTo(map)
+.bindPopup(
+`
+<b>AGRESOR</b><br>
+{{ agresor.nombres }}<br><br>
+
+<b>Domicilio:</b><br>
+{{ agresor.domicilio }}
+`
+);
+
+
+{% endfor %}
+
+
+</script>
+
+
+</body>
+
+</html>

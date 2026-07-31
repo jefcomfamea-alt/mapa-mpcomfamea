@@ -8,7 +8,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from .forms import CasoForm, UbicacionPreliminarForm
-from .models import Caso, SolicitudModificacion, Mensaje, Region, Provincia, Distrito, UbicacionPreliminar
+from .models import Caso, SolicitudModificacion, Mensaje, Region, Provincia, Distrito, UbicacionPreliminar, Agresor
 from .decorators import grupo_requerido
 from .forms_solicitudes import SolicitudModificacionForm
 
@@ -931,3 +931,20 @@ def rechazar_solicitud(request, id):
     solicitud.save()
 
     return redirect("mensajes")
+
+@login_required
+def mapa_agresores(request):
+
+    agresores = Agresor.objects.filter(
+        activo=True,
+        latitud__isnull=False,
+        longitud__isnull=False
+    )
+
+    return render(
+        request,
+        "mapa/mapa_agresores.html",
+        {
+            "agresores": agresores
+        }
+    )

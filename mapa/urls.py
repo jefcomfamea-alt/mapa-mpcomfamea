@@ -6,6 +6,12 @@ urlpatterns = [
     # Página principal
     path("", views.inicio, name="inicio"),
 
+    path(
+        "mapa-agresores/",
+        views.mapa_agresores,
+        name="mapa_agresores"
+    ),
+
     # Casos
     path("nuevo-caso/", views.nuevo_caso, name="nuevo_caso"),
     path("gestion-casos/", views.gestion_casos, name="gestion_casos"),

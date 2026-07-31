@@ -203,7 +203,7 @@ class Caso(models.Model):
         max_length=200,
         blank=True
     )
-
+    
     dni_agresor = models.CharField(
         max_length=8,
         blank=True
@@ -335,6 +335,14 @@ class Caso(models.Model):
 
     edicion_autorizada = models.BooleanField(
         default=False
+    )
+
+    agresor_registro = models.ForeignKey(
+        "Agresor",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="casos"
     )
 
     def save(self, *args, **kwargs):
@@ -639,3 +647,49 @@ class Mensaje(models.Model):
 
     def __str__(self):
         return f"{self.asunto} - {self.destinatario.username}"
+    
+class Agresor(models.Model):
+
+    nombres = models.CharField(
+        max_length=150
+    )
+
+    dni = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    alias = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    domicilio = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    latitud = models.FloatField(
+        blank=True,
+        null=True
+    )
+
+    longitud = models.FloatField(
+        blank=True,
+        null=True
+    )
+
+    fecha_registro = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    activo = models.BooleanField(
+        default=True
+    )
+
+
+    def __str__(self):
+        return self.nombres
