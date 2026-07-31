@@ -81,7 +81,7 @@ USUARIO
 
     position:absolute;
 
-    right:20px;
+    right:35px;
 
     top:50%;
 
@@ -134,6 +134,44 @@ USUARIO
     border-radius:6px;
     font-weight:bold;
     transition:.2s;
+}
+
+.btnAdmin{
+
+    display:inline-flex;
+    align-items:center;
+
+    background:transparent;
+    color:#FFD700;
+
+    border:1px solid #FFD700;
+
+    text-decoration:none;
+
+    padding:6px 12px;
+
+    border-radius:5px;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    transition:.2s;
+
+}
+
+.btnAdmin:hover{
+
+    background:#FFD700;
+    color:#1B5E20;
+
+}
+
+
+.btnAdmin:hover{
+
+    background:white;
+
 }
 
 .btnBuzon:hover{
@@ -273,7 +311,7 @@ MENU
 
 #menu{
 
-    width:240px;
+    width:210px;
     background:#245D2F;
     padding:20px;
 
@@ -486,6 +524,12 @@ DESPLEGABLE DE BÚSQUEDA
 
     <div class="accionesUsuario">
 
+{% if request.user.is_superuser %}
+<a href="/admin/" class="btnAdmin">
+    ⚙️ ADMIN
+</a>
+{% endif %}
+
 {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" or request.user.groups.all.0.name == "Usuario_MP" %}
 
 <a href="{% url 'mensajes' %}" class="btnBuzon">
@@ -601,7 +645,7 @@ const esUsuarioMP = {{ es_usuario_mp|yesno:"true,false" }};
 const esEfectivoComfamea = {{ es_efectivo_comfamea|yesno:"true,false" }};
 
 
-var map = L.map("map").setView([-12.0478,-76.9983],13);
+var map = L.map("map").setView([-12.0435,-76.9950],15);
 
 var marcadoresCasos = [];
 
