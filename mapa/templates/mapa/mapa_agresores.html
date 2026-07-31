@@ -1,36 +1,163 @@
-{% load static %}
+{% extends "mapa/base.html" %}
 
-<!DOCTYPE html>
-<html lang="es">
+{% block content %}
 
-<head>
-
-<meta charset="UTF-8">
-
-<title>Mapa de Agresores</title>
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
 
 <style>
 
-body{
-    margin:0;
+    #map{
+        height:650px;
+        width:100%;
+        border:2px solid #ccc;
+        border-radius:8px;
+        overflow:hidden;
+    }
+
+    .contenedor-mapa-agresores{
+        background:white;
+        border-radius:10px;
+        box-shadow:0 2px 10px rgba(0,0,0,.15);
+        padding:25px;
+        margin-bottom:25px;
+    }
+
+    .titulo-mapa-agresores{
+        font-size:22px;
+        color:#1B5E20;
+        font-weight:bold;
+        border-bottom:3px solid #FFD700;
+        padding-bottom:10px;
+        margin-bottom:15px;
+    }
+
+    .descripcion-mapa{
+        color:#555;
+        margin-bottom:20px;
+    }
+
+    .acciones-mapa{
+        text-align:center;
+        margin-top:22px;
+    }
+
+    .btn-volver{
+        display:inline-block;
+        background:#198754;
+        color:white;
+        text-decoration:none;
+        padding:12px 25px;
+        border-radius:7px;
+        font-weight:bold;
+    }
+
+    .btn-volver:hover{
+        background:#146c43;
+    }
+
+    .buscador-agresores{
+
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+
 }
 
-#map{
-    height:100vh;
-    width:100%;
+.buscador-agresores input{
+
+    flex:1;
+    margin:0;
+
+}
+
+.buscador-agresores button{
+
+    padding:10px 25px;
+
+}
+
+.resultado-busqueda{
+
+    display:none;
+    margin-bottom:15px;
+    padding:10px;
+    border-radius:6px;
+    background:#fff3cd;
+    color:#664d03;
+    font-weight:bold;
+
 }
 
 </style>
 
-</head>
+
+<div class="contenedor-mapa-agresores">
+
+    <div class="titulo-mapa-agresores">
+
+        🔴 Mapa de Ubicación de Agresores
+
+    </div>
+
+    <p class="descripcion-mapa">
+
+    Visualización geográfica de las ubicaciones registradas
+    de las personas agresoras en el sistema.
+
+    <br><br>
+
+    ⚫ Agresor definitivo
+
+    &nbsp;&nbsp;&nbsp;
+
+    🟤 Agresor preliminar
+
+</p>
+
+<div class="buscador-agresores">
+
+    <input
+        type="text"
+        id="buscadorAgresor"
+        placeholder="🔎 Buscar por nombre, DNI o dirección..."
+        autocomplete="off"
+    >
+
+    <button
+        type="button"
+        id="btnBuscarAgresor"
+    >
+        Buscar
+    </button>
+
+</div>
+
+<div
+    id="resultadoBusqueda"
+    class="resultado-busqueda"
+></div>
 
 
-<body>
+    <div id="map"></div>
 
-<div id="map"></div>
+
+    <div class="acciones-mapa">
+
+        <a
+            href="{% url 'inicio' %}"
+            class="btn-volver"
+        >
+
+            ⬅ Volver al Inicio
+
+        </a>
+
+    </div>
+
+</div>
 
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -39,104 +166,308 @@ body{
 <script>
 
 var map = L.map('map').setView(
-    [-12.04318,-77.02824],
+    [-12.04318, -77.02824],
     13
 );
 
+var registrosAgresores = [];
+
 
 L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        attribution:
+        '&copy; OpenStreetMap'
+    }
 ).addTo(map);
 
 
 
-/*=========================
+/*================================
 AGRESORES DEFINITIVOS
 NEGRO
-=========================*/
+================================*/
 
 {% for agresor in agresores %}
 
-L.circleMarker(
-[
-{{ agresor.latitud }},
-{{ agresor.longitud }}
-],
-{
-    radius:10,
-    color:"#000000",
-    fillColor:"#000000",
-    fillOpacity:0.9
-}
+var marcadorDefinitivo = L.circleMarker(
+    [
+        {{ agresor.latitud }},
+        {{ agresor.longitud }}
+    ],
+    {
+        radius:10,
+        color:"#000000",
+        fillColor:"#000000",
+        fillOpacity:0.9
+    }
 )
 .addTo(map)
 .bindPopup(
 `
-<b>⚫ AGRESOR DEFINITIVO</b><br><br>
-
-<b>Nombre:</b> {{ agresor.nombres }}<br>
-
-<b>DNI:</b> {{ agresor.dni }}<br>
-
-<b>Domicilio:</b><br>
-{{ agresor.domicilio }}
-
-`
-);
-
-{% endfor %}
-
-
-
-
-
-/*=========================
-AGRESORES PRELIMINARES
-30 DIAS
-MARRÓN
-=========================*/
-
-
-{% for agresor in agresores_preliminares %}
-
-
-L.circleMarker(
-[
-{{ agresor.latitud_agresor }},
-{{ agresor.longitud_agresor }}
-],
-{
-    radius:10,
-    color:"#6b3e1e",
-    fillColor:"#8B4513",
-    fillOpacity:0.9
-}
-)
-.addTo(map)
-.bindPopup(
-`
-<b>🟤 AGRESOR PRELIMINAR</b><br><br>
-
-<b>Nombre:</b>
-{{ agresor.agresor }}<br>
-
-<b>DNI:</b>
-{{ agresor.dni_agresor }}<br>
-
-<b>Dirección:</b><br>
-{{ agresor.direccion_agresor }}<br><br>
-
-<b>Fecha registro:</b>
-{{ agresor.fecha_registro }}
+<b>⚫ AGRESOR DEFINITIVO</b>
 
 <br><br>
 
+<b>Nombre:</b>
+{{ agresor.nombres }}
 
+<br>
+
+<b>DNI:</b>
+{{ agresor.dni }}
+
+<br><br>
+
+<b>Domicilio:</b>
+
+<br>
+
+{{ agresor.domicilio }}
 `
 );
 
 
+registrosAgresores.push({
+
+    nombre:
+        "{{ agresor.nombres|escapejs }}",
+
+    dni:
+        "{{ agresor.dni|escapejs }}",
+
+    direccion:
+        "{{ agresor.domicilio|escapejs }}",
+
+    latitud:
+        {{ agresor.latitud }},
+
+    longitud:
+        {{ agresor.longitud }},
+
+    marcador:
+        marcadorDefinitivo
+
+});
+
 {% endfor %}
 
 
+
+/*================================
+AGRESORES PRELIMINARES
+MARRÓN
+================================*/
+
+{% for agresor in agresores_preliminares %}
+
+var marcadorPreliminar = L.circleMarker(
+    [
+        {{ agresor.latitud_agresor }},
+        {{ agresor.longitud_agresor }}
+    ],
+    {
+        radius:10,
+        color:"#6b3e1e",
+        fillColor:"#8B4513",
+        fillOpacity:0.9
+    }
+)
+.addTo(map)
+.bindPopup(
+`
+<b>🟤 AGRESOR PRELIMINAR</b>
+
+<br><br>
+
+<b>Nombre:</b>
+
+{{ agresor.agresor }}
+
+<br>
+
+<b>DNI:</b>
+
+{{ agresor.dni_agresor }}
+
+<br><br>
+
+<b>Dirección:</b>
+
+<br>
+
+{{ agresor.direccion_agresor }}
+
+<br><br>
+
+<b>Fecha de registro:</b>
+
+{{ agresor.fecha_registro }}
+`
+);
+
+
+registrosAgresores.push({
+
+    nombre:
+        "{{ agresor.agresor|escapejs }}",
+
+    dni:
+        "{{ agresor.dni_agresor|escapejs }}",
+
+    direccion:
+        "{{ agresor.direccion_agresor|escapejs }}",
+
+    latitud:
+        {{ agresor.latitud_agresor }},
+
+    longitud:
+        {{ agresor.longitud_agresor }},
+
+    marcador:
+        marcadorPreliminar
+
+});
+
+{% endfor %}
+
+/*================================
+BUSCADOR DE AGRESORES
+================================*/
+
+function buscarAgresor(){
+
+    var texto = document
+        .getElementById(
+            "buscadorAgresor"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    var resultado = document
+        .getElementById(
+            "resultadoBusqueda"
+        );
+
+
+    if(texto === ""){
+
+        resultado.style.display =
+            "block";
+
+        resultado.innerHTML =
+            "⚠ Escriba un nombre, DNI o dirección.";
+
+        return;
+
+    }
+
+
+    var coincidencia =
+        registrosAgresores.find(
+            function(registro){
+
+                return (
+
+                    registro.nombre
+                        .toLowerCase()
+                        .includes(texto)
+
+                    ||
+
+                    registro.dni
+                        .toLowerCase()
+                        .includes(texto)
+
+                    ||
+
+                    registro.direccion
+                        .toLowerCase()
+                        .includes(texto)
+
+                );
+
+            }
+        );
+
+
+    if(coincidencia){
+
+        map.setView(
+
+            [
+                coincidencia.latitud,
+                coincidencia.longitud
+            ],
+
+            18
+
+        );
+
+
+        coincidencia.marcador
+            .openPopup();
+
+
+        resultado.style.display =
+            "block";
+
+
+        resultado.innerHTML =
+            "✅ Ubicación encontrada.";
+
+
+    }else{
+
+        resultado.style.display =
+            "block";
+
+
+        resultado.innerHTML =
+            "❌ No se encontraron coincidencias.";
+
+    }
+
+}
+
+
+/* BOTÓN BUSCAR */
+
+document
+    .getElementById(
+        "btnBuscarAgresor"
+    )
+    .addEventListener(
+        "click",
+        buscarAgresor
+    );
+
+
+/* TECLA ENTER */
+
+document
+    .getElementById(
+        "buscadorAgresor"
+    )
+    .addEventListener(
+        "keydown",
+        function(event){
+
+            if(
+                event.key === "Enter"
+            ){
+
+                event.preventDefault();
+
+                buscarAgresor();
+
+            }
+
+        }
+    );
+
 </script>
+
+{% endblock %}
