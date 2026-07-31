@@ -51,13 +51,13 @@ ENCABEZADO
 }
 
 .escudo{
-    width:72px;
-    height:72px;
+    width:65px;
+    height:65px;
     object-fit:contain;
 }
 
 .texto-titulo{
-    width:600px;
+    width:500px;
     text-align:center;
 }
 
@@ -455,11 +455,6 @@ LEYENDA
     animation:parpadeoRapido .35s infinite;
 
 }
-.parpadea {
-
-    animation: parpadeo 1s infinite;
-
-}
 
 .contenedorBusqueda {
     position: relative;
@@ -787,7 +782,7 @@ if(fecha){
 
     console.log(ultimaVisita);   
        
-        if(dias >= 0 && dias <= 15){
+        if(dias >= 0 && dias <= 3){
 
             marcador.on("add", function(){
 
@@ -886,33 +881,48 @@ fetch("/ubicaciones-preliminares-json/")
 
 .then(data => {
 
-
     L.geoJSON(data, {
 
         pointToLayer:function(feature, latlng){
 
-            return L.circleMarker(
-                latlng,
-                {
-                    radius:8,
-                    fillColor:"#0066ff",
-                    color:"#003399",
-                    weight:1,
-                    fillOpacity:0.9
-                }
-            );
+            let p = feature.properties;
+
+
+            // BENEFICIARIA PRELIMINAR = AZUL
+            if(p["tipo"]=="BENEFICIARIA"){
+
+                return L.circleMarker(
+                    latlng,
+                    {
+                        radius:8,
+                        fillColor:"#0066ff",
+                        color:"#003399",
+                        weight:1,
+                        fillOpacity:0.9
+                    }
+                );
+
+            }
+
+
+            // AGRESOR PRELIMINAR NO SE MUESTRA EN MAPA PRINCIPAL
+            if(p["tipo"]=="AGRESOR"){
+
+                return null;
+
+            }
 
         },
 
 
-        onEachFeature:function(feature, layer){
+        onEachFeature:function(feature,layer){
 
             let p = feature.properties;
 
 
             layer.bindPopup(
 
-                "<b>🔵 Ubicación preliminar</b><br><br>"+
+                "<b>🔵 Registro preliminar</b><br><br>"+
 
                 "<b>Beneficiaria:</b> "+
                 (p["BENEFICIARIA"] || "")+
@@ -920,21 +930,22 @@ fetch("/ubicaciones-preliminares-json/")
 
                 "<b>DNI:</b> "+
                 (p["DNI"] || "")+
-                "<br>"+
-
-                "<b>Domicilio:</b> "+
-                (p["DOMICILIO"] || "")+
-                "<br>"+
-
-                "<b>Referencia:</b> "+
-                (p["REFERENCIA"] || "")+
-                "<br>"+
-
-                "<b>Fecha registro:</b> "+
-                (p["FECHA"] || "")+
                 "<br><br>"+
 
-                "<a href='/convertir-preliminar-caso/" + p["id"] + "/'>"+
+                "<b>🟤 Agresor:</b> "+
+                (p["AGRESOR"] || "")+
+                "<br>"+
+
+                "<b>DNI Agresor:</b> "+
+                (p["DNI AGRESOR"] || "")+
+                "<br>"+
+
+                "<b>Dirección Agresor:</b> "+
+                (p["DIRECCION AGRESOR"] || "")+
+
+                "<br><br>"+
+
+                "<a href='/convertir-preliminar-caso/"+p["id"]+"/'>"+
                 "➡️ Convertir en Caso"+
                 "</a>"
 

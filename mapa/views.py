@@ -317,8 +317,8 @@ def nuevo_caso(request):
                         f"{caso.expediente or caso.folder} "
                         f"para realizar la ejecución y seguimiento "
                         f"de las medidas de protección."
-        )
-    )
+                    )
+                )
 
             return redirect("inicio")
 
@@ -394,53 +394,98 @@ def convertir_preliminar_caso(request, id):
         pk=id
     )
 
-    if request.method == "POST":
+    caso = Caso.objects.create(
 
-        form = CasoForm(
-            request.POST,
-            usuario=request.user
-        )
+        beneficiario=ubicacion.beneficiaria,
+        dni_beneficiario=ubicacion.dni_beneficiaria,
+        domicilio=ubicacion.domicilio,
 
-        if form.is_valid():
+        latitud=ubicacion.latitud,
+        longitud=ubicacion.longitud,
 
-            caso = form.save(commit=False)
+        agresor=ubicacion.agresor,
+        dni_agresor=ubicacion.dni_agresor,
+        direccion_agresor=ubicacion.direccion_agresor,
 
-            # Pasar datos de ubicación preliminar
-            caso.beneficiario = ubicacion.beneficiaria
-            caso.dni_beneficiario = ubicacion.dni_beneficiaria
-            caso.domicilio = ubicacion.domicilio
-            caso.latitud = ubicacion.latitud
-            caso.longitud = ubicacion.longitud
+        latitud_agresor=ubicacion.latitud_agresor,
+        longitud_agresor=ubicacion.longitud_agresor,
 
-            caso.save()
+        estado="ACTIVO",
 
-            form.save_m2m()
-
-            # ELIMINA definitivamente la ubicación preliminar
-            ubicacion.delete()
-
-            return redirect("gestion_casos")
-
-    else:
-
-        form = CasoForm(
-            usuario=request.user,
-            initial={
-                "beneficiario": ubicacion.beneficiaria,
-                "dni_beneficiario": ubicacion.dni_beneficiaria,
-                "domicilio": ubicacion.domicilio,
-                "latitud": ubicacion.latitud,
-                "longitud": ubicacion.longitud,
-            }
-        )
-
-    return render(
-        request,
-        "mapa/nuevo_caso.html",
-        {
-            "form": form
-        }
+        fecha_registro=timezone.now().date()
     )
+
+
+    # Crear agresor definitivo
+    if (
+        ubicacion.agresor
+        and ubicacion.latitud_agresor
+        and ubicacion.longitud_agresor
+    ):
+
+        Agresor.objects.create(
+
+            nombres=ubicacion.agresor,
+            dni=ubicacion.dni_agresor,
+            alias="",
+
+            domicilio=ubicacion.direccion_agresor,
+
+            latitud=ubicacion.latitud_agresor,
+            longitud=ubicacion.longitud_agresor,
+
+            activo=True
+        )
+
+
+    # quitar registro preliminar
+    ubicacion.delete()
+
+
+    return redirect("gestion_casos")
+
+@login_required
+def convertir_agresor(request, id):
+
+    ubicacion = get_object_or_404(
+        UbicacionPreliminar,
+        id=id
+    )
+
+
+    # Crear agresor definitivo
+
+    Agresor.objects.create(
+
+        nombres=ubicacion.agresor,
+
+        dni=ubicacion.dni_agresor,
+
+        alias="",
+
+        domicilio=ubicacion.direccion_agresor,
+
+        latitud=ubicacion.latitud_agresor,
+
+        longitud=ubicacion.longitud_agresor,
+
+        activo=True
+
+    )
+
+
+    # borrar solamente la información del agresor preliminar
+
+    ubicacion.agresor = ""
+    ubicacion.dni_agresor = ""
+    ubicacion.direccion_agresor = ""
+    ubicacion.latitud_agresor = None
+    ubicacion.longitud_agresor = None
+
+    ubicacion.save()
+
+
+    return redirect("mapa_agresores")
 
 @login_required
 def gestion_casos(request):
@@ -489,6 +534,17 @@ def casos_json(request):
         if caso.latitud is None or caso.longitud is None:
             continue
 
+        nombre_agresor = caso.agresor
+
+        if not nombre_agresor and caso.dni_agresor:
+
+            agresor = Agresor.objects.filter(
+                dni=caso.dni_agresor
+            ).first()
+
+            if agresor:
+                nombre_agresor = agresor.nombres
+
         features.append({
             "type": "Feature",
             "geometry": {
@@ -536,9 +592,7 @@ def ubicaciones_preliminares_json(request):
 
     for ubicacion in UbicacionPreliminar.objects.all():
 
-        if ubicacion.latitud is None or ubicacion.longitud is None:
-            continue
-
+        # PUNTO BENEFICIARIA
         features.append({
 
             "type": "Feature",
@@ -553,8 +607,10 @@ def ubicaciones_preliminares_json(request):
 
             "properties": {
 
+                "tipo": "BENEFICIARIA",
+
                 "id": ubicacion.id,
-                
+
                 "BENEFICIARIA": ubicacion.beneficiaria,
 
                 "DNI": ubicacion.dni_beneficiaria,
@@ -570,11 +626,45 @@ def ubicaciones_preliminares_json(request):
         })
 
 
+        # PUNTO AGRESOR
+        if ubicacion.latitud_agresor and ubicacion.longitud_agresor:
+
+            features.append({
+
+                "type": "Feature",
+
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        ubicacion.longitud_agresor,
+                        ubicacion.latitud_agresor
+                    ]
+                },
+
+                "properties": {
+
+                    "tipo": "AGRESOR",
+
+                    "id": ubicacion.id,
+
+                    "AGRESOR": ubicacion.agresor,
+
+                    "DNI AGRESOR": ubicacion.dni_agresor,
+
+                    "DIRECCION AGRESOR": ubicacion.direccion_agresor,
+
+                    "FECHA": str(ubicacion.fecha_registro),
+
+                }
+
+            })
+
+
     return JsonResponse({
 
-        "type":"FeatureCollection",
+        "type": "FeatureCollection",
 
-        "features":features
+        "features": features
 
     })
 
@@ -696,28 +786,6 @@ def editar_caso(request, id):
             "form": form
         }
     )
-
-@login_required
-@grupo_requerido("Administrador")
-def archivar_caso(request, id):
-
-    caso = get_object_or_404(Caso, pk=id)
-
-    caso.estado = "ARCHIVADO"
-    caso.save()
-
-    return redirect("gestion_casos")
-
-
-@login_required
-@grupo_requerido("Administrador")
-def restaurar_caso(request, id):
-
-    caso = get_object_or_404(Caso, pk=id)
-    caso.estado = "ACTIVO"
-    caso.save()
-
-    return redirect("casos_archivados")
 
 @login_required
 @grupo_requerido("Administrador")
@@ -941,10 +1009,19 @@ def mapa_agresores(request):
         longitud__isnull=False
     )
 
+    fecha_limite = timezone.now() - timedelta(days=30)
+
+    agresores_preliminares = UbicacionPreliminar.objects.filter(
+        fecha_registro__gte=fecha_limite,
+        latitud_agresor__isnull=False,
+        longitud_agresor__isnull=False
+    )
+
     return render(
         request,
         "mapa/mapa_agresores.html",
         {
-            "agresores": agresores
+            "agresores": agresores,
+            "agresores_preliminares": agresores_preliminares,
         }
     )

@@ -120,3 +120,9 @@ path(
     name="desactivar_usuario",
 ),
 ]
+
+path(
+    "convertir-agresor/<int:id>/",
+    views.convertir_agresor,
+    name="convertir_agresor"
+),

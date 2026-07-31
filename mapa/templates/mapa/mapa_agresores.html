@@ -30,7 +30,6 @@ body{
 
 <body>
 
-
 <div id="map"></div>
 
 
@@ -51,6 +50,11 @@ L.tileLayer(
 
 
 
+/*=========================
+AGRESORES DEFINITIVOS
+NEGRO
+=========================*/
+
 {% for agresor in agresores %}
 
 L.circleMarker(
@@ -60,19 +64,76 @@ L.circleMarker(
 ],
 {
     radius:10,
-    color:"red",
-    fillColor:"red",
-    fillOpacity:0.8
+    color:"#000000",
+    fillColor:"#000000",
+    fillOpacity:0.9
 }
 )
 .addTo(map)
 .bindPopup(
 `
-<b>AGRESOR</b><br>
-{{ agresor.nombres }}<br><br>
+<b>⚫ AGRESOR DEFINITIVO</b><br><br>
+
+<b>Nombre:</b> {{ agresor.nombres }}<br>
+
+<b>DNI:</b> {{ agresor.dni }}<br>
+
+<b>Alias:</b> {{ agresor.alias }}<br>
 
 <b>Domicilio:</b><br>
 {{ agresor.domicilio }}
+
+`
+);
+
+{% endfor %}
+
+
+
+
+
+/*=========================
+AGRESORES PRELIMINARES
+30 DIAS
+MARRÓN
+=========================*/
+
+
+{% for agresor in agresores_preliminares %}
+
+
+L.circleMarker(
+[
+{{ agresor.latitud_agresor }},
+{{ agresor.longitud_agresor }}
+],
+{
+    radius:10,
+    color:"#6b3e1e",
+    fillColor:"#8B4513",
+    fillOpacity:0.9
+}
+)
+.addTo(map)
+.bindPopup(
+`
+<b>🟤 AGRESOR PRELIMINAR</b><br><br>
+
+<b>Nombre:</b>
+{{ agresor.agresor }}<br>
+
+<b>DNI:</b>
+{{ agresor.dni_agresor }}<br>
+
+<b>Dirección:</b><br>
+{{ agresor.direccion_agresor }}<br><br>
+
+<b>Fecha registro:</b>
+{{ agresor.fecha_registro }}
+
+<br><br>
+
+
 `
 );
 
@@ -81,8 +142,3 @@ L.circleMarker(
 
 
 </script>
-
-
-</body>
-
-</html>
