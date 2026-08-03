@@ -304,23 +304,36 @@ def seleccionar_rol_preliminar(request, id):
 
     ubicacion = persona.ubicacion_preliminar
 
-
     personas = ubicacion.personas.prefetch_related(
         "roles"
     ).all()
 
-
-
     if request.method == "POST":
 
-        rol = request.POST.get("rol")
+        roles_seleccionados = []
 
-        if rol:
+        for persona_item in personas:
 
-            return redirect(
-                f"/nuevo-caso/?preliminar={id}&rol={rol}"
+            rol = request.POST.get(
+                f"persona_{persona_item.id}"
             )
 
+            if rol:
+
+                roles_seleccionados.append(
+                    f"{persona_item.id}:{rol}"
+                )
+
+        if roles_seleccionados:
+
+            roles_texto = ",".join(
+                roles_seleccionados
+            )
+
+            return redirect(
+                "/nuevo-caso/?personas="
+                + roles_texto
+            )
 
     return render(
         request,
