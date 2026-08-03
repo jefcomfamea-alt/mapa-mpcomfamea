@@ -221,6 +221,14 @@ class Caso(models.Model):
         blank=True
     )
 
+    agresor_registro = models.ForeignKey(
+    "Agresor",
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name="casos"
+)
+    
     estado_ubicacion_agresor = models.CharField(
         "Estado de ubicación del agresor",
         max_length=15,
@@ -337,14 +345,6 @@ class Caso(models.Model):
         default=False
     )
 
-    agresor_registro = models.ForeignKey(
-        "Agresor",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="casos"
-    )
-
     def save(self, *args, **kwargs):
 
         # Beneficiaria
@@ -389,9 +389,14 @@ class Caso(models.Model):
 
 class UbicacionPreliminar(models.Model):
 
-    TIPO_UBICACION = [
-        ("CONOCIDO", "Agresor con domicilio conocido"),
-        ("DESCONOCIDO", "Agresor sin domicilio conocido"),
+    TIPO_REGISTRO = [
+        ("DENUNCIA", "Denuncia"),
+        ("INTERVENCION", "Intervención policial"),
+    ]
+
+    TIPO_INTERVENCION = [
+        ("UNILATERAL", "Agresión unilateral"),
+        ("MUTUA", "Agresión mutua"),
     ]
 
     ESTADO = [
@@ -401,77 +406,23 @@ class UbicacionPreliminar(models.Model):
     ]
 
 
-    # DATOS BENEFICIARIA
+    # TIPO DE REGISTRO
 
-    beneficiaria = models.CharField(
-        max_length=200
-    )
-
-    dni_beneficiaria = models.CharField(
-        max_length=15,
-        blank=True,
-        null=True
-    )
-
-    domicilio = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True
-    )
-
-    referencia = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True
-    )
-
-    tipo_ubicacion = models.CharField(
+    tipo_registro = models.CharField(
         max_length=20,
-        choices=TIPO_UBICACION,
-        default="CONOCIDO"
+        choices=TIPO_REGISTRO,
+        default="DENUNCIA"
     )
 
-
-    # DATOS AGRESOR
-
-    agresor = models.CharField(
-        max_length=200,
-        blank=True,
-        null=True
-    )
-
-    dni_agresor = models.CharField(
-        max_length=15,
-        blank=True,
-        null=True
-    )
-
-    direccion_agresor = models.CharField(
-        max_length=300,
-        blank=True,
-        null=True
-    )
-
-
-    estado_ubicacion_agresor = models.CharField(
+    tipo_intervencion = models.CharField(
         max_length=20,
-        choices=TIPO_UBICACION,
-        default="CONOCIDO"
+        choices=TIPO_INTERVENCION,
+        blank=True,
+        null=True
     )
 
-
-    latitud_agresor = models.FloatField(
-        null=True,
-        blank=True
-    )
-
-    longitud_agresor = models.FloatField(
-        null=True,
-        blank=True
-    )
-
-
-    # UBICACIÓN BENEFICIARIA
+   
+    # UBICACIÓN DEL HECHO / REFERENCIA
 
     latitud = models.FloatField(
         null=True,
@@ -526,39 +477,89 @@ class UbicacionPreliminar(models.Model):
 
 
     def __str__(self):
-        return self.beneficiaria
+
+        return f"Registro preliminar {self.id}"
     
-    def clean(self):
 
-        estado = self.estado_ubicacion_agresor
+class PersonaPreliminar(models.Model):
 
-        direccion = self.direccion_agresor
+    ubicacion_preliminar = models.ForeignKey(
+        UbicacionPreliminar,
+        on_delete=models.CASCADE,
+        related_name="personas"
+    )
 
-        latitud_agresor = self.latitud_agresor
+    nombres = models.CharField(
+        max_length=200
+    )
 
-        longitud_agresor = self.longitud_agresor
+    dni = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True
+    )
 
-        from django.core.exceptions import ValidationError
+    telefono = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
 
-        if estado == "CONOCIDO":
+    direccion = models.CharField(
+        max_length=300,
+        blank=True,
+        null=True
+    )
 
-            if not direccion:
-                raise ValidationError({
-                    "direccion_agresor":
-                    "Debe registrar la dirección del agresor cuando se encuentra ubicado."
-                })
+    latitud = models.FloatField(
+        null=True,
+        blank=True
+    )
 
-            if latitud_agresor is None or longitud_agresor is None:
-                raise ValidationError({
-                    "latitud_agresor":
-                    "Debe ubicar al agresor en el mapa."
-                })
+    longitud = models.FloatField(
+        null=True,
+        blank=True
+    )
 
-        if estado == "DESCONOCIDO":
+    requiere_ubicacion = models.BooleanField(
+        default=False
+    )
 
-            self.direccion_agresor = ""
-            self.latitud_agresor = None
-            self.longitud_agresor = None
+    rol_confirmado = models.BooleanField(
+        default=False
+    )
+
+    convertida = models.BooleanField(
+        default=False
+    )
+  
+    def __str__(self):
+        return self.nombres
+    
+class RolPersonaPreliminar(models.Model):
+
+    ROLES = [
+        ("DENUNCIANTE", "Denunciante"),
+        ("PRESUNTA_VICTIMA", "Presunta víctima"),
+        ("DENUNCIADO", "Denunciado"),
+        ("PARTICIPANTE", "Participante"),
+    ]
+
+    persona = models.ForeignKey(
+        PersonaPreliminar,
+        on_delete=models.CASCADE,
+        related_name="roles"
+    )
+
+    rol = models.CharField(
+        max_length=30,
+        choices=ROLES
+    )
+
+
+    def __str__(self):
+        return self.get_rol_display()
+    
 
 class SolicitudModificacion(models.Model):
 

@@ -263,8 +263,8 @@ MARRÓN
 
 var marcadorPreliminar = L.circleMarker(
     [
-        {{ agresor.latitud_agresor }},
-        {{ agresor.longitud_agresor }}
+        {{ agresor.latitud }},
+        {{ agresor.longitud }}
     ],
     {
         radius:10,
@@ -282,13 +282,13 @@ var marcadorPreliminar = L.circleMarker(
 
 <b>Nombre:</b>
 
-{{ agresor.agresor }}
+{{ agresor.nombres }}
 
 <br>
 
 <b>DNI:</b>
 
-{{ agresor.dni_agresor }}
+{{ agresor.dni }}
 
 <br><br>
 
@@ -296,13 +296,23 @@ var marcadorPreliminar = L.circleMarker(
 
 <br>
 
-{{ agresor.direccion_agresor }}
+{{ agresor.direccion }}
+
+<br><br>
+
+<b>Rol(es):</b>
+
+{% for rol in agresor.roles.all %}
+{{ rol.get_rol_display }}{% if not forloop.last %}, {% endif %}
+{% endfor %}
 
 <br><br>
 
 <b>Fecha de registro:</b>
 
-{{ agresor.fecha_registro }}
+{{ agresor.ubicacion_preliminar.fecha_registro }}
+
+{{ agresor.ubicacion_preliminar.fecha_registro }}
 `
 );
 
@@ -310,19 +320,19 @@ var marcadorPreliminar = L.circleMarker(
 registrosAgresores.push({
 
     nombre:
-        "{{ agresor.agresor|escapejs }}",
+        "{{ agresor.nombres|escapejs }}",
 
     dni:
-        "{{ agresor.dni_agresor|escapejs }}",
+        "{{ agresor.dni|escapejs }}",
 
     direccion:
-        "{{ agresor.direccion_agresor|escapejs }}",
+        "{{ agresor.direccion|escapejs }}",
 
     latitud:
-        {{ agresor.latitud_agresor }},
+        {{ agresor.latitud }},
 
     longitud:
-        {{ agresor.longitud_agresor }},
+        {{ agresor.longitud }},
 
     marcador:
         marcadorPreliminar

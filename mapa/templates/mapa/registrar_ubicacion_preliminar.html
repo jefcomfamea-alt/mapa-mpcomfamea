@@ -1,334 +1,593 @@
-{% extends "mapa/base.html" %}
+  {% extends "mapa/base.html" %}
 
 {% block content %}
 
 <div class="panel">
 
-    <div class="panelTitulo">
-        📍 Registro de Ubicación Preliminar
-    </div>
+<div class="panelTitulo">
+📍 Registro de Ubicación Preliminar
+</div>
 
-    <p style="margin-bottom:25px;">
-        Registre la información proporcionada por la persona beneficiaria durante el primer contacto.
-    </p>
+
+<p style="margin-bottom:25px;">
+Registre la información obtenida durante el primer contacto y ubique a las personas relacionadas al hecho.
+</p>
+
 
 <form method="POST">
 
 {% csrf_token %}
 
-<div class="seccion">
-
-<h3>🔵 Datos de la Persona Beneficiaria</h3>
-
-{{ form.beneficiaria.label_tag }}
-{{ form.beneficiaria }}
-
-{{ form.dni_beneficiaria.label_tag }}
-{{ form.dni_beneficiaria }}
-
-{{ form.domicilio.label_tag }}
-{{ form.domicilio }}
-
-{{ form.referencia.label_tag }}
-{{ form.referencia }}
-
-</div>
-
 
 <div class="seccion">
 
-<h3>🗺 Ubicación de la Persona Beneficiaria</h3>
 
-<p>
-Seleccione la ubicación haciendo clic sobre el mapa.
-</p>
+<h4>📄 Datos del registro preliminar</h4>
 
-<div
-    id="mapa-beneficiaria"
-    class="mapa">
-</div>
+
+<label>
+Tipo de registro
+</label>
+
+{{ form.tipo_registro }}
+
+
+
+<label>
+Tipo de intervención
+</label>
+
+{{ form.tipo_intervencion }}
+
+
 
 {{ form.latitud }}
+
 {{ form.longitud }}
 
+
 </div>
+
+
+
 
 
 <div class="seccion">
 
-<h3>🔴 Datos de la Persona Agresora</h3>
 
-<p style="color:#666;">
+<h4>👥 Personas involucradas</h4>
 
-Registre únicamente la información conocida por la persona beneficiaria.
-
-</p>
-
-{{ form.agresor.label_tag }}
-{{ form.agresor }}
-
-{{ form.dni_agresor.label_tag }}
-{{ form.dni_agresor }}
-
-{{ form.estado_ubicacion_agresor.label_tag }}
-{{ form.estado_ubicacion_agresor }}
-
-<div id="datos-domicilio-agresor">
-
-{{ form.direccion_agresor.label_tag }}
-{{ form.direccion_agresor }}
-
-<br><br>
-
-<h3>📍 Ubicación del Agresor</h3>
 
 <p>
-Seleccione la ubicación si es conocida.
+Registre todas las personas relacionadas al hecho.
+Luego se asignarán sus roles:
+DENUNCIANTE, PRESUNTA VÍCTIMA, DENUNCIADO o PARTICIPANTE.
 </p>
 
-<div
-    id="mapa-agresor"
-    class="mapa">
+
+
+<div id="personas">
+
+
+
+<div class="persona card p-3 mb-3">
+
+
+<h5>
+Persona 1
+</h5>
+
+
+
+<label>
+Nombres completos
+</label>
+
+<input 
+type="text"
+name="nombres"
+class="form-control"
+>
+
+
+
+<label>
+DNI
+</label>
+
+<input 
+type="text"
+name="dni"
+class="form-control"
+>
+
+
+
+<label>
+Teléfono
+</label>
+
+<input 
+type="text"
+name="telefono"
+class="form-control"
+>
+
+
+
+<label>
+Dirección
+</label>
+
+<input 
+type="text"
+name="direccion"
+class="form-control"
+>
+
+
+
+<label>
+Rol
+</label>
+
+
+<select 
+name="rol"
+class="form-control rol-persona"
+onchange="mostrarMapa(this)"
+>
+
+
+<option value="">
+Seleccione rol
+</option>
+
+
+<option value="DENUNCIANTE">
+Denunciante
+</option>
+
+
+<option value="PRESUNTA_VICTIMA">
+Presunta víctima
+</option>
+
+
+<option value="DENUNCIADO">
+Denunciado
+</option>
+
+
+<option value="PARTICIPANTE">
+Participante
+</option>
+
+
+</select>
+
+
+
+<div 
+class="mapa-persona"
+style="display:none;height:300px;margin-top:15px;">
 </div>
 
-</div>
-
-{{ form.latitud_agresor }}
-{{ form.longitud_agresor }}
-
-</div>
 
 
-<div class="centrado">
+<input 
+type="hidden"
+name="latitud_persona"
+class="latitud-persona"
+>
+
+
+
+<input 
+type="hidden"
+name="longitud_persona"
+class="longitud-persona"
+>
+
+
 
 <button
-    type="submit"
-    class="btnGuardar">
+type="button"
+class="btn btn-danger mt-2"
+onclick="this.parentElement.remove()"
+>
+
+❌ Eliminar persona
+
+</button>
+
+</div>
+`;
+
+</div>
+
+<button 
+type="button"
+class="btn btn-secondary"
+onclick="agregarPersona()"
+>
+
+➕ Agregar otra persona
+
+</button>
+
+
+</div>
+
+
+
+
+
+<button
+type="submit"
+class="btnGuardar"
+>
 
 💾 Guardar Registro Preliminar
 
 </button>
 
-</div>
+
 
 </form>
 
+
 </div>
 
+
+
+
 <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
+rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"
 />
+
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+
+
 <script>
 
-    // =====================================
-    // MAPA DE LA PERSONA BENEFICIARIA
-    // =====================================
 
-    var mapaBeneficiaria = L.map(
-        'mapa-beneficiaria'
-    ).setView(
-        [-12.02224, -77.00984],
-        14
-    );
+let contadorPersonas = 1;
 
 
-    L.tileLayer(
-        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-            attribution: 'OpenStreetMap'
-        }
-    ).addTo(
-        mapaBeneficiaria
-    );
+let mapasPersonas = new Map();
 
 
-    var marcadorBeneficiaria;
+
+function agregarPersona(){
 
 
-    mapaBeneficiaria.on(
-        'click',
-        function(e) {
-
-            var lat = e.latlng.lat;
-            var lng = e.latlng.lng;
+contadorPersonas++;
 
 
-            if (marcadorBeneficiaria) {
-
-                mapaBeneficiaria.removeLayer(
-                    marcadorBeneficiaria
-                );
-
-            }
+let div=document.createElement("div");
 
 
-            marcadorBeneficiaria = L.circleMarker(
-                [lat, lng],
-                {
-                    radius:8,
-                    color:"#0066ff",
-                    fillColor:"#0066ff",
-                    fillOpacity:1,
-                    weight:2
-                }
-            ).addTo(
-                mapaBeneficiaria
-            );
+div.className="persona card p-3 mb-3";
 
 
-            document.getElementById(
-                'id_latitud'
-            ).value = lat;
+
+div.innerHTML=`
 
 
-            document.getElementById(
-                'id_longitud'
-            ).value = lng;
-
-        }
-    );
+<h5>
+Persona ${contadorPersonas}
+</h5>
 
 
-    // =====================================
-    // MAPA DE LA PERSONA AGRESORA
-    // =====================================
+<label>
+Nombres completos
+</label>
 
-    var mapaAgresor = L.map(
-        'mapa-agresor'
-    ).setView(
-        [-12.02224, -77.00984],
-        14
-    );
-
-
-    L.tileLayer(
-        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-            attribution: 'OpenStreetMap'
-        }
-    ).addTo(
-        mapaAgresor
-    );
+<input 
+type="text"
+name="nombres"
+class="form-control"
+>
 
 
-    var marcadorAgresor;
+<label>
+DNI
+</label>
+
+<input 
+type="text"
+name="dni"
+class="form-control"
+>
 
 
-    mapaAgresor.on(
-        'click',
-        function(e) {
+<label>
+Teléfono
+</label>
 
-            var lat = e.latlng.lat;
-            var lng = e.latlng.lng;
-
-
-            if (marcadorAgresor) {
-
-                mapaAgresor.removeLayer(
-                    marcadorAgresor
-                );
-
-            }
+<input 
+type="text"
+name="telefono"
+class="form-control"
+>
 
 
-            marcadorAgresor = L.circleMarker(
-                [lat, lng],
-                {
-                    radius:8,
-                    color:"black",
-                    fillColor:"black",
-                    fillOpacity:1,
-                    weight:2
-                }
-            ).addTo(
-                mapaAgresor
-            );
+<label>
+Dirección
+</label>
+
+<input 
+type="text"
+name="direccion"
+class="form-control"
+>
 
 
-            document.getElementById(
-                'id_latitud_agresor'
-            ).value = lat;
+<label>
+Rol
+</label>
 
 
-            document.getElementById(
-                'id_longitud_agresor'
-            ).value = lng;
-
-        }
-    );
-
-
-    // =====================================
-    // MOSTRAR U OCULTAR EL DOMICILIO
-    // =====================================
-
-    var estadoUbicacion = document.getElementById(
-        'id_estado_ubicacion_agresor'
-    );
+<select 
+name="rol"
+class="form-control rol-persona"
+onchange="mostrarMapa(this)"
+>
 
 
-    var datosDomicilioAgresor = document.getElementById(
-        'datos-domicilio-agresor'
-    );
+<option value="">
+Seleccione rol
+</option>
 
 
-    function actualizarUbicacionAgresor() {
-
-        if (
-            estadoUbicacion.value ===
-            'CONOCIDO'
-        ) {
-
-            datosDomicilioAgresor.style.display =
-                'block';
+<option value="DENUNCIANTE">
+Denunciante
+</option>
 
 
-            setTimeout(
-                function() {
-
-                    mapaAgresor.invalidateSize();
-
-                },
-                200
-            );
-
-        } else {
-
-            datosDomicilioAgresor.style.display =
-                'none';
+<option value="PRESUNTA_VICTIMA">
+Presunta víctima
+</option>
 
 
-            document.getElementById(
-                'id_direccion_agresor'
-            ).value = '';
+<option value="DENUNCIADO">
+Denunciado
+</option>
 
 
-            document.getElementById(
-                'id_latitud_agresor'
-            ).value = '';
+<option value="PARTICIPANTE">
+Participante
+</option>
 
 
-            document.getElementById(
-                'id_longitud_agresor'
-            ).value = '';
+</select>
 
-        }
+
+
+<div 
+class="mapa-persona"
+style="display:none;height:300px;margin-top:15px;">
+</div>
+
+
+
+<input 
+type="hidden"
+name="latitud_persona"
+class="latitud-persona"
+>
+
+
+<input 
+type="hidden"
+name="longitud_persona"
+class="longitud-persona"
+>
+
+
+<button
+type="button"
+class="btn btn-danger mt-2"
+onclick="this.parentElement.remove()"
+>
+
+❌ Eliminar persona
+
+</button>
+
+
+
+`;
+
+
+document
+.getElementById("personas")
+.appendChild(div);
+
+
+}
+
+
+
+
+
+
+function mostrarMapa(select){
+
+    let persona = select.closest(".persona");
+
+    let mapaDiv = persona.querySelector(".mapa-persona");
+
+    let latInput = persona.querySelector(".latitud-persona");
+
+    let lngInput = persona.querySelector(".longitud-persona");
+
+
+    /* Denunciante no tiene mapa */
+
+    if(select.value=="DENUNCIANTE"){
+
+    mapaDiv.style.display="none";
+
+    latInput.value="";
+    lngInput.value="";
+
+    let mapa=mapasPersonas.get(persona);
+
+    if(mapa && mapa.marcador){
+
+        mapa.removeLayer(mapa.marcador);
+
+        mapa.marcador=null;
 
     }
 
+    return;
 
-    estadoUbicacion.addEventListener(
-        'change',
-        actualizarUbicacionAgresor
-    );
+}
 
 
-    actualizarUbicacionAgresor();
+    mapaDiv.style.display="block";
+
+
+    /*=========================
+      OBTENER O CREAR MAPA
+    =========================*/
+
+    let mapa = mapasPersonas.get(persona);
+
+    if(!mapa){
+
+        mapa = L.map(mapaDiv).setView(
+            [-12.0464,-77.0428],
+            13
+        );
+
+        L.tileLayer(
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+        ).addTo(mapa);
+
+        mapa.marcador = null;
+
+        mapa.on("click",function(e){
+
+            latInput.value = e.latlng.lat;
+
+            lngInput.value = e.latlng.lng;
+
+
+            if(mapa.marcador){
+
+                mapa.removeLayer(
+                    mapa.marcador
+                );
+
+            }
+
+            let html = "";
+
+
+            if(select.value=="PRESUNTA_VICTIMA"){
+
+                html=`
+                <div style="
+                    width:25px;
+                    height:25px;
+                    border-radius:50%;
+                    background:#0066ff;
+                    border:3px solid white;
+                    box-shadow:0 0 5px #555;
+                "></div>
+                `;
+
+            }
+
+            else if(select.value=="DENUNCIADO"){
+
+                html=`
+                <div style="
+                    width:25px;
+                    height:25px;
+                    border-radius:50%;
+                    background:#8B4513;
+                    border:3px solid white;
+                    box-shadow:0 0 5px #555;
+                "></div>
+                `;
+
+            }
+
+            else if(select.value=="PARTICIPANTE"){
+
+                html=`
+                <div style="
+                    width:25px;
+                    height:25px;
+                    border-radius:50%;
+                    background:linear-gradient(
+                        90deg,
+                        #0066ff 50%,
+                        #8B4513 50%
+                    );
+                    border:3px solid white;
+                    box-shadow:0 0 5px #555;
+                "></div>
+                `;
+
+            }
+
+
+            let icono=L.divIcon({
+
+                className:"",
+
+                html:html,
+
+                iconSize:[25,25],
+
+                iconAnchor:[12,12]
+
+            });
+
+
+            mapa.marcador=L.marker(
+
+                e.latlng,
+
+                {
+                    icon:icono
+                }
+
+            ).addTo(mapa);
+
+        });
+
+        mapasPersonas.set(
+            persona,
+            mapa
+        );
+
+    }
+    
+
+    else{
+
+        setTimeout(function(){
+
+            mapa.invalidateSize();
+
+        },100);
+
+    }
+
+}
 
 </script>
+
+
 
 {% endblock %}

@@ -501,6 +501,25 @@ DESPLEGABLE DE BÚSQUEDA
     color: #1B5E20;
 }
 
+.marcador-mixto{
+
+width:25px;
+height:25px;
+
+background:linear-gradient(
+90deg,
+blue 50%,
+brown 50%
+);
+
+border-radius:50%;
+
+border:3px solid white;
+
+box-shadow:0 0 5px #555;
+
+}
+
 </style>
 
 </head>
@@ -873,6 +892,20 @@ return marcador;
 
 /*=========================
 UBICACIONES PRELIMINARES
+
+MAPA PRINCIPAL:
+
+🔵 AZUL:
+PRESUNTA VÍCTIMA
+→ SE MUESTRA
+
+🟣 MORADO:
+PRESUNTA VÍCTIMA Y AGRESOR
+→ SE MUESTRA
+
+🟤 MARRÓN:
+AGRESOR SOLAMENTE
+→ NO SE MUESTRA
 =========================*/
 
 fetch("/ubicaciones-preliminares-json/")
@@ -881,83 +914,399 @@ fetch("/ubicaciones-preliminares-json/")
 
 .then(data => {
 
-    L.geoJSON(data, {
 
-        pointToLayer:function(feature, latlng){
+    /*=================================
+    FILTRAR LOS REGISTROS
 
-            let p = feature.properties;
+    SE MUESTRAN:
 
+    - AZUL
+    - AMBOS / MORADO
 
-            // BENEFICIARIA PRELIMINAR = AZUL
-            if(p["tipo"]=="BENEFICIARIA"){
+    NO SE MUESTRA:
 
-                return L.circleMarker(
-                    latlng,
-                    {
-                        radius:8,
-                        fillColor:"#0066ff",
-                        color:"#003399",
-                        weight:1,
-                        fillOpacity:0.9
-                    }
-                );
+    - MARRÓN
+    =================================*/
 
-            }
+    data.features = data.features.filter(
 
+        function(feature){
 
-            // AGRESOR PRELIMINAR NO SE MUESTRA EN MAPA PRINCIPAL
-            if(p["tipo"]=="AGRESOR"){
+            return (
 
-                return null;
+                feature.properties.COLOR === "AZUL"
 
-            }
+                ||
 
-        },
-
-
-        onEachFeature:function(feature,layer){
-
-            let p = feature.properties;
-
-
-            layer.bindPopup(
-
-                "<b>🔵 Registro preliminar</b><br><br>"+
-
-                "<b>Beneficiaria:</b> "+
-                (p["BENEFICIARIA"] || "")+
-                "<br>"+
-
-                "<b>DNI:</b> "+
-                (p["DNI"] || "")+
-                "<br><br>"+
-
-                "<b>🟤 Agresor:</b> "+
-                (p["AGRESOR"] || "")+
-                "<br>"+
-
-                "<b>DNI Agresor:</b> "+
-                (p["DNI AGRESOR"] || "")+
-                "<br>"+
-
-                "<b>Dirección Agresor:</b> "+
-                (p["DIRECCION AGRESOR"] || "")+
-
-                "<br><br>"+
-
-                "<a href='/convertir-preliminar-caso/"+p["id"]+"/'>"+
-                "➡️ Convertir en Caso"+
-                "</a>"
+                feature.properties.COLOR === "AMBOS"
 
             );
 
         }
 
+    );
 
-    }).addTo(map);
+
+    /*=================================
+    CREAR LA CAPA DE UBICACIONES
+    =================================*/
+
+    let capaPreliminar = L.geoJSON(
+
+        data,
+
+        {
 
 
-});
+            /*=========================
+            CREAR LOS MARCADORES
+            =========================*/
+
+            pointToLayer:function(
+
+                feature,
+
+                latlng
+
+            ){
+
+
+                let color = "#0066ff";
+
+
+                /*-------------------------
+                SI ES VÍCTIMA Y AGRESOR
+
+                COLOR MORADO
+                -------------------------*/
+
+                if(
+
+                    feature.properties.COLOR
+                    === "AMBOS"
+
+                ){
+
+                    color = "#800080";
+
+                }
+
+
+                /*-------------------------
+                CREAR EL PUNTO
+                -------------------------*/
+
+                return L.circleMarker(
+
+                    latlng,
+
+                    {
+
+                        radius:12,
+
+                        fillColor:color,
+
+                        color:"#ffffff",
+
+                        weight:2,
+
+                        fillOpacity:0.9
+
+                    }
+
+                );
+
+            },
+
+
+            /*=========================
+            INFORMACIÓN DEL PUNTO
+            =========================*/
+
+            onEachFeature:function(
+
+                feature,
+
+                layer
+
+            ){
+
+
+                let p = feature.properties;
+
+
+                /*-------------------------
+                ROLES
+                -------------------------*/
+
+                let roles = "No registrado";
+
+
+                if(
+
+                    p.ROLES
+
+                    &&
+
+                    Array.isArray(
+                        p.ROLES
+                    )
+
+                    &&
+
+                    p.ROLES.length > 0
+
+                ){
+
+                    roles = p.ROLES.join(
+
+                        ", "
+
+                    );
+
+                }
+
+
+                /*-------------------------
+                TÍTULO DEL POPUP
+                -------------------------*/
+
+                let titulo =
+
+                    "🔵 PRESUNTA VÍCTIMA";
+
+
+                let colorTitulo =
+
+                    "#0066ff";
+
+
+                /*-------------------------
+                SI TIENE LOS DOS ROLES
+                -------------------------*/
+
+                if(
+
+                    p.COLOR === "AMBOS"
+
+                ){
+
+                    titulo =
+
+                        "🟣 PRESUNTA VÍCTIMA Y AGRESOR";
+
+
+                    colorTitulo =
+
+                        "#800080";
+
+                }
+
+
+                /*-------------------------
+                MOSTRAR INFORMACIÓN
+                -------------------------*/
+
+                layer.bindPopup(
+
+                    "<div " +
+
+                    "style=" +
+
+                    "'min-width:250px;" +
+
+                    "font-family:Arial;'" +
+
+                    ">" +
+
+
+                    /* TÍTULO */
+
+                    "<b " +
+
+                    "style=" +
+
+                    "'color:" +
+
+                    colorTitulo +
+
+                    ";font-size:16px;'" +
+
+                    ">" +
+
+                    titulo +
+
+                    "</b>" +
+
+
+                    /* LÍNEA */
+
+                    "<hr " +
+
+                    "style=" +
+
+                    "'margin:8px 0;'" +
+
+                    ">" +
+
+
+                    /* NOMBRE */
+
+                    "<b>Nombre:</b>" +
+
+                    "<br>" +
+
+                    (
+
+                        p.NOMBRE
+
+                        ||
+
+                        "No registrado"
+
+                    ) +
+
+
+                    "<br><br>" +
+
+
+                    /* DNI */
+
+                    "<b>DNI:</b>" +
+
+                    "<br>" +
+
+                    (
+
+                        p.DNI
+
+                        ||
+
+                        "No registrado"
+
+                    ) +
+
+
+                    "<br><br>" +
+
+
+                    /* DIRECCIÓN */
+
+                    "<b>Dirección:</b>" +
+
+                    "<br>" +
+
+                    (
+
+                        p.DIRECCION
+
+                        ||
+
+                        "No registrado"
+
+                    ) +
+
+
+                    "<br><br>" +
+
+
+                    /* TELÉFONO */
+
+                    "<b>Teléfono:</b>" +
+
+                    "<br>" +
+
+                    (
+
+                        p.TELEFONO
+
+                        ||
+
+                        "No registrado"
+
+                    ) +
+
+
+                    "<br><br>" +
+
+
+                    /* ROLES */
+
+                    "<b>Rol(es):</b>" +
+
+                    "<br>" +
+
+                    roles +
+
+
+                    "</div>"
+
+                );
+
+            }
+
+        }
+
+    );
+
+
+    /*=================================
+    AGREGAR LA CAPA AL MAPA
+    =================================*/
+
+    capaPreliminar.addTo(
+
+        map
+
+    );
+
+
+    /*=================================
+    CENTRAR EL MAPA
+
+    SOLO SI HAY PUNTOS
+    =================================*/
+
+    if(
+
+        capaPreliminar
+
+        .getLayers()
+
+        .length > 0
+
+    ){
+
+        map.fitBounds(
+
+            capaPreliminar
+
+            .getBounds()
+
+        );
+
+    }
+
+
+})
+
+.catch(
+
+    function(error){
+
+        console.error(
+
+            "Error al cargar " +
+
+            "las ubicaciones preliminares:",
+
+            error
+
+        );
+
+    }
+
+);
 
 
 /*=========================

@@ -1,7 +1,15 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Caso, Region, Provincia, Distrito, UbicacionPreliminar
 
+from .models import (
+    Caso,
+    Region,
+    Provincia,
+    Distrito,
+    UbicacionPreliminar,
+    PersonaPreliminar,
+    RolPersonaPreliminar
+)
 
 class CasoForm(forms.ModelForm):
 
@@ -374,47 +382,27 @@ class CasoForm(forms.ModelForm):
 class UbicacionPreliminarForm(forms.ModelForm):
 
     class Meta:
+
         model = UbicacionPreliminar
 
         fields = [
-            "beneficiaria",
-            "dni_beneficiaria",
-            "domicilio",
-            "referencia",
-
+            "tipo_registro",
+            "tipo_intervencion",
             "latitud",
             "longitud",
-
-            "agresor",
-            "dni_agresor",
-            "direccion_agresor",
-            "estado_ubicacion_agresor",
-
-            "latitud_agresor",
-            "longitud_agresor",
-    ]
+        ]
 
         widgets = {
 
-            "beneficiaria": forms.TextInput(
-                attrs={"class": "form-control"}
-            ),
-
-            "dni_beneficiaria": forms.TextInput(
-                attrs={"class": "form-control"}
-            ),
-
-            "domicilio": forms.Textarea(
+            "tipo_registro": forms.Select(
                 attrs={
-                    "class": "form-control",
-                    "rows": 2
+                    "class": "form-control"
                 }
             ),
 
-            "referencia": forms.Textarea(
+            "tipo_intervencion": forms.Select(
                 attrs={
-                    "class":"form-control",
-                    "rows":2
+                    "class": "form-control"
                 }
             ),
 
@@ -422,33 +410,79 @@ class UbicacionPreliminarForm(forms.ModelForm):
 
             "longitud": forms.HiddenInput(),
 
-            "agresor": forms.TextInput(),
+        }
 
+class PersonaPreliminarForm(forms.ModelForm):
 
-            "agresor": forms.TextInput(
-                attrs={"class": "form-control"}
-            ),
+    class Meta:
 
-            "dni_agresor": forms.TextInput(
-                attrs={"class": "form-control"}
-            ),
+        model = PersonaPreliminar
 
-            "direccion_agresor": forms.Textarea(
+        fields = [
+            "nombres",
+            "dni",
+            "telefono",
+            "direccion",
+            "latitud",
+            "longitud",
+            "requiere_ubicacion",
+        ]
+
+        widgets = {
+
+            "nombres": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "rows": 2
+                    "placeholder": "Nombres completos"
                 }
             ),
 
-            "estado_ubicacion_agresor": forms.Select(
-                attrs={"class": "form-control"}
+            "dni": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "DNI"
+                }
+            ),
+
+            "telefono": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Teléfono"
+                }
+            ),
+
+            "direccion": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Dirección"
+                }
             ),
 
             "latitud": forms.HiddenInput(),
 
             "longitud": forms.HiddenInput(),
 
-            "latitud_agresor": forms.HiddenInput(),
+            "requiere_ubicacion": forms.CheckboxInput(),
 
-            "longitud_agresor": forms.HiddenInput(),
+        }
+
+
+class RolPersonaPreliminarForm(forms.ModelForm):
+
+    class Meta:
+
+        model = RolPersonaPreliminar
+
+        fields = [
+            "rol"
+        ]
+
+        widgets = {
+
+            "rol": forms.Select(
+                attrs={
+                    "class": "form-control"
+                }
+            )
+
         }

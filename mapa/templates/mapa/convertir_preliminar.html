@@ -1,0 +1,265 @@
+{% extends "mapa/base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>Conversión del registro preliminar</h2>
+
+<div class="alert alert-warning">
+
+⚠️ Este proceso generará un caso definitivo.
+Revise correctamente la identificación de beneficiaria y agresor antes de confirmar.
+
+</div>
+
+
+<p>
+Seleccione cómo desea convertir cada persona.
+</p>
+
+
+<form method="POST">
+
+{% csrf_token %}
+
+
+<div class="seccion">
+
+
+<h4>👥 Personas involucradas</h4>
+
+
+<table class="table table-bordered">
+
+
+<thead>
+
+<tr>
+
+<th>
+Persona
+</th>
+
+
+<th>
+Roles preliminares
+</th>
+
+
+<th>
+Convertir como
+</th>
+
+
+</tr>
+
+</thead>
+
+
+
+<tbody>
+
+
+{% for persona in personas %}
+
+
+<tr>
+
+
+<td>
+
+
+<strong>
+{{ persona.nombres }}
+</strong>
+
+
+<br>
+
+
+DNI:
+{{ persona.dni|default:"No registrado" }}
+
+
+<br>
+
+
+Teléfono:
+{{ persona.telefono|default:"No registrado" }}
+
+
+<br>
+
+
+Dirección:
+{{ persona.direccion|default:"No registrada" }}
+
+
+</td>
+
+
+
+<td>
+
+
+{% for rol in persona.roles.all %}
+
+{{ rol.get_rol_display }}
+
+<br>
+
+{% empty %}
+
+Sin rol asignado
+
+{% endfor %}
+
+
+</td>
+
+
+
+
+<td>
+
+
+<label>
+
+
+<input
+
+type="radio"
+
+name="persona_{{ persona.id }}"
+
+value="BENEFICIARIO"
+
+>
+
+
+Beneficiario
+
+
+</label>
+
+
+
+<br>
+
+
+
+<label>
+
+
+<input
+
+type="radio"
+
+name="persona_{{ persona.id }}"
+
+value="AGRESOR"
+
+>
+
+
+Agresor
+
+
+</label>
+
+
+
+<br>
+
+
+
+<label>
+
+
+<input
+
+type="radio"
+
+name="persona_{{ persona.id }}"
+
+value="AMBOS"
+
+>
+
+
+Beneficiario y Agresor
+
+
+</label>
+
+
+
+</td>
+
+
+</tr>
+
+
+
+{% endfor %}
+
+
+
+</tbody>
+
+
+
+</table>
+
+
+
+<br>
+
+
+
+<button
+
+class="btn btn-success"
+
+type="submit"
+
+name="confirmar_conversion"
+
+value="SI"
+
+onclick="return confirm('¿Está seguro de convertir este registro preliminar en un caso definitivo? Esta acción generará un nuevo caso y no podrá revertirse automáticamente.');"
+
+>
+
+
+✅ Confirmar conversión
+
+
+</button>
+
+
+
+<a
+
+href="{% url 'gestion_casos' %}"
+
+class="btn btn-secondary"
+
+>
+
+
+Cancelar
+
+
+</a>
+
+
+
+</form>
+
+
+</div>
+
+
+{% endblock %}
