@@ -201,6 +201,16 @@
 
     {{ form.non_field_errors }}
 
+    {% if form.errors %}
+
+    <div class="errores">
+
+        {{ form.errors }}
+
+    </div>
+
+{% endif %}
+
     <!-- DATOS DE LA PERSONA BENEFICIARIA -->
 
     <section class="seccion">
@@ -569,7 +579,9 @@
 
         {{ form.estado }}
 
-    </div>
+</div>
+
+</div>
 
 </section>
 

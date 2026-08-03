@@ -1341,9 +1341,14 @@ def ubicaciones_preliminares_json(request):
 @login_required
 def editar_caso(request, id):
 
-    caso = get_object_or_404(Caso, pk=id)
+    caso = get_object_or_404(
+        Caso,
+        pk=id
+    )
+
 
     # Marcar como leído el mensaje del usuario para este caso
+
     Mensaje.objects.filter(
         destinatario=request.user,
         caso=caso,
@@ -1353,6 +1358,7 @@ def editar_caso(request, id):
         fecha_lectura=timezone.now()
     )
 
+
     es_admin = (
         request.user.is_superuser
         or request.user.groups.filter(
@@ -1360,47 +1366,70 @@ def editar_caso(request, id):
         ).exists()
     )
 
+
     es_jefe = request.user.groups.filter(
         name="Jefe_MP"
     ).exists()
+
 
     es_usuario = request.user.groups.filter(
         name="Usuario_MP"
     ).exists()
 
+
     es_efectivo_comfamea = request.user.groups.filter(
         name="Efectivo_COMFAMEA"
     ).exists()
 
-    es_usuario_investigacion = request.user.groups.filter(
-        name="Usuario_Investigacion"
-    ).exists()
 
     es_responsable = (
         caso.responsable == request.user
     )
 
+
+    # Efectivo COMFAMEA solo visualiza
+
     if es_efectivo_comfamea:
-        return redirect("gestion_casos")
-    
-    # Administrador y Jefe siempre pueden editar
+
+        return redirect(
+            "gestion_casos"
+        )
+
+
+    # Administrador y Jefe siempre editan
+
     if es_admin or es_jefe:
-        pass
 
-    # El responsable puede editar si tiene autorización
+        puede_editar = True
+
+
+    # Responsable con autorización aprobada
+
     elif es_responsable and caso.edicion_autorizada:
-        pass
 
-    # Si llegó desde un mensaje que le pertenece, se habilita la primera edición
+        puede_editar = True
+
+
+    # Responsable sin autorización solicita permiso
+
     elif es_responsable:
 
-        return redirect("solicitar_modificacion", id=caso.id)
+        return redirect(
+            "solicitar_modificacion",
+            id=caso.id
+        )
+
 
     else:
 
-        return redirect("gestion_casos")
+        return redirect(
+            "gestion_casos"
+        )
+
+
 
     if request.method == "POST":
+
 
         form = CasoForm(
             request.POST,
@@ -1408,53 +1437,109 @@ def editar_caso(request, id):
             usuario=request.user
         )
 
+
         if form.is_valid():
 
-            caso = form.save(commit=False)
+
+            caso = form.save(
+                commit=False
+            )
+
+
+            # Actualizar nombre del efectivo responsable
 
             if caso.responsable:
-                nombre = f"{caso.responsable.first_name} {caso.responsable.last_name}".strip()
-                caso.efectivo = nombre if nombre else caso.responsable.username
 
-            caso.save()
+                nombre = (
+                    f"{caso.responsable.first_name} "
+                    f"{caso.responsable.last_name}"
+                ).strip()
+
+
+                caso.efectivo = (
+                    nombre
+                    if nombre
+                    else caso.responsable.username
+                )
+
+
+
+            # Consumir autorización del responsable
 
             if es_responsable:
 
                 caso.edicion_autorizada = False
-                caso.save()
 
-            elif es_usuario:
+
+
+            caso.save()
+
+
+            form.save_m2m()
+
+
+
+            # Marcar solicitud aprobada como utilizada
+
+            if es_usuario:
 
                 solicitud = SolicitudModificacion.objects.filter(
+
                     caso=caso,
+
                     solicitante=request.user,
+
                     estado="APROBADA"
-                ).order_by("-fecha_autorizacion").first()
+
+                ).order_by(
+                    "-fecha_autorizacion"
+                ).first()
+
+
 
                 if solicitud:
 
                     solicitud.estado = "UTILIZADA"
+
                     solicitud.fecha_utilizacion = timezone.now()
+
                     solicitud.save()
 
-                    caso.edicion_autorizada = False
-                    caso.save()
 
-            return redirect("gestion_casos")
+
+            return redirect(
+                "gestion_casos"
+            )
+
+
 
     else:
 
+
         form = CasoForm(
+
             instance=caso,
+
             usuario=request.user
+
         )
 
+
+
     return render(
+
         request,
+
         "mapa/nuevo_caso.html",
+
         {
-            "form": form
+
+            "form": form,
+
+            "caso": caso
+
         }
+
     )
 
 @login_required

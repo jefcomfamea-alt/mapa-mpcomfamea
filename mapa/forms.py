@@ -124,6 +124,9 @@ class CasoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["comisaria_medida"].label = "Comisaría del sector"
 
+        self.fields["estado_ubicacion_agresor"].required = False
+        self.fields["estado_ubicacion_agresor"].initial = "NO UBICADO"
+
                 # ==================================
         # UBIGEOS EN CASCADA
         # ==================================
@@ -376,6 +379,9 @@ class CasoForm(forms.ModelForm):
             "motivo_notificacion_agresor_pendiente",
                 "Debe indicar el motivo de la notificación pendiente."
             )
+        # Permitir agresor sin ubicación
+        if not cleaned_data.get("estado_ubicacion_agresor"):
+                cleaned_data["estado_ubicacion_agresor"] = "NO UBICADO"
 
         return cleaned_data
     
