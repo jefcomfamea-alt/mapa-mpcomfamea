@@ -199,7 +199,11 @@ urlpatterns = [
         name="desactivar_usuario"
     ),
 
-
+    path(
+        "convertir-preliminar-caso/<int:id>/",
+        views.convertir_preliminar_caso,
+        name="convertir_preliminar_caso",
+    ),
 
     # Convertir agresor preliminar
     path(
@@ -207,5 +211,12 @@ urlpatterns = [
         views.convertir_agresor,
         name="convertir_agresor"
     ),
+
+    path(
+        "seleccionar-rol-preliminar/<int:id>/",
+        views.seleccionar_rol_preliminar,
+        name="seleccionar_rol_preliminar"
+    ),
+
 
 ]

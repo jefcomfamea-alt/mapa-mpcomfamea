@@ -294,8 +294,60 @@ def desactivar_usuario(request, pk):
     return redirect("administrar_usuarios")
 
 @login_required
-@grupo_requerido("Administrador", "Jefe_MP", "Usuario_MP")
+@grupo_requerido("Administrador", "Jefe_MP")
+def seleccionar_rol_preliminar(request, id):
+
+    persona = get_object_or_404(
+        PersonaPreliminar,
+        id=id
+    )
+
+    ubicacion = persona.ubicacion_preliminar
+
+
+    personas = ubicacion.personas.prefetch_related(
+        "roles"
+    ).all()
+
+
+
+    if request.method == "POST":
+
+        rol = request.POST.get("rol")
+
+        if rol:
+
+            return redirect(
+                f"/nuevo-caso/?preliminar={id}&rol={rol}"
+            )
+
+
+    return render(
+        request,
+        "mapa/seleccionar_rol_preliminar.html",
+        {
+            "ubicacion": ubicacion,
+            "personas": personas,
+            "persona_seleccionada": persona
+        }
+    )
+
+@login_required
+@grupo_requerido("Administrador", "Jefe_MP")
 def nuevo_caso(request):
+
+    preliminar_id = request.GET.get("preliminar")
+    rol = request.GET.get("rol")
+
+    preliminar = None
+
+    if preliminar_id:
+
+        preliminar = get_object_or_404(
+            PersonaPreliminar,
+            id=preliminar_id
+        )
+
 
     if request.method == "POST":
 
@@ -304,60 +356,238 @@ def nuevo_caso(request):
             usuario=request.user
         )
 
+
         if form.is_valid():
 
             caso = form.save(commit=False)
 
+
+            # =====================================
+            # CARGAR DATOS DESDE PERSONA PRELIMINAR
+            # =====================================
+
+            if preliminar:
+
+
+                if rol == "beneficiaria":
+
+                    caso.beneficiario = preliminar.nombres
+                    caso.dni_beneficiario = preliminar.dni
+                    caso.telefono = preliminar.telefono
+                    caso.domicilio = preliminar.direccion
+
+
+                elif rol == "agresora":
+
+                    caso.agresor = preliminar.nombres
+                    caso.dni_agresor = preliminar.dni
+                    caso.direccion_agresor = preliminar.direccion
+
+
+                elif rol == "ambas":
+
+                    caso.beneficiario = preliminar.nombres
+                    caso.dni_beneficiario = preliminar.dni
+
+                    caso.agresor = preliminar.nombres
+                    caso.dni_agresor = preliminar.dni
+
+
+                caso.latitud = preliminar.latitud
+                caso.longitud = preliminar.longitud
+
+
+
+            # =====================================
+            # ASIGNACIÓN DE EFECTIVO RESPONSABLE
+            # =====================================
+
             if caso.responsable:
 
-                nombre = f"{caso.responsable.first_name} {caso.responsable.last_name}".strip()
-                caso.efectivo = nombre if nombre else caso.responsable.username
+                nombre = (
+                    f"{caso.responsable.first_name} "
+                    f"{caso.responsable.last_name}"
+                ).strip()
+
+
+                caso.efectivo = (
+                    nombre
+                    if nombre
+                    else caso.responsable.username
+                )
+
 
                 caso.edicion_autorizada = False
 
+
+
             caso.save()
 
+
             form.save_m2m()
+
+
+
+            # =====================================
+            # MARCAR PERSONA PRELIMINAR CONVERTIDA
+            # =====================================
+
+            if preliminar:
+
+                preliminar.convertida = True
+
+                if rol:
+                    preliminar.condicion_actual = rol.upper()
+
+                preliminar.fecha_actualizacion_condicion = (
+                    timezone.now()
+                )
+
+                preliminar.save()
+
+
+
+            # =====================================
+            # NOTIFICAR RESPONSABLE
+            # =====================================
 
             if caso.responsable:
 
                 Mensaje.objects.create(
+
                     destinatario=caso.responsable,
+
                     caso=caso,
+
                     asunto="🔔 Nuevo caso asignado",
+
                     contenido=(
+
                         f"Se le comunica que se le ha asignado "
                         f"el expediente N.° "
                         f"{caso.expediente or caso.folder} "
                         f"para realizar la ejecución y seguimiento "
                         f"de las medidas de protección."
+
                     )
+
                 )
+
 
             return redirect("inicio")
 
+
         else:
+
             print(form.errors)
 
+
+
     else:
+
 
         lat = request.GET.get("lat")
         lng = request.GET.get("lng")
 
+
+        datos_iniciales = {
+
+            "latitud": lat,
+            "longitud": lng,
+
+        }
+
+
+
+        # =====================================
+        # CARGAR DATOS AL FORMULARIO
+        # =====================================
+
+        if preliminar:
+
+
+            if rol == "beneficiaria":
+
+                datos_iniciales.update({
+
+                    "beneficiario": preliminar.nombres,
+
+                    "dni_beneficiario": preliminar.dni,
+
+                    "telefono": preliminar.telefono,
+
+                    "domicilio": preliminar.direccion,
+
+                })
+
+
+
+            elif rol == "agresora":
+
+                datos_iniciales.update({
+
+                    "agresor": preliminar.nombres,
+
+                    "dni_agresor": preliminar.dni,
+
+                    "direccion_agresor": preliminar.direccion,
+
+                })
+
+
+
+            elif rol == "ambas":
+
+                datos_iniciales.update({
+
+                    "beneficiario": preliminar.nombres,
+
+                    "dni_beneficiario": preliminar.dni,
+
+                    "agresor": preliminar.nombres,
+
+                    "dni_agresor": preliminar.dni,
+
+                })
+
+
+
+            datos_iniciales.update({
+
+                "latitud": preliminar.latitud,
+
+                "longitud": preliminar.longitud,
+
+            })
+
+
+
         form = CasoForm(
+
             usuario=request.user,
-            initial={
-                "latitud": lat,
-                "longitud": lng,
-            }
+
+            initial=datos_iniciales
+
         )
 
+
+
     return render(
+
         request,
+
         "mapa/nuevo_caso.html",
+
         {
-            "form": form
+
+            "form": form,
+
+            "preliminar": preliminar,
+
+            "rol": rol,
+
         }
+
     )
 
 @login_required
@@ -470,141 +700,359 @@ def convertir_preliminar_caso(request, id):
         pk=id
     )
 
+
+    if ubicacion.estado == "CONVERTIDA":
+
+        return redirect(
+            "gestion_casos"
+        )
+
+
     personas = ubicacion.personas.prefetch_related(
         "roles"
     ).all()
 
 
-    if request.method == "POST" and request.POST.get("confirmar_conversion") == "SI":
+    if (
+        request.method == "POST"
+        and request.POST.get("confirmar_conversion") == "SI"
+    ):
 
-        beneficiario = None
+
+        beneficiarios = []
+
         agresores = []
+
+        primer_agresor_registro = None
+
 
 
         # =====================================
-        # LEER SELECCIÓN DEL USUARIO
+        # CLASIFICAR PERSONAS
         # =====================================
 
         for persona in personas:
+
 
             seleccion = request.POST.get(
                 f"persona_{persona.id}"
             )
 
 
-            if seleccion == "BENEFICIARIO":
+            if seleccion not in [
+                "BENEFICIARIO",
+                "AGRESOR",
+                "AMBOS"
+            ]:
 
-                if beneficiario is None:
-                    beneficiario = persona
-
-
-            elif seleccion == "AGRESOR":
-
-                agresores.append(persona)
+                continue
 
 
-            elif seleccion == "AMBOS":
 
-                if beneficiario is None:
-                    beneficiario = persona
+            persona.condicion_actual = seleccion
 
-                agresores.append(persona)
+            persona.rol_confirmado = True
+
+            persona.convertida = True
+
+            persona.fecha_actualizacion_condicion = (
+                timezone.now()
+            )
+
+            persona.motivo_actualizacion_condicion = (
+                request.POST.get(
+                    "motivo_condicion",
+                    ""
+                ).strip()
+            )
+
+            persona.save()
+
+
+
+            if seleccion in [
+                "BENEFICIARIO",
+                "AMBOS"
+            ]:
+
+                beneficiarios.append(
+                    persona
+                )
+
+
+
+            if seleccion in [
+                "AGRESOR",
+                "AMBOS"
+            ]:
+
+                agresores.append(
+                    persona
+                )
 
 
 
         # =====================================
-        # CREAR CASO DEFINITIVO
+        # VALIDAR BENEFICIARIO
+        # =====================================
+
+        if not beneficiarios:
+
+
+            return render(
+
+                request,
+
+                "mapa/convertir_preliminar.html",
+
+                {
+
+                    "ubicacion": ubicacion,
+
+                    "personas": personas,
+
+                    "error":
+                    "Debe seleccionar por lo menos una persona beneficiaria."
+
+                }
+
+            )
+
+
+
+        alcance_medida = request.POST.get(
+            "alcance_medida"
+        )
+
+
+        if alcance_medida not in [
+            "UNA_PERSONA",
+            "AMBAS_PERSONAS"
+        ]:
+
+            alcance_medida = "UNA_PERSONA"
+
+
+
+        beneficiario_principal = (
+            beneficiarios[0]
+        )
+
+
+
+        # =====================================
+        # CREAR CASO
         # =====================================
 
         caso = Caso.objects.create(
 
             beneficiario=(
-                beneficiario.nombres
-                if beneficiario
-                else ""
+                beneficiario_principal.nombres
             ),
 
             dni_beneficiario=(
-                beneficiario.dni
-                if beneficiario
-                else ""
+                beneficiario_principal.dni or ""
             ),
 
             domicilio=(
-                beneficiario.direccion
-                if beneficiario
-                else ""
+                beneficiario_principal.direccion or ""
             ),
 
-            latitud=ubicacion.latitud,
+            telefono=(
+                beneficiario_principal.telefono or ""
+            ),
 
-            longitud=ubicacion.longitud,
+            latitud=(
+                beneficiario_principal.latitud
+                if beneficiario_principal.latitud is not None
+                else ubicacion.latitud
+            ),
+
+            longitud=(
+                beneficiario_principal.longitud
+                if beneficiario_principal.longitud is not None
+                else ubicacion.longitud
+            ),
 
             estado="ACTIVO",
 
-            fecha_registro=timezone.now().date()
+            fecha_registro=(
+                timezone.now().date()
+            )
 
         )
 
-
-        # =====================================
-        # CREAR AGRESORES
+                # =====================================
+        # CREAR O VINCULAR AGRESOR(ES)
         # =====================================
 
         for persona in agresores:
 
-            Agresor.objects.create(
 
-                nombres=persona.nombres,
+            agresor_registro, creado = (
+                Agresor.objects.get_or_create(
 
-                dni=persona.dni,
+                    dni=persona.dni,
 
-                alias="",
+                    defaults={
 
-                domicilio=persona.direccion,
+                        "nombres": (
+                            persona.nombres
+                        ),
 
-                latitud=(
-                    persona.latitud
-                    if persona.latitud
-                    else ubicacion.latitud
-                ),
+                        "alias": "",
 
-                longitud=(
-                    persona.longitud
-                    if persona.longitud
-                    else ubicacion.longitud
-                ),
+                        "domicilio": (
+                            persona.direccion or ""
+                        ),
 
-                activo=True
+                        "latitud": (
+
+                            persona.latitud
+                            if persona.latitud is not None
+                            else ubicacion.latitud
+
+                        ),
+
+                        "longitud": (
+
+                            persona.longitud
+                            if persona.longitud is not None
+                            else ubicacion.longitud
+
+                        ),
+
+                        "activo": True
+
+                    }
+
+                )
             )
 
 
 
+            # =====================================
+            # SI YA EXISTÍA ACTUALIZAR DATOS
+            # =====================================
+
+            if not creado:
+
+
+                agresor_registro.nombres = (
+                    persona.nombres
+                )
+
+
+                agresor_registro.domicilio = (
+                    persona.direccion or ""
+                )
+
+
+                agresor_registro.latitud = (
+
+                    persona.latitud
+                    if persona.latitud is not None
+                    else ubicacion.latitud
+
+                )
+
+
+                agresor_registro.longitud = (
+
+                    persona.longitud
+                    if persona.longitud is not None
+                    else ubicacion.longitud
+
+                )
+
+
+                agresor_registro.activo = True
+
+
+                agresor_registro.save()
+
+
+
+            # Guardar primer agresor encontrado
+
+            if primer_agresor_registro is None:
+
+                primer_agresor_registro = (
+                    agresor_registro
+                )
+
+
+
         # =====================================
-        # GUARDAR PRIMER AGRESOR EN CASO
+        # VINCULAR AGRESOR AL CASO
         # =====================================
 
-        if agresores:
+        if primer_agresor_registro:
 
-            agresor = agresores[0]
 
-            caso.agresor = agresor.nombres
-            caso.dni_agresor = agresor.dni
-            caso.direccion_agresor = agresor.direccion
+            caso.agresor = (
+                primer_agresor_registro.nombres
+            )
 
-            caso.latitud_agresor = agresor.latitud
-            caso.longitud_agresor = agresor.longitud
+
+            caso.dni_agresor = (
+                primer_agresor_registro.dni or ""
+            )
+
+
+            caso.direccion_agresor = (
+                primer_agresor_registro.domicilio or ""
+            )
+
+
+            caso.latitud_agresor = (
+                primer_agresor_registro.latitud
+            )
+
+
+            caso.longitud_agresor = (
+                primer_agresor_registro.longitud
+            )
+
+
+            caso.agresor_registro = (
+                primer_agresor_registro
+            )
+
 
             caso.save()
 
 
 
         # =====================================
-        # CAMBIAR ESTADO PRELIMINAR
+        # FINALIZAR CONVERSIÓN
         # =====================================
 
         ubicacion.estado = "CONVERTIDA"
+
+
+        ubicacion.alcance_medida = (
+            alcance_medida
+        )
+
+
+        ubicacion.caso_generado = (
+            caso
+        )
+
+
+        ubicacion.convertida_por = (
+            request.user
+        )
+
+
+        ubicacion.fecha_conversion = (
+            timezone.now()
+        )
+
+
         ubicacion.save()
+
 
 
         return redirect(
@@ -613,6 +1061,10 @@ def convertir_preliminar_caso(request, id):
 
 
 
+    # =====================================
+    # MOSTRAR FORMULARIO
+    # =====================================
+
     return render(
 
         request,
@@ -620,8 +1072,11 @@ def convertir_preliminar_caso(request, id):
         "mapa/convertir_preliminar.html",
 
         {
+
             "ubicacion": ubicacion,
+
             "personas": personas,
+
         }
 
     )
@@ -757,7 +1212,6 @@ def ubicaciones_preliminares_json(request):
 
     features = []
 
-
     personas = PersonaPreliminar.objects.filter(
         latitud__isnull=False,
         longitud__isnull=False,
@@ -769,7 +1223,6 @@ def ubicaciones_preliminares_json(request):
 
     for persona in personas:
 
-
         roles = list(
             persona.roles.values_list(
                 "rol",
@@ -778,51 +1231,55 @@ def ubicaciones_preliminares_json(request):
         )
 
 
-        # ==========================
-        # DETERMINAR COLOR
-        # ==========================
+        # ==================================
+        # DETERMINAR TIPO DE PERSONA
+        # ==================================
+
+        tipo_color = None
+        tipo_persona = None
 
 
         # Denunciante solo no aparece
-        if roles == ["DENUNCIANTE"]:
-
+        if (
+            "DENUNCIANTE" in roles
+            and len(roles) == 1
+        ):
             continue
 
 
-
-        # Presunta víctima + denunciado
-        if (
-            "PRESUNTA_VICTIMA" in roles
-            and "DENUNCIADO" in roles
-        ):
-
-            tipo_color = "AMBOS"
-
-
-
-        # Participante puede ser ambos
-        elif "PARTICIPANTE" in roles:
-
-            tipo_color = "AMBOS"
-
-
-
-        # Denunciado = agresor
-        elif "DENUNCIADO" in roles:
-
-            tipo_color = "MARRON"
-
-
-
-        # Presunta víctima sola
-        elif "PRESUNTA_VICTIMA" in roles:
+        # Presunta víctima
+        if "PRESUNTA_VICTIMA" in roles:
 
             tipo_color = "AZUL"
+            tipo_persona = "PRESUNTA VICTIMA"
 
 
 
-        else:
+        # Denunciado / presunto agresor
+        if "DENUNCIADO" in roles:
 
+            if tipo_color:
+
+                tipo_color = "AMBOS"
+                tipo_persona = "PARTICIPANTE"
+
+            else:
+
+                tipo_color = "MARRON"
+                tipo_persona = "PRESUNTO AGRESOR"
+
+
+
+        # Participante
+        if "PARTICIPANTE" in roles:
+
+            tipo_color = "AMBOS"
+            tipo_persona = "PARTICIPANTE"
+
+
+
+        # Si no tiene clasificación no mostrar
+        if not tipo_color:
             continue
 
 
@@ -831,14 +1288,16 @@ def ubicaciones_preliminares_json(request):
 
             "type": "Feature",
 
-
             "geometry": {
 
                 "type": "Point",
 
                 "coordinates": [
+
                     float(persona.longitud),
+
                     float(persona.latitud)
+
                 ]
 
             },
@@ -858,7 +1317,13 @@ def ubicaciones_preliminares_json(request):
 
                 "ROLES": roles,
 
-                "COLOR": tipo_color
+                "TIPO": tipo_persona,
+
+                "COLOR": tipo_color,
+
+                "CONDICION_ACTUAL": persona.condicion_actual,
+
+                "CONVERTIDA": persona.convertida,
 
             }
 

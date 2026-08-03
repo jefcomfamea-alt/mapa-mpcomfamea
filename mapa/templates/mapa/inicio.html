@@ -1232,14 +1232,28 @@ fetch("/ubicaciones-preliminares-json/")
 
                     /* ROLES */
 
-                    "<b>Rol(es):</b>" +
+"<b>Rol(es):</b>" +
 
-                    "<br>" +
+"<br>" +
 
-                    roles +
+roles +
 
+"<br><br>" +
 
-                    "</div>"
+"<br><br>" +
+
+"<a href='/seleccionar-rol-preliminar/" + p.id + "/' " +
+"style='display:inline-block;" +
+"background:#198754;" +
+"color:white;" +
+"padding:8px 12px;" +
+"border-radius:6px;" +
+"text-decoration:none;" +
+"font-weight:bold;'>" +
+"🟢 Convertir en Caso" +
+"</a>" +
+
+"</div>"
 
                 );
 
@@ -1651,6 +1665,7 @@ function buscarCaso(){
 
     });
 
+  
 }
 
 </script>

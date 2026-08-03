@@ -389,6 +389,11 @@ class Caso(models.Model):
 
 class UbicacionPreliminar(models.Model):
 
+    ALCANCE_MEDIDA = [
+        ("UNA_PERSONA", "Medida de protección a favor de una persona"),
+        ("AMBAS_PERSONAS", "Medida de protección a favor de ambas personas"),
+    ]
+
     TIPO_REGISTRO = [
         ("DENUNCIA", "Denuncia"),
         ("INTERVENCION", "Intervención policial"),
@@ -404,6 +409,38 @@ class UbicacionPreliminar(models.Model):
         ("CONVERTIDA", "Convertida en medida"),
         ("VENCIDA", "Vencida"),
     ]
+
+    alcance_medida = models.CharField(
+        max_length=20,
+        choices=ALCANCE_MEDIDA,
+        null=True,
+        blank=True,
+        verbose_name="Alcance de la medida de protección"
+    )
+
+    caso_generado = models.ForeignKey(
+        Caso,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ubicaciones_preliminares_origen",
+        verbose_name="Caso generado"
+    )
+
+    convertida_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ubicaciones_preliminares_convertidas",
+        verbose_name="Convertida por"
+    )
+
+    fecha_conversion = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de conversión"
+    )
 
 
     # TIPO DE REGISTRO
@@ -531,6 +568,31 @@ class PersonaPreliminar(models.Model):
 
     convertida = models.BooleanField(
         default=False
+    )
+
+    CONDICIONES_ACTUALES = [
+        ("BENEFICIARIO", "Beneficiario/a"),
+        ("AGRESOR", "Agresor/a"),
+        ("AMBOS", "Beneficiario/a y Agresor/a"),
+    ]
+
+    condicion_actual = models.CharField(
+        max_length=20,
+        choices=CONDICIONES_ACTUALES,
+        null=True,
+        blank=True,
+        verbose_name="Condición actual"
+    )
+
+    fecha_actualizacion_condicion = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de actualización de la condición"
+    )
+
+    motivo_actualizacion_condicion = models.TextField(
+        blank=True,
+        verbose_name="Motivo o disposición que sustenta la condición"
     )
   
     def __str__(self):

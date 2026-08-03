@@ -1,0 +1,101 @@
+{% extends "mapa/base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h3>
+    Seleccionar roles del nuevo caso
+</h3>
+
+<p>
+    Las personas involucradas serán convertidas al caso nuevo.
+    Seleccione el rol que tendrá cada una dentro del expediente.
+</p>
+
+
+<form method="POST" action="{% url 'convertir_preliminar_caso' ubicacion.id %}">
+
+{% csrf_token %}
+
+
+        {% for persona in personas %}
+
+<div class="card mb-3 p-3">
+
+<h5>
+{{ persona.nombres }}
+</h5>
+
+<p>
+DNI: {{ persona.dni }}
+</p>
+
+<p>
+Rol preliminar:
+
+{% for rol in persona.roles.all %}
+{{ rol.rol }}
+{% endfor %}
+
+</p>
+
+
+<label>
+<input 
+type="radio"
+name="persona_{{ persona.id }}"
+value="BENEFICIARIO"
+required>
+
+Beneficiaria/o
+</label>
+
+
+<br>
+
+
+<label>
+<input 
+type="radio"
+name="persona_{{ persona.id }}"
+value="AGRESOR">
+
+Agresora/or
+</label>
+
+
+<br>
+
+
+<label>
+<input 
+type="radio"
+name="persona_{{ persona.id }}"
+value="AMBOS">
+
+Ambos
+</label>
+
+</div>
+
+{% endfor %}
+
+
+        <button
+        type="submit"
+        name="confirmar_conversion"
+        value="SI"
+        class="btn btn-success">
+
+            🟢 Convertir en Caso
+
+        </button>
+
+
+    </form>
+
+
+</div>
+
+{% endblock %}

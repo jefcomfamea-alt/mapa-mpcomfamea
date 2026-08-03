@@ -2,112 +2,211 @@
 
 {% block content %}
 
-<div class="container mt-4">
+<style>
 
-<h2>Conversión del registro preliminar</h2>
+.contenedor-conversion{
 
-<div class="alert alert-warning">
+max-width:700px;
+margin:40px auto;
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 3px 15px rgba(0,0,0,.15);
 
-⚠️ Este proceso generará un caso definitivo.
-Revise correctamente la identificación de beneficiaria y agresor antes de confirmar.
+}
+
+
+.titulo-conversion{
+
+color:#1B5E20;
+border-bottom:4px solid #FFD700;
+padding-bottom:12px;
+margin-bottom:20px;
+
+}
+
+
+.alerta{
+
+background:#eef7ee;
+border-left:5px solid #1B5E20;
+padding:15px;
+border-radius:8px;
+margin-bottom:25px;
+
+}
+
+
+.persona-card{
+
+display:none;
+border:1px solid #ccc;
+border-radius:10px;
+padding:25px;
+
+}
+
+
+.persona-card h3{
+
+color:#1B5E20;
+
+}
+
+
+.dato{
+
+margin:8px 0;
+
+}
+
+
+.opcion{
+
+display:block;
+padding:12px;
+margin:10px 0;
+border-radius:7px;
+background:#f5f5f5;
+cursor:pointer;
+font-weight:bold;
+
+}
+
+
+.opcion:hover{
+
+background:#e8f5e9;
+
+}
+
+
+input[type=radio]{
+
+margin-right:10px;
+
+}
+
+
+.btn{
+
+border:none;
+padding:12px 25px;
+border-radius:7px;
+font-weight:bold;
+cursor:pointer;
+
+}
+
+
+.btn-continuar{
+
+background:#198754;
+color:white;
+
+}
+
+
+.btn-final{
+
+background:#1B5E20;
+color:white;
+display:none;
+
+}
+
+
+.progreso{
+
+text-align:center;
+font-weight:bold;
+color:#555;
+margin-bottom:15px;
+
+}
+
+
+</style>
+
+
+<div class="contenedor-conversion">
+
+
+<h2 class="titulo-conversion">
+
+🔄 Conversión de Ubicación Preliminar a Caso
+
+</h2>
+
+
+<div class="alerta">
+
+<strong>SIGESMP</strong><br>
+
+Clasificación obligatoria de las personas involucradas antes de generar el caso definitivo.
+
+<br><br>
+
+El sistema solicitará la condición actual de cada participante.
 
 </div>
 
 
-<p>
-Seleccione cómo desea convertir cada persona.
-</p>
 
-
-<form method="POST">
+<form method="POST" id="formConversion">
 
 {% csrf_token %}
 
 
-<div class="seccion">
+<input 
+type="hidden"
+name="confirmar_conversion"
+value="SI"
+>
 
 
-<h4>👥 Personas involucradas</h4>
-
-
-<table class="table table-bordered">
-
-
-<thead>
-
-<tr>
-
-<th>
-Persona
-</th>
-
-
-<th>
-Roles preliminares
-</th>
-
-
-<th>
-Convertir como
-</th>
-
-
-</tr>
-
-</thead>
-
-
-
-<tbody>
+<div id="contenedorPersonas">
 
 
 {% for persona in personas %}
 
 
-<tr>
+<div 
+class="persona-card"
+data-id="{{ persona.id }}"
+>
 
 
-<td>
+<div class="progreso">
+
+Persona {{ forloop.counter }} de {{ personas|length }}
+
+</div>
 
 
-<strong>
-{{ persona.nombres }}
-</strong>
+
+<h3>
+
+👤 {{ persona.nombres }}
+
+</h3>
 
 
-<br>
+<div class="dato">
 
-
-DNI:
+<b>DNI:</b>
 {{ persona.dni|default:"No registrado" }}
 
-
-<br>
-
-
-Teléfono:
-{{ persona.telefono|default:"No registrado" }}
+</div>
 
 
-<br>
+<div class="dato">
 
-
-Dirección:
-{{ persona.direccion|default:"No registrada" }}
-
-
-</td>
-
-
-
-<td>
-
+<b>Rol preliminar:</b><br>
 
 {% for rol in persona.roles.all %}
 
-{{ rol.get_rol_display }}
-
-<br>
+{{ rol.get_rol_display }}<br>
 
 {% empty %}
 
@@ -115,17 +214,20 @@ Sin rol asignado
 
 {% endfor %}
 
-
-</td>
-
+</div>
 
 
 
-<td>
+<hr>
 
 
-<label>
+<h4>
+Seleccione condición actual:
+</h4>
 
+
+
+<label class="opcion">
 
 <input
 
@@ -137,20 +239,13 @@ value="BENEFICIARIO"
 
 >
 
-
-Beneficiario
-
+👤 Beneficiario/a de medida de protección
 
 </label>
 
 
 
-<br>
-
-
-
-<label>
-
+<label class="opcion">
 
 <input
 
@@ -162,20 +257,13 @@ value="AGRESOR"
 
 >
 
-
-Agresor
-
+⚠️ Presunto agresor/a
 
 </label>
 
 
 
-<br>
-
-
-
-<label>
-
+<label class="opcion">
 
 <input
 
@@ -187,72 +275,127 @@ value="AMBOS"
 
 >
 
-
-Beneficiario y Agresor
-
+👥 Beneficiario/a y agresor/a
 
 </label>
-
-
-
-</td>
-
-
-</tr>
-
-
-
-{% endfor %}
-
-
-
-</tbody>
-
-
-
-</table>
 
 
 
 <br>
 
 
-
 <button
 
-class="btn btn-success"
+type="button"
 
-type="submit"
+class="btn btn-continuar"
 
-name="confirmar_conversion"
-
-value="SI"
-
-onclick="return confirm('¿Está seguro de convertir este registro preliminar en un caso definitivo? Esta acción generará un nuevo caso y no podrá revertirse automáticamente.');"
+onclick="continuarPersona()"
 
 >
 
-
-✅ Confirmar conversión
-
+Continuar
 
 </button>
 
 
+</div>
 
-<a
 
-href="{% url 'gestion_casos' %}"
+{% endfor %}
 
-class="btn btn-secondary"
 
+</div>
+
+
+
+<div id="datosFinales" style="display:none;">
+
+
+<hr>
+
+
+<label>
+
+🛡️ Alcance de la medida
+
+</label>
+
+
+<select
+name="alcance_medida"
+id="alcance_medida"
+required
+style="width:100%;padding:10px;margin-top:8px;"
 >
 
 
-Cancelar
+<option value="">
+
+Seleccione
+
+</option>
 
 
-</a>
+<option value="UNA_PERSONA">
+
+Medida a favor de una persona
+
+</option>
+
+
+<option value="AMBAS_PERSONAS">
+
+Medida a favor de ambas personas
+
+</option>
+
+
+</select>
+
+
+
+<br><br>
+
+
+<label>
+
+📄 Motivo o sustento de condición
+
+</label>
+
+
+<textarea
+
+name="motivo_condicion"
+
+style="width:100%;height:100px;margin-top:8px;"
+
+placeholder="Resolución, disposición fiscal, documento sustentatorio..."
+
+></textarea>
+
+
+
+<br><br>
+
+
+<button
+
+type="submit"
+
+class="btn btn-final"
+
+id="btnFinal"
+
+>
+
+✅ Confirmar conversión
+
+</button>
+
+
+</div>
 
 
 
@@ -260,6 +403,140 @@ Cancelar
 
 
 </div>
+
+
+
+<script>
+
+
+let actual = 0;
+
+
+let tarjetas = document.querySelectorAll(
+".persona-card"
+);
+
+
+
+function mostrarPersona(){
+
+
+tarjetas.forEach(t=>{
+
+t.style.display="none";
+
+});
+
+
+if(actual < tarjetas.length){
+
+
+tarjetas[actual].style.display="block";
+
+
+}
+
+
+else{
+
+
+document.getElementById(
+"datosFinales"
+).style.display="block";
+
+
+document.getElementById(
+"btnFinal"
+).style.display="inline-block";
+
+
+}
+
+
+}
+
+
+
+function continuarPersona(){
+
+
+let seleccion = tarjetas[actual]
+.querySelector(
+"input[type=radio]:checked"
+);
+
+
+if(!seleccion){
+
+
+alert(
+"Debe seleccionar la condición de esta persona antes de continuar."
+);
+
+
+return;
+
+}
+
+
+
+actual++;
+
+
+mostrarPersona();
+
+
+}
+
+
+
+mostrarPersona();
+
+
+
+document
+.getElementById("formConversion")
+.addEventListener(
+"submit",
+function(e){
+
+
+let alcance =
+document.getElementById(
+"alcance_medida"
+).value;
+
+
+
+if(alcance==""){
+
+
+e.preventDefault();
+
+
+alert(
+"Seleccione el alcance de la medida."
+);
+
+
+return;
+
+}
+
+
+
+return confirm(
+"¿Confirmar conversión del registro preliminar?"
+);
+
+
+
+}
+
+);
+
+
+</script>
 
 
 {% endblock %}
