@@ -2,99 +2,331 @@
 
 {% block content %}
 
-<div class="container mt-4">
+<style>
 
-<h3>
-    Seleccionar roles del nuevo caso
-</h3>
+    /* CONTENEDOR GENERAL */
 
-<p>
-    Las personas involucradas serán convertidas al caso nuevo.
-    Seleccione el rol que tendrá cada una dentro del expediente.
-</p>
+    .rol-contenedor {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 25px 20px 40px;
+    }
 
 
-<form method="POST" action="{% url 'seleccionar_rol_preliminar' persona_seleccionada.id %}">
+    /* TÍTULO */
 
-{% csrf_token %}
+    .rol-titulo {
+        color: #176b2c;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 12px;
+    }
+
+
+    /* DESCRIPCIÓN */
+
+    .rol-subtitulo {
+        font-size: 15px;
+        margin-bottom: 20px;
+        color: #222;
+    }
+
+
+    /* FORMULARIO GENERAL */
+
+    .rol-formulario {
+        width: 100%;
+    }
+
+
+    /* TARJETA DE CADA PERSONA */
+
+    .rol-card {
+        background: white;
+        border-radius: 8px;
+        padding: 25px 18px;
+        margin-bottom: 18px;
+
+        box-shadow:
+            0 2px 8px rgba(0, 0, 0, 0.12);
+
+        border: 1px solid #eeeeee;
+    }
+
+
+    /* NOMBRE */
+
+    .rol-persona {
+        font-size: 14px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+        color: #222;
+    }
+
+
+    /* DATOS */
+
+    .rol-dato {
+        font-size: 14px;
+        margin-bottom: 10px;
+        color: #222;
+    }
+
+
+    .rol-dato strong {
+        font-weight: bold;
+    }
+
+
+    /* PREGUNTA */
+
+    .rol-pregunta {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 22px;
+        margin-bottom: 12px;
+    }
+
+
+    /* OPCIONES */
+
+    .rol-opcion {
+        display: flex;
+        align-items: center;
+
+        width: 100%;
+
+        padding: 10px 0;
+
+        cursor: pointer;
+
+        font-size: 14px;
+        font-weight: bold;
+
+        color: #111;
+    }
+
+
+    /* TEXTO DE LA OPCIÓN */
+
+    .rol-opcion span {
+        flex: 1;
+    }
+
+
+    /* RADIO */
+
+    .rol-opcion input[type="radio"] {
+        width: 15px;
+        height: 15px;
+
+        margin-right: 5px;
+
+        cursor: pointer;
+    }
+
+
+    /* BOTÓN FINAL */
+
+    .rol-botones {
+        margin-top: 5px;
+    }
+
+
+    .rol-convertir {
+        background: #159447;
+
+        color: white;
+
+        border: none;
+        border-radius: 4px;
+
+        padding: 8px 16px;
+
+        font-size: 14px;
+        font-weight: bold;
+
+        cursor: pointer;
+    }
+
+
+    .rol-convertir:hover {
+        background: #117d3b;
+    }
+
+
+    /* SEPARACIÓN VISUAL ENTRE DATOS Y OPCIONES */
+
+    .rol-separador {
+        border: 0;
+        border-top: 1px solid #d0d0d0;
+
+        margin: 18px 0;
+    }
+
+</style>
+
+
+<div class="rol-contenedor">
+
+
+    <!-- TÍTULO -->
+
+    <div class="rol-titulo">
+        👤 Seleccionar roles del nuevo caso
+    </div>
+
+
+    <!-- DESCRIPCIÓN -->
+
+    <div class="rol-subtitulo">
+        Las personas involucradas serán convertidas al caso nuevo.
+        Seleccione el rol que tendrá cada una dentro del expediente.
+    </div>
+
+
+
+    <!-- FORMULARIO ÚNICO -->
+
+    <form
+        method="POST"
+        class="rol-formulario"
+    >
+
+        {% csrf_token %}
 
 
         {% for persona in personas %}
 
-<div class="card mb-3 p-3">
 
-<h5>
-{{ persona.nombres }}
-</h5>
+        <!-- TARJETA DE PERSONA -->
 
-<p>
-DNI: {{ persona.dni }}
-</p>
-
-<p>
-Rol preliminar:
-
-{% for rol in persona.roles.all %}
-{{ rol.rol }}
-{% endfor %}
-
-</p>
+        <div class="rol-card">
 
 
-<label>
-<input 
-type="radio"
-name="persona_{{ persona.id }}"
-value="BENEFICIARIO"
-required>
+            <!-- PERSONA -->
 
-Beneficiaria/o
-</label>
+            <div class="rol-persona">
+                {{ persona.nombres }}
+            </div>
 
 
-<br>
+            <!-- DNI -->
+
+            <div class="rol-dato">
+                <strong>DNI:</strong>
+                {{ persona.dni|default:"No registrado" }}
+            </div>
 
 
-<label>
-<input 
-type="radio"
-name="persona_{{ persona.id }}"
-value="AGRESOR">
+            <!-- ROL PRELIMINAR -->
 
-Agresora/or
-</label>
+            <div class="rol-dato">
 
+                <strong>Rol preliminar:</strong>
 
-<br>
+                {% for rol in persona.roles.all %}
 
+                    {{ rol.rol }}
 
-<label>
-<input 
-type="radio"
-name="persona_{{ persona.id }}"
-value="AMBOS">
+                    {% if not forloop.last %}
+                        ,
+                    {% endif %}
 
-Ambos
-</label>
+                {% empty %}
 
-</div>
+                    Sin rol registrado
 
-{% endfor %}
+                {% endfor %}
+
+            </div>
 
 
-        <button
-        type="submit"
-        name="confirmar_conversion"
-        value="SI"
-        class="btn btn-success">
+            <hr class="rol-separador">
 
-            🟢 Convertir en Caso
 
-        </button>
+            <!-- PREGUNTA -->
+
+            <div class="rol-pregunta">
+                ¿Qué rol tendrá esta persona en el caso?
+            </div>
+
+
+            <!-- BENEFICIARIA/O -->
+
+            <label class="rol-opcion">
+
+                <span>
+                    Beneficiaria/o
+                </span>
+
+                <input
+                    type="radio"
+                    name="rol_{{ persona.id }}"
+                    value="BENEFICIARIA"
+                    required
+                >
+
+            </label>
+
+
+            <!-- AGRESORA/OR -->
+
+            <label class="rol-opcion">
+
+                <span>
+                    Agresora/or
+                </span>
+
+                <input
+                    type="radio"
+                    name="rol_{{ persona.id }}"
+                    value="AGRESORA"
+                >
+
+            </label>
+
+
+            <!-- AMBOS -->
+
+            <label class="rol-opcion">
+
+                <span>
+                    Ambos
+                </span>
+
+                <input
+                    type="radio"
+                    name="rol_{{ persona.id }}"
+                    value="AMBOS"
+                >
+
+            </label>
+
+
+        </div>
+
+
+        {% endfor %}
+
+
+
+        <!-- BOTÓN ÚNICO -->
+
+        <div class="rol-botones">
+
+            <button
+                type="submit"
+                class="rol-convertir"
+            >
+                🟢 Convertir en Caso
+            </button>
+
+        </div>
 
 
     </form>
-
 
 </div>
 

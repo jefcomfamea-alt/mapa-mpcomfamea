@@ -503,20 +503,20 @@ DESPLEGABLE DE BÚSQUEDA
 
 .marcador-mixto{
 
-width:25px;
-height:25px;
+    width:25px;
+    height:25px;
 
-background:linear-gradient(
-90deg,
-blue 50%,
-brown 50%
-);
+    background:linear-gradient(
+        90deg,
+        #0066ff 50%,
+        #8B4513 50%
+    );
 
-border-radius:50%;
+    border-radius:50%;
 
-border:3px solid white;
+    border:3px solid white;
 
-box-shadow:0 0 5px #555;
+    box-shadow:0 0 5px #555;
 
 }
 
@@ -765,7 +765,7 @@ fetch("/casos-json/")
         color="#990000";
     }
     else if(riesgo=="NO DETERMINADO"){
-        color="#808080";
+        color="#800080";
     }
 
     let marcador = L.circleMarker(latlng,{
@@ -899,8 +899,8 @@ MAPA PRINCIPAL:
 PRESUNTA VÍCTIMA
 → SE MUESTRA
 
-🟣 MORADO:
-PRESUNTA VÍCTIMA Y AGRESOR
+🔵🟤 MITAD AZUL Y MARRÓN:
+PRESUNTA VÍCTIMA Y DENUNCIADO
 → SE MUESTRA
 
 🟤 MARRÓN:
@@ -921,7 +921,7 @@ fetch("/ubicaciones-preliminares-json/")
     SE MUESTRAN:
 
     - AZUL
-    - AMBOS / MORADO
+    - AMBOS / MARCADOR MIXTO
 
     NO SE MUESTRA:
 
@@ -939,8 +939,9 @@ fetch("/ubicaciones-preliminares-json/")
                 ||
 
                 feature.properties.COLOR === "AMBOS"
-
-            );
+            )
+            &&
+            feature.properties.CONVERTIDA === false;
 
         }
 
@@ -951,6 +952,10 @@ fetch("/ubicaciones-preliminares-json/")
     CREAR LA CAPA DE UBICACIONES
     =================================*/
 
+    if (data.features.length === 0) {
+        return;
+    }
+    
     let capaPreliminar = L.geoJSON(
 
         data,
@@ -964,59 +969,77 @@ fetch("/ubicaciones-preliminares-json/")
 
             pointToLayer:function(
 
-                feature,
+    feature,
 
-                latlng
+    latlng
 
-            ){
+){
+
+    /*--------------------------------
+    PRESUNTA VÍCTIMA Y AGRESOR
+
+    MARCADOR MITAD AZUL
+    Y MITAD MARRÓN
+    --------------------------------*/
+
+    if (
+    feature.properties.COLOR === "AMBOS"
+) {
+
+    return L.marker(
+        latlng,
+        {
+            icon: L.divIcon({
+
+                className: "",
+
+                html:
+                    '<div style="' +
+                        'width:24px;' +
+                        'height:24px;' +
+                        'border-radius:50%;' +
+                        'background:linear-gradient(90deg, #0066ff 50%, #6b4a45 50%);' +
+                        'border:2px solid #ffffff;' +
+                        'box-shadow:0 0 2px #000;' +
+                    '"></div>',
+
+                iconSize: [28, 28],
+
+                iconAnchor: [14, 14]
+
+            })
+        }
+    );
+}
 
 
-                let color = "#0066ff";
+    /*--------------------------------
+    PRESUNTA VÍCTIMA
 
+    MARCADOR AZUL
+    --------------------------------*/
 
-                /*-------------------------
-                SI ES VÍCTIMA Y AGRESOR
+    return L.circleMarker(
 
-                COLOR MORADO
-                -------------------------*/
+        latlng,
 
-                if(
+        {
 
-                    feature.properties.COLOR
-                    === "AMBOS"
+            radius:12,
 
-                ){
+            fillColor:"#0066ff",
 
-                    color = "#800080";
+            color:"#ffffff",
 
-                }
+            weight:2,
 
+            fillOpacity:0.9
 
-                /*-------------------------
-                CREAR EL PUNTO
-                -------------------------*/
+        }
 
-                return L.circleMarker(
+    );
 
-                    latlng,
-
-                    {
-
-                        radius:12,
-
-                        fillColor:color,
-
-                        color:"#ffffff",
-
-                        weight:2,
-
-                        fillOpacity:0.9
-
-                    }
-
-                );
-
-            },
+},
 
 
             /*=========================
@@ -1087,20 +1110,19 @@ fetch("/ubicaciones-preliminares-json/")
 
                 if(
 
-                    p.COLOR === "AMBOS"
+    p.COLOR === "AMBOS"
 
-                ){
+){
 
-                    titulo =
+    titulo =
 
-                        "🟣 PRESUNTA VÍCTIMA Y AGRESOR";
+        "🔵🟤 PRESUNTA VÍCTIMA Y DENUNCIADO";
 
+    colorTitulo =
 
-                    colorTitulo =
+        "#6b4a45";
 
-                        "#800080";
-
-                }
+}
 
 
                 /*-------------------------
@@ -1345,7 +1367,7 @@ div.innerHTML=
 
 '<i style="background:#990000"></i> SEVERO EXTREMO<br>'+
 
-'<i style="background:#808080"></i> NO DETERMINADO<br><br>'+
+'<i style="background:#800080"></i> NO DETERMINADO<br><br>'+
 
 "<b>Denuncias sin medida</b><br><br>"+
 
@@ -1544,7 +1566,7 @@ function seleccionarCaso(caso){
             }
             else if(riesgo == "NO DETERMINADO"){
 
-                color = "#808080";
+                color = "#800080";
 
             }
 

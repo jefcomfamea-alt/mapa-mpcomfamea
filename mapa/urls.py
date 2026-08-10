@@ -39,16 +39,6 @@ urlpatterns = [
         name="casos_json"
     ),
 
-
-    # JSON ubicaciones preliminares
-    path(
-        "ubicaciones-preliminares-json/",
-        views.ubicaciones_preliminares_json,
-        name="ubicaciones_preliminares_json"
-    ),
-
-
-
     # Editar / archivar casos
     path(
         "editar-caso/<int:id>/",
@@ -164,16 +154,6 @@ urlpatterns = [
     ),
 
 
-    # Esta conversión ocurre DESPUÉS
-    # cuando ya llegó la medida de protección
-    path(
-        "convertir-preliminar-caso/<int:id>/",
-        views.convertir_preliminar_caso,
-        name="convertir_preliminar_caso",
-    ),
-
-
-
     # Administración usuarios
     path(
         "administrar-usuarios/",
@@ -197,19 +177,6 @@ urlpatterns = [
         "administrar-usuarios/desactivar/<int:pk>/",
         views.desactivar_usuario,
         name="desactivar_usuario"
-    ),
-
-    path(
-        "convertir-preliminar-caso/<int:id>/",
-        views.convertir_preliminar_caso,
-        name="convertir_preliminar_caso",
-    ),
-
-    # Convertir agresor preliminar
-    path(
-        "convertir-agresor/<int:id>/",
-        views.convertir_agresor,
-        name="convertir_agresor"
     ),
 
     path(
