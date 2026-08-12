@@ -601,13 +601,17 @@ DESPLEGABLE DE BÚSQUEDA
 
     <div id="menu">
 
-                <button
+        {% if es_admin or es_jefe or es_usuario_mp %}
+
+        <button
             class="botonMenu verde"
             id="btnNuevoCaso">
 
             ➕ Registrar Nuevo Caso
 
         </button>
+
+    {% endif %}
 
         {% if es_admin or es_usuario_investigacion %}
 
@@ -663,13 +667,17 @@ DESPLEGABLE DE BÚSQUEDA
     🔍 Buscar
 </button>
 
+{% if es_admin or es_jefe or es_usuario_mp %}
+
 <button
-            class="botonMenu azul"
-            onclick="window.location.href='/gestion-casos/'">
+    class="botonMenu azul"
+    onclick="window.location.href='/gestion-casos/'">
 
-             📂 Gestión de Casos
+    📂 Gestión de Casos
 
-        </button>
+</button>
+
+{% endif %}
 
     {% if es_admin %}
 <button
@@ -693,8 +701,8 @@ const usuarioId = {{ request.user.id }};
 const esAdmin = {{ es_admin|yesno:"true,false" }};
 const esJefe = {{ es_jefe|yesno:"true,false" }};
 const esUsuarioMP = {{ es_usuario_mp|yesno:"true,false" }};
+const esUsuarioInvestigacion = {{ es_usuario_investigacion|yesno:"true,false" }};
 const esEfectivoComfamea = {{ es_efectivo_comfamea|yesno:"true,false" }};
-
 
 var map = L.map("map").setView([-12.0435,-76.9950],15);
 
@@ -712,21 +720,27 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
 REGISTRAR NUEVO CASO
 =========================*/
 
-document.getElementById("btnNuevoCaso").onclick=function(){
+const btnNuevoCaso = document.getElementById("btnNuevoCaso");
 
-    alert("Haga clic sobre el mapa para registrar el nuevo caso.");
+if (btnNuevoCaso) {
 
-    map.once("click",function(e){
+    btnNuevoCaso.onclick=function(){
 
-        window.location.href=
-            "/nuevo-caso/?lat="+
-            e.latlng.lat+
-            "&lng="+
-            e.latlng.lng;
+        alert("Haga clic sobre el mapa para registrar el nuevo caso.");
 
-    });
+        map.once("click",function(e){
 
-};
+            window.location.href=
+                "/nuevo-caso/?lat="+
+                e.latlng.lat+
+                "&lng="+
+                e.latlng.lng;
+
+        });
+
+    };
+
+}
 
 /*=========================
 CARGAR CASOS
