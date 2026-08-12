@@ -9,7 +9,7 @@
 <title>SIGESMP</title>
 
 <link rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+      href="https://unpkg.com/leaflet/dist/leaflet.css">
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -640,7 +640,6 @@ DESPLEGABLE DE BÚSQUEDA
     <option value="folder">Folder</option>
     <option value="dni">DNI Beneficiario</option>
     <option value="beneficiario">Beneficiario</option>
-    <option value="agresor">Agresor</option>
 </select>
 
 <div class="contenedorBusqueda">
@@ -700,6 +699,7 @@ const esEfectivoComfamea = {{ es_efectivo_comfamea|yesno:"true,false" }};
 var map = L.map("map").setView([-12.0435,-76.9950],15);
 
 var marcadoresCasos = [];
+var marcadoresPreliminares = [];
 
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
 
@@ -928,40 +928,25 @@ fetch("/ubicaciones-preliminares-json/")
     - MARRÓN
     =================================*/
 
-    data.features = data.features.filter(
-
-        function(feature){
-
-            return (
-
-                feature.properties.COLOR === "AZUL"
-
-                ||
-
-                feature.properties.COLOR === "AMBOS"
-            )
-            &&
-            feature.properties.CONVERTIDA === false;
-
-        }
-
-    );
-
-
+    
     /*=================================
     CREAR LA CAPA DE UBICACIONES
     =================================*/
 
+    data.features = data.features.filter(function(feature) {
+
+        return feature.properties.CONVERTIDA !== true;
+
+    });
+
     if (data.features.length === 0) {
         return;
     }
-    
-    let capaPreliminar = L.geoJSON(
 
+    let capaPreliminar = L.geoJSON(
         data,
 
         {
-
 
             /*=========================
             CREAR LOS MARCADORES
@@ -969,11 +954,11 @@ fetch("/ubicaciones-preliminares-json/")
 
             pointToLayer:function(
 
-    feature,
+                feature,
 
-    latlng
+                latlng
 
-){
+            ){
 
     /*--------------------------------
     PRESUNTA VÍCTIMA Y AGRESOR
@@ -983,8 +968,8 @@ fetch("/ubicaciones-preliminares-json/")
     --------------------------------*/
 
     if (
-    feature.properties.COLOR === "AMBOS"
-) {
+        feature.properties.COLOR === "AMBOS"
+    ) {
 
     return L.marker(
         latlng,
@@ -1056,6 +1041,10 @@ fetch("/ubicaciones-preliminares-json/")
 
 
                 let p = feature.properties;
+
+                layer.personaPreliminarId = p.id;
+
+                marcadoresPreliminares.push(layer);
 
 
                 /*-------------------------
@@ -1425,15 +1414,32 @@ textoBusqueda.addEventListener("input", function(){
 
             opcion.className = "resultadoBusqueda";
 
-            opcion.innerHTML =
-                "<strong>" +
-                (caso.beneficiario || "Sin beneficiario") +
-                "</strong>" +
-                "<br>" +
-                "<small>" +
-                "Folder: " + (caso.folder || "-") +
-                " | Expediente: " + (caso.expediente || "-") +
-                "</small>";
+            if(caso.tipo === "PRELIMINAR"){
+
+                opcion.innerHTML =
+                    "<strong>🔵 " +
+                    (caso.beneficiario || "Sin nombre") +
+                    "</strong>" +
+                    "<br>" +
+                    "<small>" +
+                    "DNI: " + (caso.dni || "-") +
+                    " | PRELIMINAR" +
+                    "</small>";
+
+            }
+            else{
+
+                opcion.innerHTML =
+                    "<strong>" +
+                    (caso.beneficiario || "Sin beneficiario") +
+                    "</strong>" +
+                    "<br>" +
+                    "<small>" +
+                    "Folder: " + (caso.folder || "-") +
+                    " | Expediente: " + (caso.expediente || "-") +
+                    "</small>";
+
+            }
 
             opcion.onclick = function(){
 
@@ -1482,22 +1488,70 @@ function seleccionarCaso(caso){
 
     textoBusqueda.value = caso.beneficiario || "";
 
+    // ==========================================
+    // VERIFICAR COORDENADAS
+    // ==========================================
+
     if(caso.latitud == null || caso.longitud == null){
 
-        alert("Este caso no tiene coordenadas registradas.");
+        alert("Esta persona no tiene coordenadas registradas.");
 
         return;
 
     }
+
+    // ==========================================
+    // CENTRAR MAPA
+    // ==========================================
 
     map.setView(
         [caso.latitud, caso.longitud],
         18
     );
 
+    // ==========================================
+    // PERSONA PRELIMINAR
+    // ==========================================
+
+    if(
+        caso.tipo === "PRELIMINAR" ||
+        caso.tipo_resultado === "PRELIMINAR"
+    ){
+
+        let marcadorPreliminar = null;
+
+        marcadoresPreliminares.forEach(function(layer){
+
+            if(layer.personaPreliminarId == caso.id){
+
+                marcadorPreliminar = layer;
+
+            }
+
+        });
+
+        if(marcadorPreliminar){
+
+            marcadorPreliminar.openPopup();
+
+        }
+        else{
+
+            alert(
+                "🔵 Persona beneficiaria preliminar:\n\n" +
+                caso.beneficiario
+            );
+
+        }
+
+        return;
+    }
+
+    // ==========================================
+    // CASO EXISTENTE
+    // ==========================================
 
     let marcadorEncontrado = null;
-
 
     marcadoresCasos.forEach(function(layer){
 
@@ -1511,7 +1565,6 @@ function seleccionarCaso(caso){
         }
 
     });
-
 
     if(marcadorEncontrado){
 
@@ -1527,7 +1580,6 @@ function seleccionarCaso(caso){
 
         marcadorEncontrado.openPopup();
 
-
         setTimeout(function(){
 
             let riesgo =
@@ -1536,7 +1588,6 @@ function seleccionarCaso(caso){
                 .toUpperCase();
 
             let color = "gray";
-
 
             if(riesgo == "LEVE"){
 
@@ -1569,7 +1620,6 @@ function seleccionarCaso(caso){
                 color = "#800080";
 
             }
-
 
             marcadorEncontrado.setStyle({
 
@@ -1606,6 +1656,8 @@ function buscarCaso(){
 
 
     let tipo = tipoBusqueda.value;
+    console.log("TIPO:", tipo);
+    console.log("TEXTO:", texto);
 
 
     fetch(
@@ -1656,15 +1708,32 @@ function buscarCaso(){
 
             opcion.className = "resultadoBusqueda";
 
-            opcion.innerHTML =
-                "<strong>" +
-                (caso.beneficiario || "Sin beneficiario") +
-                "</strong>" +
-                "<br>" +
-                "<small>" +
-                "Folder: " + (caso.folder || "-") +
-                " | Expediente: " + (caso.expediente || "-") +
-                "</small>";
+            if(caso.tipo === "PRELIMINAR"){
+
+                opcion.innerHTML =
+                    "<strong>🔵 " +
+                    (caso.beneficiario || "Sin nombre") +
+                    "</strong>" +
+                    "<br>" +
+                    "<small>" +
+                    "DNI: " + (caso.dni || "-") +
+                    " | PRELIMINAR" +
+                    "</small>";
+
+            }
+            else{
+
+                opcion.innerHTML =
+                    "<strong>" +
+                    (caso.beneficiario || "Sin beneficiario") +
+                    "</strong>" +
+                    "<br>" +
+                    "<small>" +
+                    "Folder: " + (caso.folder || "-") +
+                    " | Expediente: " + (caso.expediente || "-") +
+                    "</small>";
+
+                }
 
 
             opcion.onclick = function(){
@@ -1686,7 +1755,6 @@ function buscarCaso(){
         alert("Error al realizar la búsqueda.");
 
     });
-
   
 }
 

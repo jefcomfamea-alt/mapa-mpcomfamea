@@ -1239,6 +1239,10 @@ def buscar_caso(request):
             "casos": []
         })
 
+    # =====================================================
+    # BUSCAR CASOS EXISTENTES
+    # =====================================================
+
     filtros = {
         "beneficiario": Q(beneficiario__icontains=texto),
         "agresor": Q(agresor__icontains=texto),
@@ -1248,10 +1252,13 @@ def buscar_caso(request):
     }
 
     if tipo in filtros:
+
         casos = Caso.objects.filter(
             filtros[tipo]
         ).order_by("beneficiario")
+
     else:
+
         casos = Caso.objects.filter(
             Q(beneficiario__icontains=texto) |
             Q(agresor__icontains=texto) |
@@ -1260,6 +1267,7 @@ def buscar_caso(request):
             Q(expediente__icontains=texto) |
             Q(folder__icontains=texto)
         ).order_by("beneficiario")
+
 
     resultados = []
 
@@ -1274,12 +1282,89 @@ def buscar_caso(request):
             "latitud": caso.latitud,
             "longitud": caso.longitud,
             "riesgo": caso.nivel_riesgo,
+            "tipo": "CASO",
         })
 
+
+    # =====================================================
+    # BUSCAR PERSONAS PRELIMINARES
+    # SOLO LAS QUE APARECEN COMO PRESUNTA VÍCTIMA
+    # =====================================================
+
+    if tipo in ["beneficiario", "dni"]:
+
+        personas_preliminares = PersonaPreliminar.objects.filter(
+            convertida=False
+        ).filter(
+            roles__rol="PRESUNTA_VICTIMA"
+        ).distinct()
+
+
+        if tipo == "beneficiario":
+
+            personas_preliminares = personas_preliminares.filter(
+                nombres__icontains=texto
+            )
+
+        elif tipo == "dni":
+
+            personas_preliminares = personas_preliminares.filter(
+                dni__icontains=texto
+            )
+
+
+        for persona in personas_preliminares:
+
+            if (
+                persona.latitud is None
+                or persona.longitud is None
+            ):
+                continue
+
+            resultados.append({
+
+                "id": persona.id,
+
+                "beneficiario":
+                    persona.nombres,
+
+                "dni":
+                    persona.dni,
+
+                "agresor": "",
+
+                "expediente": "",
+
+                "folder": "",
+
+                "latitud":
+                    persona.latitud,
+
+                "longitud":
+                    persona.longitud,
+
+                "riesgo":
+                    "PRELIMINAR",
+
+                "tipo":
+                    "PRELIMINAR",
+
+                "rol":
+                    "BENEFICIARIO",
+
+            })
+
+
     return JsonResponse({
-        "encontrado": len(resultados) > 0,
-        "casos": resultados
+
+        "encontrado":
+            len(resultados) > 0,
+
+        "casos":
+            resultados
+
     })
+
 
 
 @login_required
