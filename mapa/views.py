@@ -745,6 +745,7 @@ def nuevo_caso(request):
 @grupo_requerido(
     "Administrador",
     "Jefe_MP",
+    "Usuario_Investigacion"
 )
 def registrar_ubicacion_preliminar(request):
 
@@ -842,7 +843,7 @@ def registrar_ubicacion_preliminar(request):
     )
 
 @login_required
-@grupo_requerido("Administrador", "Jefe_MP", "Usuario_MP")
+@grupo_requerido("Administrador", "Jefe_MP")
 def seleccionar_rol_preliminar(request, id):
 
     persona = get_object_or_404(
