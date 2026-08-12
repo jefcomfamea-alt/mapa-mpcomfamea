@@ -158,6 +158,14 @@
                 Usuario de Medidas de Protección
             </option>
 
+            <option value="Usuario_Investigacion"
+                {% if grupo_actual and grupo_actual.name == "Usuario_Investigacion" %}
+                    selected
+                {% endif %}
+            >
+                Usuario Investigación
+            </option>
+
             <option value="Efectivo_COMFAMEA"
                 {% if grupo_actual and grupo_actual.name == "Efectivo_COMFAMEA" %}
                     selected
