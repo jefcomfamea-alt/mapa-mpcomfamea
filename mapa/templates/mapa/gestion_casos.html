@@ -436,6 +436,170 @@
 
 </div>
 
+```html
+<script>
+
+function buscarCasos() {
+
+    const texto = document.getElementById("buscadorCasos").value.trim();
+
+    if (!texto) {
+        return;
+    }
+
+    const url = "{% url 'gestion_casos' %}";
+
+    window.location.href =
+        url + "?q=" + encodeURIComponent(texto);
+}
+
+
+const buscador = document.getElementById("buscadorCasos");
+const resultados = document.getElementById("resultadosBusqueda");
+
+let temporizador = null;
+
+
+buscador.addEventListener("input", function() {
+
+    const texto = this.value.trim();
+
+    clearTimeout(temporizador);
+
+    if (texto.length < 2) {
+
+        resultados.innerHTML = "";
+        resultados.style.display = "none";
+
+        return;
+    }
+
+
+    temporizador = setTimeout(() => {
+
+        fetch(
+            "{% url 'buscar_caso' %}?q=" +
+            encodeURIComponent(texto)
+        )
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            resultados.innerHTML = "";
+
+            if (!data.encontrado) {
+
+                resultados.innerHTML = `
+                    <div style="
+                        padding:12px;
+                        color:#777;
+                    ">
+                        No se encontraron casos.
+                    </div>
+                `;
+
+                resultados.style.display = "block";
+
+                return;
+            }
+
+
+            data.casos.forEach(caso => {
+
+                const opcion =
+                    document.createElement("div");
+
+                opcion.style.padding = "10px";
+                opcion.style.cursor = "pointer";
+                opcion.style.borderBottom =
+                    "1px solid #eee";
+
+
+                opcion.innerHTML = `
+                    <strong>
+                        ${caso.beneficiario || "Sin beneficiario"}
+                    </strong>
+                    <br>
+
+                    <small>
+                        DNI: ${caso.dni || "-"}
+                        |
+                        Expediente: ${caso.expediente || "-"}
+                    </small>
+                `;
+
+
+                opcion.addEventListener(
+                    "mouseenter",
+                    () => {
+                        opcion.style.background = "#f0f5f0";
+                    }
+                );
+
+
+                opcion.addEventListener(
+                    "mouseleave",
+                    () => {
+                        opcion.style.background = "white";
+                    }
+                );
+
+
+                opcion.addEventListener(
+                    "click",
+                    () => {
+
+                        const url =
+                            "{% url 'gestion_casos' %}";
+
+                        window.location.href =
+                            url + "?q=" +
+                            encodeURIComponent(
+                                caso.beneficiario || ""
+                            );
+                    }
+                );
+
+
+                resultados.appendChild(opcion);
+
+            });
+
+
+            resultados.style.display = "block";
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Error buscando casos:",
+                error
+            );
+
+        });
+
+    }, 250);
+
+});
+
+
+document.addEventListener("click", function(event) {
+
+    if (
+        !buscador.contains(event.target) &&
+        !resultados.contains(event.target)
+    ) {
+
+        resultados.style.display = "none";
+
+    }
+
+});
+
+</script>
+```
 
 
 {% endblock %}
