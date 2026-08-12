@@ -1123,7 +1123,7 @@ def editar_caso(request, id):
     )
 
 @login_required
-@grupo_requerido("Administrador")
+@grupo_requerido("Administrador", "Jefe_MP")
 def archivar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
@@ -1134,7 +1134,7 @@ def archivar_caso(request, id):
     return redirect("gestion_casos")
 
 @login_required
-@grupo_requerido("Administrador")
+@grupo_requerido("Administrador", "Jefe_MP")
 def casos_archivados(request):
 
     casos = Caso.objects.filter(
@@ -1150,7 +1150,7 @@ def casos_archivados(request):
     )
 
 @login_required
-@grupo_requerido("Administrador")
+@grupo_requerido("Administrador", "Jefe_MP")
 def restaurar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)

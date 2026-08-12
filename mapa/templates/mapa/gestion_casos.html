@@ -174,15 +174,19 @@
         </a>
 
 
-        {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
+        {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" %}
 
             <a href="{% url 'casos_archivados' %}"
-               class="btn archivar">
+                class="btn archivar">
                 📁 Casos Archivados
             </a>
 
+        {% endif %}
+
+        {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
+
             <a href="{% url 'casos_eliminados' %}"
-               class="btn eliminar">
+                class="btn eliminar">
                 🗑️ Casos Eliminados
             </a>
 
@@ -303,16 +307,15 @@
 
                         {% elif request.user.groups.all.0.name == "Jefe_MP" %}
 
-
                             <a href="{% url 'editar_caso' caso.id %}"
-                               class="btn editar">
+                                class="btn editar">
                                 ✏️ Editar
                             </a>
 
-
-                            <a href="#"
-                               class="btn archivar">
-                                📩 Solicitar Archivo
+                            <a href="{% url 'archivar_caso' caso.id %}"
+                                class="btn archivar"
+                                onclick="return confirm('¿Desea archivar este caso?');">
+                                📁 Archivar
                             </a>
 
 
@@ -433,123 +436,6 @@
 
 </div>
 
-<script>
 
-const buscador = document.getElementById("buscadorCasos");
-const resultados = document.getElementById("resultadosBusqueda");
-
-let temporizador = null;
-
-buscador.addEventListener("input", function() {
-
-    const texto = this.value.trim();
-
-    clearTimeout(temporizador);
-
-    if (texto.length < 2) {
-        resultados.innerHTML = "";
-        resultados.style.display = "none";
-        return;
-    }
-
-    temporizador = setTimeout(() => {
-
-        fetch(`/buscar-caso/?q=${encodeURIComponent(texto)}`)
-            .then(response => response.json())
-            .then(data => {
-
-                resultados.innerHTML = "";
-
-                if (!data.encontrado) {
-
-                    resultados.innerHTML = `
-                        <div style="padding:12px;color:#777;">
-                            No se encontraron casos.
-                        </div>
-                    `;
-
-                    resultados.style.display = "block";
-                    return;
-                }
-
-                data.casos.forEach(caso => {
-
-                    const opcion = document.createElement("div");
-
-                    opcion.style.padding = "10px";
-                    opcion.style.cursor = "pointer";
-                    opcion.style.borderBottom = "1px solid #eee";
-
-                    opcion.innerHTML = `
-                        <strong>${caso.beneficiario || "Sin beneficiario"}</strong>
-                        <br>
-                        <small>
-                            DNI: ${caso.dni || "-"}
-                            |
-                            Expediente: ${caso.expediente || "-"}
-                        </small>
-                    `;
-
-                    opcion.addEventListener("mouseenter", () => {
-                        opcion.style.background = "#f0f5f0";
-                    });
-
-                    opcion.addEventListener("mouseleave", () => {
-                        opcion.style.background = "white";
-                    });
-
-                    opcion.addEventListener("click", () => {
-
-                        window.location.href =
-                            `/editar-caso/${caso.id}/`;
-
-                    });
-
-                    resultados.appendChild(opcion);
-
-                });
-
-                resultados.style.display = "block";
-
-            })
-            .catch(error => {
-
-                console.error("Error buscando casos:", error);
-
-            });
-
-    }, 250);
-
-});
-
-
-function buscarCasos() {
-
-    const texto = buscador.value.trim();
-
-    if (!texto) {
-        return;
-    }
-
-    window.location.href =
-        `/gestion-casos/?q=${encodeURIComponent(texto)}`;
-
-}
-
-
-document.addEventListener("click", function(event) {
-
-    if (
-        !buscador.contains(event.target) &&
-        !resultados.contains(event.target)
-    ) {
-
-        resultados.style.display = "none";
-
-    }
-
-});
-
-</script>
 
 {% endblock %}
