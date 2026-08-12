@@ -64,8 +64,6 @@ def cargar_distritos(request):
 @login_required
 def inicio(request):
 
-    eliminar_casos_vencidos()
-
     pendientes_mensajes = Mensaje.objects.filter(
         destinatario=request.user,
         leido=False
@@ -926,13 +924,29 @@ def seleccionar_rol_preliminar(request, id):
 @login_required
 def gestion_casos(request):
 
-    casos = Caso.objects.all().order_by("-id")
+    busqueda = request.GET.get("q", "").strip()
+
+    casos = Caso.objects.all()
+
+    if busqueda:
+
+        casos = casos.filter(
+            Q(beneficiario__icontains=busqueda) |
+            Q(dni_beneficiario__icontains=busqueda) |
+            Q(agresor__icontains=busqueda) |
+            Q(dni_agresor__icontains=busqueda) |
+            Q(expediente__icontains=busqueda) |
+            Q(folder__icontains=busqueda)
+        )
+
+    casos = casos.order_by("-id")
 
     return render(
         request,
         "mapa/gestion_casos.html",
         {
-            "casos": casos
+            "casos": casos,
+            "busqueda": busqueda,
         }
     )
 
@@ -1215,19 +1229,15 @@ def restaurar_caso_eliminado(request, id):
 @grupo_requerido("Administrador")
 def eliminar_caso_definitivamente(request, id):
 
-    caso = get_object_or_404(Caso, pk=id)
-
-    if request.method == "POST":
-        caso.delete()
-        return redirect("gestion_casos")
-
-    return render(
-        request,
-        "mapa/eliminar_caso.html",
-        {
-            "caso": caso
-        }
+    caso = get_object_or_404(
+        Caso,
+        pk=id,
+        estado="ELIMINADO"
     )
+
+    caso.delete()
+
+    return redirect("casos_eliminados")
 
 
 # =====================================================

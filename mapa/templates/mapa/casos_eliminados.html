@@ -204,6 +204,7 @@
                         <a
                             href="{% url 'eliminar_caso_definitivamente' caso.id %}"
                             class="btn-eliminar"
+                            onclick="return confirm('⚠️ ATENCIÓN: este caso será eliminado DEFINITIVAMENTE y no podrá ser recuperado. ¿Desea continuar?');"
                         >
                             🗑️ Eliminar
                         </a>

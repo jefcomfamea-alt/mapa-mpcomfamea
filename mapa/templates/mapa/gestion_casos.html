@@ -126,29 +126,40 @@
     <!-- BÚSQUEDA -->
     <!-- ========================= -->
 
-    <form method="GET" class="busqueda">
+    <div class="busqueda" style="position: relative;">
 
-        <input
-            type="text"
-            name="q"
-            value="{{ busqueda }}"
-            placeholder="Buscar por DNI, beneficiario o expediente"
-        >
+    <input
+        type="text"
+        id="buscadorCasos"
+        name="q"
+        value="{{ busqueda }}"
+        placeholder="Buscar por DNI, beneficiario, agresor, expediente o folder"
+        autocomplete="off"
+    >
 
-        <button type="submit">
-            🔎 Buscar
-        </button>
+    <button type="button" onclick="buscarCasos()">
+        🔎 Buscar
+    </button>
 
-        {% if busqueda %}
+    <div
+        id="resultadosBusqueda"
+        style="
+            position:absolute;
+            top:45px;
+            left:0;
+            width:350px;
+            background:white;
+            border:1px solid #ccc;
+            border-radius:6px;
+            box-shadow:0 3px 8px rgba(0,0,0,0.15);
+            z-index:9999;
+            display:none;
+            max-height:300px;
+            overflow-y:auto;
+        "
+    ></div>
 
-            <a href="{% url 'gestion_casos' %}"
-               class="btn volver">
-                ✖ Limpiar
-            </a>
-
-        {% endif %}
-
-    </form>
+</div>
 
 
     <!-- ========================= -->
@@ -421,5 +432,124 @@
 
 
 </div>
+
+<script>
+
+const buscador = document.getElementById("buscadorCasos");
+const resultados = document.getElementById("resultadosBusqueda");
+
+let temporizador = null;
+
+buscador.addEventListener("input", function() {
+
+    const texto = this.value.trim();
+
+    clearTimeout(temporizador);
+
+    if (texto.length < 2) {
+        resultados.innerHTML = "";
+        resultados.style.display = "none";
+        return;
+    }
+
+    temporizador = setTimeout(() => {
+
+        fetch(`/buscar-caso/?q=${encodeURIComponent(texto)}`)
+            .then(response => response.json())
+            .then(data => {
+
+                resultados.innerHTML = "";
+
+                if (!data.encontrado) {
+
+                    resultados.innerHTML = `
+                        <div style="padding:12px;color:#777;">
+                            No se encontraron casos.
+                        </div>
+                    `;
+
+                    resultados.style.display = "block";
+                    return;
+                }
+
+                data.casos.forEach(caso => {
+
+                    const opcion = document.createElement("div");
+
+                    opcion.style.padding = "10px";
+                    opcion.style.cursor = "pointer";
+                    opcion.style.borderBottom = "1px solid #eee";
+
+                    opcion.innerHTML = `
+                        <strong>${caso.beneficiario || "Sin beneficiario"}</strong>
+                        <br>
+                        <small>
+                            DNI: ${caso.dni || "-"}
+                            |
+                            Expediente: ${caso.expediente || "-"}
+                        </small>
+                    `;
+
+                    opcion.addEventListener("mouseenter", () => {
+                        opcion.style.background = "#f0f5f0";
+                    });
+
+                    opcion.addEventListener("mouseleave", () => {
+                        opcion.style.background = "white";
+                    });
+
+                    opcion.addEventListener("click", () => {
+
+                        window.location.href =
+                            `/editar-caso/${caso.id}/`;
+
+                    });
+
+                    resultados.appendChild(opcion);
+
+                });
+
+                resultados.style.display = "block";
+
+            })
+            .catch(error => {
+
+                console.error("Error buscando casos:", error);
+
+            });
+
+    }, 250);
+
+});
+
+
+function buscarCasos() {
+
+    const texto = buscador.value.trim();
+
+    if (!texto) {
+        return;
+    }
+
+    window.location.href =
+        `/gestion-casos/?q=${encodeURIComponent(texto)}`;
+
+}
+
+
+document.addEventListener("click", function(event) {
+
+    if (
+        !buscador.contains(event.target) &&
+        !resultados.contains(event.target)
+    ) {
+
+        resultados.style.display = "none";
+
+    }
+
+});
+
+</script>
 
 {% endblock %}
