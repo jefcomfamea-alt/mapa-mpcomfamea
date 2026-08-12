@@ -200,6 +200,38 @@
 
     </div>
 
+{% if casos.has_other_pages %}
+
+<div class="paginacion">
+
+    {% if casos.has_previous %}
+        <a href="?page=1{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}">
+            ⏮ Primero
+        </a>
+
+        <a href="?page={{ casos.previous_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}">
+            ◀ Anterior
+        </a>
+    {% endif %}
+
+    <strong>
+        Página {{ casos.number }} de {{ casos.paginator.num_pages }}
+    </strong>
+
+    {% if casos.has_next %}
+        <a href="?page={{ casos.next_page_number }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}">
+            Siguiente ▶
+        </a>
+
+        <a href="?page={{ casos.paginator.num_pages }}{% if busqueda %}&q={{ busqueda|urlencode }}{% endif %}">
+            Último ⏭
+        </a>
+    {% endif %}
+
+</div>
+
+{% endif %}
+
 
     <!-- ========================= -->
     <!-- TABLA -->
@@ -599,7 +631,5 @@ document.addEventListener("click", function(event) {
 });
 
 </script>
-```
-
 
 {% endblock %}
