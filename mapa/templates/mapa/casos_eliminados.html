@@ -2,235 +2,1017 @@
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
-    <title>Casos Eliminados</title>
+
+    <title>Casos Eliminados - SIGESMP</title>
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #eef2ef;
+            color: #222;
         }
 
-        header {
+
+        /* ==================================================
+           ENCABEZADO PRINCIPAL
+           ================================================== */
+
+        #encabezado {
+
+            height: 115px;
+
             background: #1B5E20;
+
             color: white;
-            padding: 18px 30px;
+
             display: flex;
-            justify-content: space-between;
+
             align-items: center;
+
+            justify-content: space-between;
+
+            padding: 10px 25px;
+
+            position: relative;
+
+            box-shadow: 0 2px 7px rgba(0,0,0,0.25);
+
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 22px;
+
+        /* ==================================================
+           BLOQUE INSTITUCIONAL CENTRADO
+           ================================================== */
+
+        #titulo {
+
+            position: absolute;
+
+            left: 50%;
+
+            top: 50%;
+
+            transform: translate(-50%, -50%);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 18px;
+
+            white-space: nowrap;
+
         }
+
+
+        .escudo {
+
+            width: 72px;
+
+            height: 72px;
+
+            object-fit: contain;
+
+        }
+
+
+        .texto-titulo {
+
+            text-align: center;
+
+        }
+
+
+        .texto-titulo h1 {
+
+            margin: 0;
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            letter-spacing: 1px;
+
+        }
+
+
+        .texto-titulo p {
+
+            margin: 5px 0 0 0;
+
+            font-size: 13px;
+
+            line-height: 1.35;
+
+        }
+
+
+        /* ==================================================
+           BLOQUE USUARIO
+           ================================================== */
+
+        #usuario {
+
+            margin-left: auto;
+
+            text-align: right;
+
+            min-width: 300px;
+
+            z-index: 10;
+
+        }
+
+
+        #usuario strong {
+
+            display: block;
+
+            font-size: 16px;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .rol {
+
+            font-size: 13px;
+
+            margin-bottom: 8px;
+
+            opacity: 0.95;
+
+        }
+
+
+        .accionesUsuario {
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            align-items: center;
+
+            gap: 7px;
+
+        }
+
+
+        .accionesUsuario a,
+        .accionesUsuario button {
+
+            border: none;
+
+            text-decoration: none;
+
+            color: white;
+
+            padding: 7px 10px;
+
+            border-radius: 5px;
+
+            font-size: 12px;
+
+            cursor: pointer;
+
+            font-family: Arial, sans-serif;
+
+        }
+
+
+        .btnAdmin {
+
+            background: #455A64;
+
+        }
+
+
+        .btnAdmin:hover {
+
+            background: #263238;
+
+        }
+
+
+        .btnBuzon {
+
+            background: #1565C0;
+
+            position: relative;
+
+        }
+
+
+        .btnBuzon:hover {
+
+            background: #0D47A1;
+
+        }
+
+
+        .btnSalir {
+
+            background: #8B0000;
+
+        }
+
+
+        .btnSalir:hover {
+
+            background: #650000;
+
+        }
+
+
+        .contador {
+
+            position: absolute;
+
+            top: -7px;
+
+            right: -7px;
+
+            background: red;
+
+            color: white;
+
+            width: 19px;
+
+            height: 19px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            border: 2px solid white;
+
+        }
+
+
+        /* ==================================================
+           CONTENIDO
+           ================================================== */
 
         .contenedor {
-            padding: 30px;
+
+            padding: 25px 30px 40px 30px;
+
         }
+
+
+        /* ==================================================
+           TITULO DE LA SECCION
+           ================================================== */
+
+        .tituloPagina {
+
+            background: white;
+
+            border-left: 6px solid #1B5E20;
+
+            border-radius: 8px;
+
+            padding: 16px 20px;
+
+            margin-bottom: 18px;
+
+            box-shadow: 0 2px 7px rgba(0,0,0,0.10);
+
+        }
+
+
+        .tituloPagina h2 {
+
+            margin: 0;
+
+            color: #1B5E20;
+
+            font-size: 22px;
+
+        }
+
+
+        .tituloPagina p {
+
+            margin: 6px 0 0 0;
+
+            color: #666;
+
+            font-size: 14px;
+
+        }
+
+
+        /* ==================================================
+           BOTON VOLVER
+           ================================================== */
 
         .volver {
+
             display: inline-block;
-            background: #555;
+
+            background: #455A64;
+
             color: white;
+
             text-decoration: none;
-            padding: 10px 16px;
+
+            padding: 9px 15px;
+
             border-radius: 6px;
-            margin-bottom: 20px;
+
+            margin-bottom: 18px;
+
+            font-weight: bold;
+
+            font-size: 13px;
+
         }
+
 
         .volver:hover {
-            background: #333;
+
+            background: #263238;
+
         }
 
-        .tabla-contenedor {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-            overflow-x: auto;
-        }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            background: #37474F;
-            color: white;
-            padding: 12px;
-            text-align: left;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        tr:hover {
-            background: #f5f5f5;
-        }
-
-        .btn-restaurar {
-            background: #2E7D32;
-            color: white;
-            padding: 7px 12px;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-
-        .btn-restaurar:hover {
-            background: #1B5E20;
-        }
-
-        .btn-eliminar {
-            background: #C62828;
-            color: white;
-            padding: 7px 12px;
-            border-radius: 5px;
-            text-decoration: none;
-            margin-left: 5px;
-        }
-
-        .btn-eliminar:hover {
-            background: #8E0000;
-        }
-
-        .vacio {
-            text-align: center;
-            padding: 30px;
-            color: #777;
-        }
+        /* ==================================================
+           INFORMACION PAPELERA
+           ================================================== */
 
         .info {
+
+            background: #fff8e1;
+
+            border-left: 5px solid #FFB300;
+
+            padding: 13px 17px;
+
             margin-bottom: 20px;
-            color: #555;
+
+            border-radius: 6px;
+
+            color: #5d4b00;
+
+            box-shadow: 0 1px 5px rgba(0,0,0,0.08);
+
+            font-size: 14px;
+
         }
+
+
+        /* ==================================================
+           TABLA
+           ================================================== */
+
+        .tabla-contenedor {
+
+            background: white;
+
+            border-radius: 10px;
+
+            padding: 20px;
+
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+
+            overflow-x: auto;
+
+        }
+
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 1000px;
+
+        }
+
+
+        th {
+
+            background: #37474F;
+
+            color: white;
+
+            padding: 12px;
+
+            text-align: left;
+
+            font-size: 13px;
+
+        }
+
+
+        td {
+
+            padding: 12px;
+
+            border-bottom: 1px solid #ddd;
+
+            font-size: 13px;
+
+        }
+
+
+        tr:hover {
+
+            background: #f5f5f5;
+
+        }
+
+
+        /* ==================================================
+           BOTONES
+           ================================================== */
+
+        .btn-restaurar {
+
+            display: inline-block;
+
+            background: #2E7D32;
+
+            color: white;
+
+            padding: 7px 12px;
+
+            border-radius: 5px;
+
+            text-decoration: none;
+
+            font-weight: bold;
+
+            font-size: 12px;
+
+        }
+
+
+        .btn-restaurar:hover {
+
+            background: #1B5E20;
+
+        }
+
+
+        .btn-eliminar {
+
+            display: inline-block;
+
+            background: #C62828;
+
+            color: white;
+
+            padding: 7px 12px;
+
+            border-radius: 5px;
+
+            text-decoration: none;
+
+            margin-left: 5px;
+
+            font-weight: bold;
+
+            font-size: 12px;
+
+        }
+
+
+        .btn-eliminar:hover {
+
+            background: #8E0000;
+
+        }
+
+
+        /* ==================================================
+           PAPELERA VACIA
+           ================================================== */
+
+        .vacio {
+
+            text-align: center;
+
+            padding: 65px 20px;
+
+            color: #777;
+
+        }
+
+
+        .iconoPapelera {
+
+            font-size: 52px;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .vacio h3 {
+
+            margin: 5px 0;
+
+            color: #555;
+
+            font-size: 20px;
+
+        }
+
+
+        .vacio p {
+
+            margin-top: 8px;
+
+            color: #888;
+
+            font-size: 14px;
+
+        }
+
+
+        /* ==================================================
+           PANTALLAS PEQUEÑAS
+           ================================================== */
+
+        @media (max-width: 1100px) {
+
+            #encabezado {
+
+                height: auto;
+
+                min-height: 115px;
+
+            }
+
+            #titulo {
+
+                position: static;
+
+                transform: none;
+
+                margin: auto;
+
+            }
+
+            #usuario {
+
+                position: absolute;
+
+                right: 15px;
+
+                top: 15px;
+
+            }
+
+            .texto-titulo p {
+
+                font-size: 11px;
+
+            }
+
+            .escudo {
+
+                width: 55px;
+
+                height: 55px;
+
+            }
+
+        }
+
+
+        @media (max-width: 800px) {
+
+            #encabezado {
+
+                flex-direction: column;
+
+                padding: 15px;
+
+            }
+
+            #titulo {
+
+                position: static;
+
+                transform: none;
+
+            }
+
+            #usuario {
+
+                position: static;
+
+                margin-top: 10px;
+
+                text-align: center;
+
+            }
+
+            .accionesUsuario {
+
+                justify-content: center;
+
+            }
+
+        }
+
     </style>
+
 </head>
+
 
 <body>
 
-<header>
-    <h1>🗑️ Casos Eliminados</h1>
 
-    <div>
-        Sistema Integrado de Gestión para la Ejecución y Seguimiento
-        de Medidas de Protección
+<!-- ==================================================
+     ENCABEZADO INSTITUCIONAL
+     ================================================== -->
+
+<header id="encabezado">
+
+
+    <!-- ==============================================
+         CENTRO: PNP + SIGESMP + DIRFAM
+         ============================================== -->
+
+    <div id="titulo">
+
+
+        <img
+            class="escudo"
+            src="{% static 'mapa/img/EscudoPNP.png' %}"
+            alt="Escudo PNP"
+        >
+
+
+        <div class="texto-titulo">
+
+            <h1>SIGESMP</h1>
+
+            <p>
+
+                Sistema Integrado de Gestión para la Ejecución y Seguimiento
+                de Medidas de Protección
+
+                <br>
+
+                Comisaría de Familia PNP El Agustino
+
+            </p>
+
+        </div>
+
+
+        <img
+            class="escudo"
+            src="{% static 'mapa/img/EscudoDIRFAM.png' %}"
+            alt="Escudo DIRFAM"
+        >
+
+
     </div>
+
+
+    <!-- ==============================================
+         DERECHA: USUARIO
+         ============================================== -->
+
+    <div id="usuario">
+
+
+        <strong>
+
+            {{ request.user.get_full_name|default:request.user.username }}
+
+        </strong>
+
+
+        <div class="rol">
+
+            {{ request.user.groups.all.0.name|default:"Administrador" }}
+
+        </div>
+
+
+        <div class="accionesUsuario">
+
+
+            {% if request.user.is_superuser %}
+
+                <a
+                    href="/admin/"
+                    class="btnAdmin"
+                >
+
+                    ⚙️ ADMIN
+
+                </a>
+
+            {% endif %}
+
+
+            {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" or request.user.groups.all.0.name == "Usuario_MP" %}
+
+                <a
+                    href="{% url 'mensajes' %}"
+                    class="btnBuzon"
+                >
+
+                    ✉️ Buzón
+
+
+                    {% if pendientes > 0 %}
+
+                        <span class="contador">
+
+                            {{ pendientes }}
+
+                        </span>
+
+                    {% endif %}
+
+                </a>
+
+            {% endif %}
+
+
+            <button
+                class="btnSalir"
+                onclick="location.href='{% url 'cerrar_sesion' %}'"
+            >
+
+                🚪 Cerrar sesión
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
 </header>
+
+
+
+<!-- ==================================================
+     CONTENIDO
+     ================================================== -->
 
 <div class="contenedor">
 
-    <a href="{% url 'gestion_casos' %}" class="volver">
+
+    <!-- TITULO -->
+
+    <div class="tituloPagina">
+
+        <h2>
+
+            🗑️ Casos Eliminados
+
+        </h2>
+
+        <p>
+
+            Gestión de casos enviados a la papelera.
+
+        </p>
+
+    </div>
+
+
+    <!-- VOLVER -->
+
+    <a
+        href="{% url 'gestion_casos' %}"
+        class="volver"
+    >
+
         ← Volver a Gestión de Casos
+
     </a>
 
+
+    <!-- AVISO -->
+
     <div class="info">
-        Estos casos permanecen en la papelera durante <strong>30 días</strong>.
+
+        Estos casos permanecen en la papelera durante
+        <strong>30 días</strong>.
         Luego serán eliminados automáticamente.
+
     </div>
+
+
+    <!-- ==================================================
+         TABLA / PAPELERA
+         ================================================== -->
 
     <div class="tabla-contenedor">
 
+
         {% if casos %}
 
-        <table>
 
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Beneficiario</th>
-                    <th>Agresor</th>
-                    <th>Expediente</th>
-                    <th>Folder</th>
-                    <th>Fecha de eliminación</th>
-                    <th>Eliminado por</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+            <table>
 
-            <tbody>
+                <thead>
 
-                {% for caso in casos %}
+                    <tr>
 
-                <tr>
+                        <th>ID</th>
 
-                    <td>
-                        {{ caso.id }}
-                    </td>
+                        <th>Beneficiario</th>
 
-                    <td>
-                        {{ caso.beneficiario }}
-                    </td>
+                        <th>Agresor</th>
 
-                    <td>
-                        {{ caso.agresor }}
-                    </td>
+                        <th>Expediente</th>
 
-                    <td>
-                        {{ caso.expediente|default:"-" }}
-                    </td>
+                        <th>Folder</th>
 
-                    <td>
-                        {{ caso.folder|default:"-" }}
-                    </td>
+                        <th>Fecha de eliminación</th>
 
-                    <td>
-                        {{ caso.fecha_eliminacion|date:"d/m/Y H:i" }}
-                    </td>
+                        <th>Eliminado por</th>
 
-                    <td>
-                        {% if caso.eliminado_por %}
-                            {{ caso.eliminado_por.get_full_name|default:caso.eliminado_por.username }}
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
+                        <th>Acciones</th>
 
-                    <td>
+                    </tr>
 
-                        <a
-                            href="{% url 'restaurar_caso_eliminado' caso.id %}"
-                            class="btn-restaurar"
-                            onclick="return confirm('¿Desea restaurar este caso?');"
-                        >
-                            ♻️ Restaurar
-                        </a>
+                </thead>
 
-                        <a
-                            href="{% url 'eliminar_caso_definitivamente' caso.id %}"
-                            class="btn-eliminar"
-                            onclick="return confirm('⚠️ ATENCIÓN: este caso será eliminado DEFINITIVAMENTE y no podrá ser recuperado. ¿Desea continuar?');"
-                        >
-                            🗑️ Eliminar
-                        </a>
 
-                    </td>
+                <tbody>
 
-                </tr>
 
-                {% endfor %}
+                    {% for caso in casos %}
 
-            </tbody>
 
-        </table>
+                        <tr>
+
+
+                            <td>
+
+                                {{ caso.id }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ caso.beneficiario }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ caso.agresor }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ caso.expediente|default:"-" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ caso.folder|default:"-" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ caso.fecha_eliminacion|date:"d/m/Y H:i" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if caso.eliminado_por %}
+
+                                    {{ caso.eliminado_por.get_full_name|default:caso.eliminado_por.username }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+
+                                <a
+                                    href="{% url 'restaurar_caso_eliminado' caso.id %}"
+                                    class="btn-restaurar"
+                                    onclick="return confirm('¿Desea restaurar este caso?');"
+                                >
+
+                                    ♻️ Restaurar
+
+                                </a>
+
+
+                                <a
+                                    href="{% url 'eliminar_caso_definitivamente' caso.id %}"
+                                    class="btn-eliminar"
+                                    onclick="return confirm('⚠️ ATENCIÓN: este caso será eliminado DEFINITIVAMENTE y no podrá ser recuperado. ¿Desea continuar?');"
+                                >
+
+                                    🗑️ Eliminar
+
+                                </a>
+
+
+                            </td>
+
+
+                        </tr>
+
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
 
         {% else %}
 
-        <div class="vacio">
-            <h3>🗑️ No existen casos eliminados</h3>
-            <p>La papelera se encuentra vacía.</p>
-        </div>
+
+            <!-- PAPELERA VACÍA -->
+
+            <div class="vacio">
+
+
+                <div class="iconoPapelera">
+
+                    🗑️
+
+                </div>
+
+
+                <h3>
+
+                    No existen casos eliminados
+
+                </h3>
+
+
+                <p>
+
+                    La papelera se encuentra vacía.
+
+                </p>
+
+
+            </div>
+
 
         {% endif %}
 
+
     </div>
+
 
 </div>
 
+
 </body>
+
 </html>
