@@ -942,6 +942,17 @@ def gestion_casos(request):
 
     casos = casos.order_by("-id")
 
+    # ============================
+    # PAGINACIÓN: 20 CASOS
+    # ============================
+    from django.core.paginator import Paginator
+
+    paginator = Paginator(casos, 20)
+
+    pagina = request.GET.get("page")
+
+    casos = paginator.get_page(pagina)
+
     return render(
         request,
         "mapa/gestion_casos.html",
