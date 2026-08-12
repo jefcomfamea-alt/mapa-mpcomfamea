@@ -41,21 +41,56 @@
 
 <nav>
 
+    <!-- INICIO -->
     <a href="{% url 'inicio' %}">
         🗺 Inicio
     </a>
 
-    <a href="{% url 'gestion_casos' %}">
-        📂 Casos
-    </a>
 
-    <a href="{% url 'mensajes' %}">
-        ✉ Mensajes
-    </a>
+    <!-- ===================================== -->
+    <!-- ADMINISTRADOR / JEFE / USUARIO MP -->
+    <!-- ===================================== -->
 
-    <a href="{% url 'notificaciones' %}">
-        🔔 Alertas
-    </a>
+    {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" or request.user.groups.all.0.name == "Usuario_MP" %}
+
+        <a href="{% url 'gestion_casos' %}">
+            📂 Gestión de Casos
+        </a>
+
+        <a href="{% url 'mensajes' %}">
+            ✉ Mensajes
+        </a>
+
+        <a href="{% url 'notificaciones' %}">
+            🔔 Alertas
+        </a>
+
+    {% endif %}
+
+
+    <!-- ===================================== -->
+    <!-- USUARIO INVESTIGACION -->
+    <!-- ===================================== -->
+
+    {% for grupo in request.user.groups.all %}
+
+        {% if grupo.name == "Usuario_Investigacion" %}
+
+            <a href="{% url 'registrar_ubicacion_preliminar' %}">
+                📍 Registrar Caso Preliminar
+            </a>
+
+            <a href="{% url 'mapa_agresores' %}">
+                🗺️ Mapa de Agresores
+            </a>
+
+        {% endif %}
+
+    {% endfor %}
+
+    <!-- ===================================== -->
+    <!-- CERRAR SESIÓN -->
+    <!-- ===================================== -->
 
     <a href="{% url 'cerrar_sesion' %}">
         🚪 Cerrar sesión

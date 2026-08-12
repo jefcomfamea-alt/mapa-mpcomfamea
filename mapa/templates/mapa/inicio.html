@@ -613,7 +613,7 @@ DESPLEGABLE DE BÚSQUEDA
 
     {% endif %}
 
-        {% if es_admin or es_usuario_investigacion %}
+        {% if es_admin or es_jefe or es_usuario_investigacion %}
 
         <button
             class="botonMenu azul"
@@ -1267,16 +1267,22 @@ roles +
 
 "<br><br>" +
 
-"<a href='/seleccionar-rol-preliminar/" + p.id + "/' " +
-"style='display:inline-block;" +
-"background:#198754;" +
-"color:white;" +
-"padding:8px 12px;" +
-"border-radius:6px;" +
-"text-decoration:none;" +
-"font-weight:bold;'>" +
-"🟢 Convertir en Caso" +
-"</a>" +
+(
+    esAdmin || esJefe
+    ?
+    "<a href='/seleccionar-rol-preliminar/" + p.id + "/' " +
+    "style='display:inline-block;" +
+    "background:#198754;" +
+    "color:white;" +
+    "padding:8px 12px;" +
+    "border-radius:6px;" +
+    "text-decoration:none;" +
+    "font-weight:bold;'>" +
+    "🟢 Convertir en Caso" +
+    "</a>"
+    :
+    ""
+) +
 
 "</div>"
 
