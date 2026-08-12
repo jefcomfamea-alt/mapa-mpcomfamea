@@ -1668,43 +1668,6 @@ def ubicaciones_preliminares_json(request):
                 })
 
             # ==========================================
-            # DENUNCIADO
-            # ==========================================
-
-            if (
-                "DENUNCIADO" in roles
-                and not persona.convertida
-            ):
-
-                properties = datos.copy()
-
-                properties.update({
-
-                    "COLOR": "MARRON",
-
-                    "beneficiario": "",
-
-                    "agresor":
-                        persona.nombres or "",
-
-                })
-
-                features.append({
-
-                    "type": "Feature",
-
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
-                            lng,
-                            lat
-                        ]
-                    },
-
-                    "properties": properties
-                })
-
-            # ==========================================
             # PARTICIPANTE
             #
             # UN PARTICIPANTE APARECE EN AMBOS MAPAS

@@ -949,7 +949,10 @@ fetch("/ubicaciones-preliminares-json/")
 
     data.features = data.features.filter(function(feature) {
 
-        return feature.properties.CONVERTIDA !== true;
+        return (
+            feature.properties.CONVERTIDA !== true &&
+            feature.properties.COLOR === "AZUL"
+        );
 
     });
 
