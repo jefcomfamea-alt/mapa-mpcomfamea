@@ -172,16 +172,31 @@
     {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
 
         <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
-            ✏️ Editar
+        ✏️ Editar
         </a>
 
         <a href="{% url 'archivar_caso' caso.id %}"
-           class="btn archivar"
-           onclick="return confirm('¿Desea archivar este caso?');">
+            class="btn archivar"
+            onclick="return confirm('¿Desea archivar este caso?');">
             📁 Archivar
         </a>
 
-    {% elif request.user.groups.all.0.name == "Jefe_MP" %}
+        <form method="POST"
+            action="{% url 'eliminar_caso' caso.id %}"
+            style="display:inline;"
+            onsubmit="return confirm('⚠️ ATENCIÓN: ¿Está seguro de ELIMINAR DEFINITIVAMENTE este caso? Esta acción NO se puede deshacer.');">
+
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="btn"
+                    style="background:#000;">
+                🗑️ Eliminar definitivamente
+            </button>
+
+    </form>
+
+{% elif request.user.groups.all.0.name == "Jefe_MP" %}
 
         <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
             ✏️ Editar

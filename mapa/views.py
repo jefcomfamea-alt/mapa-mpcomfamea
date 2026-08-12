@@ -1119,6 +1119,20 @@ def archivar_caso(request, id):
 
 @login_required
 @grupo_requerido("Administrador")
+def eliminar_caso(request, id):
+
+    caso = get_object_or_404(Caso, pk=id)
+
+    if request.method == "POST":
+        caso.delete()
+
+        return redirect("gestion_casos")
+
+    return redirect("gestion_casos")
+
+
+@login_required
+@grupo_requerido("Administrador")
 def casos_archivados(request):
 
     casos = Caso.objects.filter(
@@ -1144,6 +1158,25 @@ def restaurar_caso(request, id):
     caso.save()
 
     return redirect("casos_archivados")
+
+@login_required
+@grupo_requerido("Administrador")
+def eliminar_caso_definitivamente(request, id):
+
+    caso = get_object_or_404(Caso, pk=id)
+
+    if request.method == "POST":
+        caso.delete()
+        return redirect("gestion_casos")
+
+    return render(
+        request,
+        "mapa/eliminar_caso.html",
+        {
+            "caso": caso
+        }
+    )
+
 
 @login_required
 @grupo_requerido("Jefe_MP", "Usuario_MP")

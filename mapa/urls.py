@@ -53,6 +53,12 @@ urlpatterns = [
     ),
 
     path(
+        "eliminar-caso/<int:id>/",
+        views.eliminar_caso,
+        name="eliminar_caso"
+    ),
+
+    path(
         "casos-archivados/",
         views.casos_archivados,
         name="casos_archivados"
