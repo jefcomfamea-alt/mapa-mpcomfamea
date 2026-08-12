@@ -1,0 +1,235 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Casos Eliminados</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #eef2ef;
+        }
+
+        header {
+            background: #1B5E20;
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .contenedor {
+            padding: 30px;
+        }
+
+        .volver {
+            display: inline-block;
+            background: #555;
+            color: white;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .volver:hover {
+            background: #333;
+        }
+
+        .tabla-contenedor {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #37474F;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-restaurar {
+            background: #2E7D32;
+            color: white;
+            padding: 7px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .btn-restaurar:hover {
+            background: #1B5E20;
+        }
+
+        .btn-eliminar {
+            background: #C62828;
+            color: white;
+            padding: 7px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-left: 5px;
+        }
+
+        .btn-eliminar:hover {
+            background: #8E0000;
+        }
+
+        .vacio {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+
+        .info {
+            margin-bottom: 20px;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🗑️ Casos Eliminados</h1>
+
+    <div>
+        Sistema Integrado de Gestión para la Ejecución y Seguimiento
+        de Medidas de Protección
+    </div>
+</header>
+
+<div class="contenedor">
+
+    <a href="{% url 'gestion_casos' %}" class="volver">
+        ← Volver a Gestión de Casos
+    </a>
+
+    <div class="info">
+        Estos casos permanecen en la papelera durante <strong>30 días</strong>.
+        Luego serán eliminados automáticamente.
+    </div>
+
+    <div class="tabla-contenedor">
+
+        {% if casos %}
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Beneficiario</th>
+                    <th>Agresor</th>
+                    <th>Expediente</th>
+                    <th>Folder</th>
+                    <th>Fecha de eliminación</th>
+                    <th>Eliminado por</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for caso in casos %}
+
+                <tr>
+
+                    <td>
+                        {{ caso.id }}
+                    </td>
+
+                    <td>
+                        {{ caso.beneficiario }}
+                    </td>
+
+                    <td>
+                        {{ caso.agresor }}
+                    </td>
+
+                    <td>
+                        {{ caso.expediente|default:"-" }}
+                    </td>
+
+                    <td>
+                        {{ caso.folder|default:"-" }}
+                    </td>
+
+                    <td>
+                        {{ caso.fecha_eliminacion|date:"d/m/Y H:i" }}
+                    </td>
+
+                    <td>
+                        {% if caso.eliminado_por %}
+                            {{ caso.eliminado_por.get_full_name|default:caso.eliminado_por.username }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td>
+
+                        <a
+                            href="{% url 'restaurar_caso_eliminado' caso.id %}"
+                            class="btn-restaurar"
+                            onclick="return confirm('¿Desea restaurar este caso?');"
+                        >
+                            ♻️ Restaurar
+                        </a>
+
+                        <a
+                            href="{% url 'eliminar_caso_definitivamente' caso.id %}"
+                            class="btn-eliminar"
+                        >
+                            🗑️ Eliminar
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+        <div class="vacio">
+            <h3>🗑️ No existen casos eliminados</h3>
+            <p>La papelera se encuentra vacía.</p>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

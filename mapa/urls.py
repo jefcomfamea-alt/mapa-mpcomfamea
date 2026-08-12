@@ -4,7 +4,10 @@ from . import views
 
 urlpatterns = [
 
-    # Página principal
+    # ===============================
+    # PÁGINA PRINCIPAL
+    # ===============================
+
     path(
         "",
         views.inicio,
@@ -12,7 +15,10 @@ urlpatterns = [
     ),
 
 
-    # Mapa agresores
+    # ===============================
+    # MAPA DE AGRESORES
+    # ===============================
+
     path(
         "mapa-agresores/",
         views.mapa_agresores,
@@ -20,7 +26,10 @@ urlpatterns = [
     ),
 
 
-    # Casos
+    # ===============================
+    # CASOS
+    # ===============================
+
     path(
         "nuevo-caso/",
         views.nuevo_caso,
@@ -39,7 +48,11 @@ urlpatterns = [
         name="casos_json"
     ),
 
-    # Editar / archivar casos
+
+    # ===============================
+    # EDITAR / ARCHIVAR
+    # ===============================
+
     path(
         "editar-caso/<int:id>/",
         views.editar_caso,
@@ -50,12 +63,6 @@ urlpatterns = [
         "archivar-caso/<int:id>/",
         views.archivar_caso,
         name="archivar_caso"
-    ),
-
-    path(
-        "eliminar-caso/<int:id>/",
-        views.eliminar_caso,
-        name="eliminar_caso"
     ),
 
     path(
@@ -71,8 +78,39 @@ urlpatterns = [
     ),
 
 
+    # ===============================
+    # CASOS ELIMINADOS
+    # ===============================
 
-    # Solicitudes modificación
+    path(
+        "eliminar-caso/<int:id>/",
+        views.eliminar_caso,
+        name="eliminar_caso"
+    ),
+
+    path(
+        "casos-eliminados/",
+        views.casos_eliminados,
+        name="casos_eliminados"
+    ),
+
+    path(
+        "restaurar-caso-eliminado/<int:id>/",
+        views.restaurar_caso_eliminado,
+        name="restaurar_caso_eliminado"
+    ),
+
+    path(
+        "eliminar-caso-definitivamente/<int:id>/",
+        views.eliminar_caso_definitivamente,
+        name="eliminar_caso_definitivamente"
+    ),
+
+
+    # ===============================
+    # SOLICITUDES DE MODIFICACIÓN
+    # ===============================
+
     path(
         "solicitar-modificacion/<int:id>/",
         views.solicitar_modificacion,
@@ -92,8 +130,10 @@ urlpatterns = [
     ),
 
 
+    # ===============================
+    # MENSAJES
+    # ===============================
 
-    # Mensajes
     path(
         "mensajes/",
         views.mensajes,
@@ -101,7 +141,10 @@ urlpatterns = [
     ),
 
 
-    # Notificaciones
+    # ===============================
+    # NOTIFICACIONES
+    # ===============================
+
     path(
         "notificaciones/",
         views.notificaciones,
@@ -109,8 +152,10 @@ urlpatterns = [
     ),
 
 
+    # ===============================
+    # BUSCAR CASOS
+    # ===============================
 
-    # Buscar casos
     path(
         "buscar-caso/",
         views.buscar_caso,
@@ -118,8 +163,10 @@ urlpatterns = [
     ),
 
 
+    # ===============================
+    # CERRAR SESIÓN
+    # ===============================
 
-    # Cerrar sesión
     path(
         "cerrar-sesion/",
         views.cerrar_sesion,
@@ -127,8 +174,10 @@ urlpatterns = [
     ),
 
 
+    # ===============================
+    # UBIGEO
+    # ===============================
 
-    # Ubigeo
     path(
         "cargar-provincias/",
         views.cargar_provincias,
@@ -142,7 +191,6 @@ urlpatterns = [
     ),
 
 
-
     # ===============================
     # UBICACIÓN PRELIMINAR
     # ===============================
@@ -152,15 +200,24 @@ urlpatterns = [
         views.ubicaciones_preliminares_json,
         name="ubicaciones_preliminares_json"
     ),
-    
+
     path(
         "registrar-ubicacion-preliminar/",
         views.registrar_ubicacion_preliminar,
         name="registrar_ubicacion_preliminar"
     ),
 
+    path(
+        "seleccionar-rol-preliminar/<int:id>/",
+        views.seleccionar_rol_preliminar,
+        name="seleccionar_rol_preliminar"
+    ),
 
-    # Administración usuarios
+
+    # ===============================
+    # ADMINISTRACIÓN DE USUARIOS
+    # ===============================
+
     path(
         "administrar-usuarios/",
         views.administrar_usuarios,
@@ -184,12 +241,5 @@ urlpatterns = [
         views.desactivar_usuario,
         name="desactivar_usuario"
     ),
-
-    path(
-        "seleccionar-rol-preliminar/<int:id>/",
-        views.seleccionar_rol_preliminar,
-        name="seleccionar_rol_preliminar"
-    ),
-
 
 ]

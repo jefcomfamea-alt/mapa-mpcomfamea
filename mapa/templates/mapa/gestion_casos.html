@@ -1,280 +1,425 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
+{% extends "mapa/base.html" %}
 
-    <meta charset="UTF-8">
+{% block content %}
 
-    <title>Gestión de Casos</title>
+<style>
 
-    <style>
+    .contenedor {
+        width: 95%;
+        margin: 25px auto;
+    }
 
-        body{
-            margin:0;
-            font-family:Arial, Helvetica, sans-serif;
-            background:#f4f6f9;
-        }
+    .contenedor h1 {
+        margin-bottom: 20px;
+    }
 
-        header{
-            background:#2E6B2E;
-            color:#FFD700;
-            text-align:center;
-            padding:20px;
-        }
+    .busqueda {
+        margin-bottom: 20px;
+    }
 
-        h1{
-            margin:0;
-        }
+    .busqueda input {
+        padding: 9px;
+        width: 350px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
 
-        .contenedor{
-            width:95%;
-            margin:auto;
-            margin-top:20px;
-        }
+    .busqueda button {
+        padding: 9px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background: #2E6B2E;
+        color: white;
+    }
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-            background:white;
-        }
+    .acciones {
+        margin-bottom: 20px;
+    }
 
-        th{
-            background:#2E6B2E;
-            color:white;
-            padding:10px;
-        }
+    .btn {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        margin: 3px;
+    }
 
-        td{
-            padding:10px;
-            border-bottom:1px solid #ddd;
-            text-align:center;
-        }
+    .nuevo {
+        background: #198754;
+    }
 
-        tr:hover{
-            background:#f2f2f2;
-        }
+    .editar {
+        background: #0d6efd;
+    }
 
-        .btn{
-            padding:8px 15px;
-            border:none;
-            border-radius:5px;
-            cursor:pointer;
-            color:white;
-            text-decoration:none;
-            display:inline-block;
-            margin:2px;
-        }
+    .archivar {
+        background: #6c757d;
+    }
 
-        .editar{
-            background:#0d6efd;
-        }
+    .eliminar {
+        background: #8b0000;
+    }
 
-        .archivar{
-            background:#dc3545;
-        }
+    .volver {
+        background: #495057;
+    }
 
-        .nuevo{
-            background:#198754;
-        }
+    .tabla-contenedor {
+        overflow-x: auto;
+    }
 
-        .volver{
-            background:#6c757d;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
 
-        .acciones{
-            margin-bottom:20px;
-        }
+    th {
+        background: #2E6B2E;
+        color: white;
+        padding: 10px;
+        text-align: center;
+    }
 
-    </style>
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: center;
+    }
 
-</head>
+    tr:hover {
+        background: #f5f5f5;
+    }
 
-<body>
+    .paginacion {
+        text-align: center;
+        margin-top: 25px;
+    }
 
-<header>
+    .paginacion a {
+        display: inline-block;
+        margin: 3px;
+        padding: 7px 12px;
+        text-decoration: none;
+        border-radius: 5px;
+        background: #6c757d;
+        color: white;
+    }
 
-    <h1>Gestión de Casos</h1>
-    
-    <form method="GET" style="margin-bottom:20px;">
+    .paginacion strong {
+        margin: 0 10px;
+    }
 
-    <input 
-        type="text" 
-        name="q" 
-        value="{{ busqueda }}"
-        placeholder="Buscar por DNI, beneficiario o expediente"
-        style="padding:8px; width:350px;"
-    >
+</style>
 
-    <button type="submit">
-        Buscar
-    </button>
-
-    {% if busqueda %}
-        <a href="{% url 'gestion_casos' %}">
-            Limpiar
-        </a>
-    {% endif %}
-
-</form>
-
-</header>
 
 <div class="contenedor">
 
+    <h1>Gestión de Casos</h1>
+
+
+    <!-- ========================= -->
+    <!-- BÚSQUEDA -->
+    <!-- ========================= -->
+
+    <form method="GET" class="busqueda">
+
+        <input
+            type="text"
+            name="q"
+            value="{{ busqueda }}"
+            placeholder="Buscar por DNI, beneficiario o expediente"
+        >
+
+        <button type="submit">
+            🔎 Buscar
+        </button>
+
+        {% if busqueda %}
+
+            <a href="{% url 'gestion_casos' %}"
+               class="btn volver">
+                ✖ Limpiar
+            </a>
+
+        {% endif %}
+
+    </form>
+
+
+    <!-- ========================= -->
+    <!-- BOTONES PRINCIPALES -->
+    <!-- ========================= -->
+
     <div class="acciones">
 
-        <a href="{% url 'nuevo_caso' %}" class="btn nuevo">
+        <a href="{% url 'nuevo_caso' %}"
+           class="btn nuevo">
             ➕ Nuevo Caso
         </a>
 
-        <a href="/" class="btn volver">
+
+        {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
+
+            <a href="{% url 'casos_archivados' %}"
+               class="btn archivar">
+                📁 Casos Archivados
+            </a>
+
+            <a href="{% url 'casos_eliminados' %}"
+               class="btn eliminar">
+                🗑️ Casos Eliminados
+            </a>
+
+        {% endif %}
+
+
+        <a href="{% url 'inicio' %}"
+           class="btn volver">
             🗺️ Volver al Mapa
         </a>
 
     </div>
 
-    <table>
 
-        <tr>
+    <!-- ========================= -->
+    <!-- TABLA -->
+    <!-- ========================= -->
 
-            <th>ID</th>
-            <th>Beneficiario</th>
-            <th>Distrito</th>
-            <th>Riesgo</th>
-            <th>📅 Próximo seguimiento</th>
-            <th>Acciones</th>
+    <div class="tabla-contenedor">
 
-        </tr>
+        <table>
 
-        {% for caso in casos %}
+            <thead>
 
-        <tr>
+                <tr>
 
-            <td>{{ caso.id }}</td>
+                    <th>ID</th>
 
-            <td>{{ caso.beneficiario }}</td>
+                    <th>Beneficiario</th>
 
-            <td>{{ caso.distrito }}</td>
+                    <th>Distrito</th>
 
-            <td>{{ caso.nivel_riesgo }}</td>
+                    <th>Riesgo</th>
 
-            <td>
+                    <th>📅 Próximo seguimiento</th>
 
-                {% if caso.fecha_limite %}
-                    {{ caso.fecha_limite|date:"d/m/Y" }}
-                {% else %}
-        -
-                 {% endif %}
+                    <th>Acciones</th>
 
-        </td>
+                </tr>
 
-         <td>
+            </thead>
 
-    {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
 
-        <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
-        ✏️ Editar
-        </a>
+            <tbody>
 
-        <a href="{% url 'archivar_caso' caso.id %}"
-            class="btn archivar"
-            onclick="return confirm('¿Desea archivar este caso?');">
-            📁 Archivar
-        </a>
+                {% for caso in casos %}
 
-        <form method="POST"
-            action="{% url 'eliminar_caso' caso.id %}"
-            style="display:inline;"
-            onsubmit="return confirm('⚠️ ATENCIÓN: ¿Está seguro de ELIMINAR DEFINITIVAMENTE este caso? Esta acción NO se puede deshacer.');">
+                <tr>
 
-            {% csrf_token %}
+                    <td>
+                        {{ caso.id }}
+                    </td>
 
-            <button type="submit"
-                    class="btn"
-                    style="background:#000;">
-                🗑️ Eliminar definitivamente
-            </button>
 
-    </form>
+                    <td>
+                        {{ caso.beneficiario }}
+                    </td>
 
-{% elif request.user.groups.all.0.name == "Jefe_MP" %}
 
-        <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
-            ✏️ Editar
-        </a>
+                    <td>
+                        {{ caso.distrito }}
+                    </td>
 
-        <a href="#" class="btn archivar">
-            📩 Solicitar Archivo
-        </a>
 
-    {% elif request.user.groups.all.0.name == "Usuario_MP" %}
+                    <td>
+                        {{ caso.nivel_riesgo }}
+                    </td>
 
-    {% if caso.edicion_autorizada %}
 
-        <a href="{% url 'editar_caso' caso.id %}" class="btn editar">
-            ✏️ Modificar Caso
-        </a>
+                    <td>
 
-        <span style="color:green; font-weight:bold;">
-            ✅ Autorizado
-        </span>
+                        {% if caso.fecha_limite %}
 
-    {% else %}
+                            {{ caso.fecha_limite|date:"d/m/Y" }}
 
-        <a href="{% url 'solicitar_modificacion' caso.id %}" class="btn editar">
-            📨 Solicitar Modificación
-        </a>
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+
+                        <!-- ========================= -->
+                        <!-- ADMINISTRADOR -->
+                        <!-- ========================= -->
+
+                        {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
+
+
+                            <a href="{% url 'editar_caso' caso.id %}"
+                               class="btn editar">
+                                ✏️ Editar
+                            </a>
+
+
+                            <a href="{% url 'archivar_caso' caso.id %}"
+                               class="btn archivar"
+                               onclick="return confirm('¿Desea archivar este caso?');">
+                                📁 Archivar
+                            </a>
+
+
+                            <a href="{% url 'eliminar_caso' caso.id %}"
+                               class="btn eliminar"
+                               onclick="return confirm('⚠️ ATENCIÓN: este caso será enviado a Casos Eliminados. ¿Desea continuar?');">
+                                🗑️ Eliminar definitivamente
+                            </a>
+
+
+                        <!-- ========================= -->
+                        <!-- JEFE MP -->
+                        <!-- ========================= -->
+
+                        {% elif request.user.groups.all.0.name == "Jefe_MP" %}
+
+
+                            <a href="{% url 'editar_caso' caso.id %}"
+                               class="btn editar">
+                                ✏️ Editar
+                            </a>
+
+
+                            <a href="#"
+                               class="btn archivar">
+                                📩 Solicitar Archivo
+                            </a>
+
+
+                        <!-- ========================= -->
+                        <!-- USUARIO MP -->
+                        <!-- ========================= -->
+
+                        {% elif request.user.groups.all.0.name == "Usuario_MP" %}
+
+
+                            {% if caso.edicion_autorizada %}
+
+
+                                <a href="{% url 'editar_caso' caso.id %}"
+                                   class="btn editar">
+                                    ✏️ Modificar Caso
+                                </a>
+
+
+                                <span style="
+                                    color:green;
+                                    font-weight:bold;
+                                    display:inline-block;
+                                    margin:5px;
+                                ">
+                                    ✅ Autorizado
+                                </span>
+
+
+                            {% else %}
+
+
+                                <a href="{% url 'solicitar_modificacion' caso.id %}"
+                                   class="btn editar">
+                                    📨 Solicitar Modificación
+                                </a>
+
+
+                            {% endif %}
+
+
+                        {% endif %}
+
+
+                    </td>
+
+                </tr>
+
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6">
+
+                        No hay casos registrados.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- PAGINACIÓN -->
+    <!-- ========================= -->
+
+    {% if casos.has_other_pages %}
+
+    <div class="paginacion">
+
+
+        {% if casos.has_previous %}
+
+            <a href="?page=1">
+                ⏮ Primero
+            </a>
+
+            <a href="?page={{ casos.previous_page_number }}">
+                ◀ Anterior
+            </a>
+
+        {% endif %}
+
+
+        <strong>
+
+            Página {{ casos.number }}
+            de {{ casos.paginator.num_pages }}
+
+        </strong>
+
+
+        {% if casos.has_next %}
+
+            <a href="?page={{ casos.next_page_number }}">
+                Siguiente ▶
+            </a>
+
+            <a href="?page={{ casos.paginator.num_pages }}">
+                Último ⏭
+            </a>
+
+        {% endif %}
+
+
+    </div>
 
     {% endif %}
 
-{% endif %}
-
-</td>  
-
-        </tr>
-
-        {% empty %}
-
-        <tr>
-
-            <td colspan="6">
-                No hay casos registrados.
-            </td>
-
-        </tr>
-
-        {% endfor %}
-
-    </table>
-
-    <br>
-
-<div style="text-align:center;">
-
-    {% if casos.has_previous %}
-        <a href="?page=1">⏮ Primero</a>
-
-        <a href="?page={{ casos.previous_page_number }}">
-            ◀ Anterior
-        </a>
-    {% endif %}
-
-    <strong>
-        Página {{ casos.number }} de {{ casos.paginator.num_pages }}
-    </strong>
-
-    {% if casos.has_next %}
-        <a href="?page={{ casos.next_page_number }}">
-            Siguiente ▶
-        </a>
-
-        <a href="?page={{ casos.paginator.num_pages }}">
-            Último ⏭
-        </a>
-    {% endif %}
 
 </div>
 
-</div>
-
-</body>
-</html>
+{% endblock %}

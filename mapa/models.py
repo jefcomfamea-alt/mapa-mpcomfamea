@@ -331,6 +331,19 @@ class Caso(models.Model):
         default="ACTIVO"
     )
 
+    fecha_eliminacion = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    eliminado_por = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="casos_eliminados"
+    )
+
     latitud = models.FloatField(
         null=True,
         blank=True

@@ -64,6 +64,8 @@ def cargar_distritos(request):
 @login_required
 def inicio(request):
 
+    eliminar_casos_vencidos()
+
     pendientes_mensajes = Mensaje.objects.filter(
         destinatario=request.user,
         leido=False
@@ -539,7 +541,7 @@ def nuevo_caso(request):
 
             if personas_param:
 
-                rimer_dato = personas_param.split(",")[0]
+                primer_dato = personas_param.split(",")[0]
 
                 try:
 
@@ -1116,21 +1118,6 @@ def archivar_caso(request, id):
 
     return redirect("gestion_casos")
 
-
-@login_required
-@grupo_requerido("Administrador")
-def eliminar_caso(request, id):
-
-    caso = get_object_or_404(Caso, pk=id)
-
-    if request.method == "POST":
-        caso.delete()
-
-        return redirect("gestion_casos")
-
-    return redirect("gestion_casos")
-
-
 @login_required
 @grupo_requerido("Administrador")
 def casos_archivados(request):
@@ -1147,7 +1134,6 @@ def casos_archivados(request):
         }
     )
 
-
 @login_required
 @grupo_requerido("Administrador")
 def restaurar_caso(request, id):
@@ -1158,6 +1144,72 @@ def restaurar_caso(request, id):
     caso.save()
 
     return redirect("casos_archivados")
+
+@login_required
+@grupo_requerido("Administrador")
+def eliminar_caso(request, id):
+
+    caso = get_object_or_404(
+        Caso,
+        pk=id
+    )
+
+    caso.estado = "ELIMINADO"
+    caso.fecha_eliminacion = timezone.now()
+    caso.eliminado_por = request.user
+
+    caso.save(
+        update_fields=[
+            "estado",
+            "fecha_eliminacion",
+            "eliminado_por"
+        ]
+    )
+
+    return redirect("gestion_casos")
+
+
+@login_required
+@grupo_requerido("Administrador")
+def casos_eliminados(request):
+
+    casos = Caso.objects.filter(
+        estado="ELIMINADO"
+    ).order_by("-fecha_eliminacion")
+
+    return render(
+        request,
+        "mapa/casos_eliminados.html",
+        {
+            "casos": casos
+        }
+    )
+
+
+@login_required
+@grupo_requerido("Administrador")
+def restaurar_caso_eliminado(request, id):
+
+    caso = get_object_or_404(
+        Caso,
+        pk=id,
+        estado="ELIMINADO"
+    )
+
+    caso.estado = "ACTIVO"
+    caso.fecha_eliminacion = None
+    caso.eliminado_por = None
+
+    caso.save(
+        update_fields=[
+            "estado",
+            "fecha_eliminacion",
+            "eliminado_por"
+        ]
+    )
+
+    return redirect("casos_eliminados")
+
 
 @login_required
 @grupo_requerido("Administrador")
@@ -1176,6 +1228,27 @@ def eliminar_caso_definitivamente(request, id):
             "caso": caso
         }
     )
+
+
+# =====================================================
+# ELIMINAR AUTOMÁTICAMENTE CASOS DESPUÉS DE 30 DÍAS
+# =====================================================
+
+def eliminar_casos_vencidos():
+
+    fecha_limite = timezone.now() - timedelta(days=30)
+
+    casos = Caso.objects.filter(
+        estado="ELIMINADO",
+        fecha_eliminacion__isnull=False,
+        fecha_eliminacion__lte=fecha_limite
+    )
+
+    cantidad = casos.count()
+
+    casos.delete()
+
+    return cantidad
 
 
 @login_required

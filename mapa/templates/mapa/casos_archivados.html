@@ -1,3 +1,175 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+    <meta charset="UTF-8">
+    <title>Casos Archivados</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+        }
+
+        header {
+            background: #2E6B2E;
+            color: #FFD700;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .contenedor {
+            width: 95%;
+            margin: 20px auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #2E6B2E;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        tr:hover {
+            background: #f2f2f2;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .restaurar {
+            background: #198754;
+        }
+
+        .eliminar {
+            background: #000;
+        }
+
+        .volver {
+            background: #6c757d;
+        }
+
+        .acciones {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>📁 Casos Archivados</h1>
+</header>
+
+<div class="contenedor">
+
+    <div class="acciones">
+
+        <a href="{% url 'gestion_casos' %}" class="btn volver">
+            ↩️ Volver a Gestión de Casos
+        </a>
+
+    </div>
+
+    <table>
+
+        <tr>
+            <th>ID</th>
+            <th>Beneficiario</th>
+            <th>Distrito</th>
+            <th>Riesgo</th>
+            <th>Expediente</th>
+            <th>Folder</th>
+            <th>Acciones</th>
+        </tr>
+
+        {% for caso in casos %}
+
+        <tr>
+
+            <td>{{ caso.id }}</td>
+
+            <td>{{ caso.beneficiario }}</td>
+
+            <td>{{ caso.distrito }}</td>
+
+            <td>{{ caso.nivel_riesgo }}</td>
+
+            <td>{{ caso.expediente|default:"-" }}</td>
+
+            <td>{{ caso.folder|default:"-" }}</td>
+
+            <td>
+
+                <a
+                    href="{% url 'restaurar_caso' caso.id %}"
+                    class="btn restaurar"
+                    onclick="return confirm('¿Desea restaurar este caso?');"
+                >
+                    🔄 Restaurar
+                </a>
+
+                <form
+                    method="POST"
+                    action="{% url 'eliminar_caso' caso.id %}"
+                    style="display:inline;"
+                    onsubmit="return confirm('⚠️ ATENCIÓN: ¿Está seguro de ELIMINAR DEFINITIVAMENTE este caso? Esta acción NO se puede deshacer.');"
+                >
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn eliminar"
+                    >
+                        🗑️ Eliminar definitivamente
+                    </button>
+
+                </form>
+
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+
+            <td colspan="7">
+                No hay casos archivados.
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+</body>
+</html>
