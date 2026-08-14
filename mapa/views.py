@@ -1067,7 +1067,17 @@ def editar_caso(request, id):
     elif es_responsable and caso.edicion_autorizada:
         pass
 
-    # Si llegó desde un mensaje que le pertenece, se habilita la primera edición
+    # Primera edición del caso asignado mediante mensaje
+    elif es_responsable and Mensaje.objects.filter(
+        destinatario=request.user,
+        caso=caso,
+        asunto="🔔 Nuevo caso asignado"
+    ).exists():
+
+        caso.edicion_autorizada = True
+        caso.save(update_fields=["edicion_autorizada"])
+
+    # Responsable sin autorización
     elif es_responsable:
 
         return redirect("solicitar_modificacion", id=caso.id)
@@ -1351,6 +1361,7 @@ def mensajes(request):
             "casos_por_vencer": casos_por_vencer,
         }
     )
+
 def cerrar_sesion(request):
     logout(request)
     return redirect("/accounts/login/")
@@ -1649,6 +1660,43 @@ def ubicaciones_preliminares_json(request):
                         persona.nombres or "",
 
                     "agresor": "",
+
+                })
+
+                features.append({
+
+                    "type": "Feature",
+
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            lng,
+                            lat
+                        ]
+                    },
+
+                    "properties": properties
+                })
+
+            # ==========================================
+            # DENUNCIADO
+            # ==========================================
+
+            if (
+                "DENUNCIADO" in roles
+                and not persona.convertida
+            ):
+
+                properties = datos.copy()
+
+                properties.update({
+
+                    "COLOR": "MARRON",
+
+                    "beneficiario": "",
+
+                    "agresor":
+                        persona.nombres or "",
 
                 })
 
