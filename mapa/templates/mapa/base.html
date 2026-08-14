@@ -77,16 +77,25 @@
         {% if grupo.name == "Usuario_Investigacion" %}
 
             <a href="{% url 'registrar_ubicacion_preliminar' %}">
-                📍 Registrar Caso Preliminar
-            </a>
-
-            <a href="{% url 'mapa_agresores' %}">
-                🗺️ Mapa de Agresores
+            📍 Registrar Caso Preliminar
             </a>
 
         {% endif %}
 
     {% endfor %}
+
+    <!-- ===================================== -->
+    <!-- MAPA DE AGRESORES -->
+    <!-- ===================================== -->
+
+    {% if es_admin or es_jefe or es_usuario_mp or es_usuario_investigacion %}
+
+        <a href="{% url 'mapa_agresores' %}">
+            🗺️ Mapa de Agresores
+        </a>
+
+    {% endif %}
+
 
     <!-- ===================================== -->
     <!-- CERRAR SESIÓN -->
