@@ -1,0 +1,8 @@
+[33mcommit 12bafcd5d74e553dd5de89443bedcde391f59cfd[m
+Author: jefcomfamea-alt <TU_CORREO_DE_GITHUB>
+Date:   Sat Aug 15 14:31:23 2026 -0500
+
+    Corregir niveles de riesgo
+
+ db.sqlite3 | Bin [31m532480[m -> [32m532480[m bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)

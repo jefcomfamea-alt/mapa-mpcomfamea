@@ -45,6 +45,50 @@
         border-left: 6px solid #1B5E20;
     }
 
+    /* ==========================================
+   COLORES DE TARJETAS POR NIVEL DE RIESGO
+   ========================================== */
+
+.tarjeta-leve {
+    border-left-color: #00b050;
+}
+
+.tarjeta-leve .numero {
+    color: #00b050;
+}
+
+.tarjeta-moderado {
+    border-left-color: #ffd966;
+}
+
+.tarjeta-moderado .numero {
+    color: #ffd966;
+}
+
+.tarjeta-severo {
+    border-left-color: #ff0000;
+}
+
+.tarjeta-severo .numero {
+    color: #ff0000;
+}
+
+.tarjeta-extremo {
+    border-left-color: #990000;
+}
+
+.tarjeta-extremo .numero {
+    color: #990000;
+}
+
+.tarjeta-no-determinado {
+    border-left-color: #800080;
+}
+
+.tarjeta-no-determinado .numero {
+    color: #800080;
+}
+
     .tarjeta h3 {
         margin: 0 0 10px;
         font-size: 15px;
@@ -119,19 +163,27 @@
     }
 
     .barra-leve {
-        background: #66bb6a;
+        background: #00b050;
     }
 
     .barra-moderado {
-        background: #ffa726;
+        background: #ffd966;
     }
 
     .barra-severo {
-        background: #ef5350;
+        background: #ff0000;
     }
 
     .barra-extremo {
-        background: #8e0000;
+       background: #990000;
+    }
+
+    .tarjeta-no-determinado {
+       border-left-color: #800080;
+    }
+
+    .tarjeta-no-determinado .numero {
+        color: #800080;
     }
 
 /* ==========================================
@@ -219,22 +271,27 @@
 
 .valor-leve {
     font-weight: bold;
-    color: #2e7d32;
+    color: #00b050;
 }
 
 .valor-moderado {
     font-weight: bold;
-    color: #ef6c00;
+    color: #ffd966;
 }
 
 .valor-severo {
     font-weight: bold;
-    color: #d32f2f;
+    color: #ff0000;
 }
 
 .valor-extremo {
     font-weight: bold;
-    color: #8e0000;
+    color: #990000;
+}
+
+.valor-no-determinado {
+    font-weight: bold;
+    color: #800080;
 }
 
 /* SEGUIMIENTO */
@@ -333,7 +390,7 @@
         </div>
 
 
-        <div class="tarjeta">
+        <div class="tarjeta tarjeta-leve">
 
             <h3>
                 🔵 Casos leves
@@ -346,7 +403,7 @@
         </div>
 
 
-        <div class="tarjeta">
+        <div class="tarjeta tarjeta-moderado">
 
             <h3>
                 🟡 Casos moderados
@@ -359,7 +416,7 @@
         </div>
 
 
-        <div class="tarjeta">
+        <div class="tarjeta tarjeta-severo">
 
             <h3>
                 🔴 Casos severos
@@ -372,7 +429,7 @@
         </div>
 
 
-        <div class="tarjeta">
+        <div class="tarjeta tarjeta-extremo">
 
             <h3>
                 ⚠️ Severo extremo
@@ -380,6 +437,18 @@
 
             <div class="numero">
                 {{ casos_severo_extremo }}
+            </div>
+
+        </div>
+
+        <div class="tarjeta tarjeta-no-determinado">
+
+            <h3>
+                ⚪ No determinado
+            </h3>
+
+            <div class="numero">
+                {{ casos_no_determinado }}
             </div>
 
         </div>
@@ -608,6 +677,39 @@
 
                 </tr>
 
+                <tr>
+
+    <td class="riesgo-no-determinado">
+        NO DETERMINADO
+    </td>
+
+    <td>
+        {{ casos_no_determinado }}
+    </td>
+
+    <td>
+
+        <div class="barra-contenedor">
+
+            {% if total_casos %}
+
+                <div
+                    class="barra"
+                    style="
+                        width:
+                        {% widthratio casos_no_determinado total_casos 100 %}%;
+                        background:#800080;
+                    "
+                ></div>
+
+            {% endif %}
+
+        </div>
+
+    </td>
+
+</tr>
+
 
             </tbody>
 
@@ -650,7 +752,7 @@
                     </th>
 
                     <th
-                        colspan="4"
+                        colspan="5"
                         class="encabezado-riesgo"
                     >
                         NIVEL DE RIESGO
@@ -688,6 +790,10 @@
 
                     <th class="subencabezado">
                         Severo extremo
+                    </th>
+
+                    <th class="subencabezado">
+                        No determinado
                     </th>
 
                     <th class="subencabezado">
@@ -741,6 +847,9 @@
                         {{ efectivo.severo_extremo }}
                     </td>
 
+                     <td class="valor-no-determinado">
+                        {{ efectivo.no_determinado }}
+                    </td>   
 
                     <!-- SEGUIMIENTO -->
 
