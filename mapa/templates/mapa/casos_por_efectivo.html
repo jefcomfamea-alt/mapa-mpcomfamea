@@ -1,0 +1,152 @@
+{% extends "mapa/base.html" %}
+
+{% block content %}
+
+<div style="padding:20px;">
+
+    <h2>
+        Casos asignados a:
+        {{ efectivo.get_full_name|default:efectivo.username }}
+    </h2>
+
+    <p>
+        Total de casos activos: <strong>{{ casos|length }}</strong>
+    </p>
+
+    <table
+        style="
+            width:100%;
+            border-collapse:collapse;
+            margin-top:20px;
+        "
+    >
+
+        <thead>
+
+            <tr style="background:#1B5E20;color:white;">
+
+                <th style="padding:10px;border:1px solid #ccc;">
+                    N.°
+                </th>
+
+                <th style="padding:10px;border:1px solid #ccc;">
+                    Beneficiaria
+                </th>
+
+                <th style="padding:10px;border:1px solid #ccc;">
+                    DNI
+                </th>
+
+                <th style="padding:10px;border:1px solid #ccc;">
+                    Expediente
+                </th>
+
+                <th style="padding:10px;border:1px solid #ccc;">
+                    Folder
+                </th>
+
+                <th style="padding:10px;border:1px solid #ccc;">
+                    Nivel de riesgo
+                </th>
+
+                <th style="padding:10px;border:1px solid #ccc;">
+                    Última visita
+                </th>
+
+                <th style="padding:10px;border:1px solid #ccc;">
+                    Fecha límite
+                </th>
+
+                <th style="padding:10px;border:1px solid #ccc;">
+                    Estado
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for caso in casos %}
+
+            <tr>
+
+                <td style="padding:8px;border:1px solid #ccc;">
+                    {{ forloop.counter }}
+                </td>
+
+                <td style="padding:8px;border:1px solid #ccc;">
+                    {{ caso.beneficiario }}
+                </td>
+
+                <td style="padding:8px;border:1px solid #ccc;">
+                    {{ caso.dni_beneficiario }}
+                </td>
+
+                <td style="padding:8px;border:1px solid #ccc;">
+                    {{ caso.expediente }}
+                </td>
+
+                <td style="padding:8px;border:1px solid #ccc;">
+                    {{ caso.folder }}
+                </td>
+
+                <td style="padding:8px;border:1px solid #ccc;">
+                    {{ caso.nivel_riesgo }}
+                </td>
+
+                <td style="padding:8px;border:1px solid #ccc;">
+                    {{ caso.ultima_visita|date:"d/m/Y" }}
+                </td>
+
+                <td style="padding:8px;border:1px solid #ccc;">
+                    {{ caso.fecha_limite|date:"d/m/Y" }}
+                </td>
+
+                <td style="padding:8px;border:1px solid #ccc;">
+                    {{ caso.estado }}
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+
+                <td
+                    colspan="9"
+                    style="
+                        padding:20px;
+                        text-align:center;
+                    "
+                >
+                    No tiene casos activos asignados.
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    <br>
+
+    <a
+        href="{% url 'estadistica' %}"
+        style="
+            display:inline-block;
+            padding:10px 18px;
+            background:#1B5E20;
+            color:white;
+            text-decoration:none;
+            border-radius:5px;
+        "
+    >
+        ← Volver a Estadística
+    </a>
+
+</div>
+
+{% endblock %}

@@ -818,7 +818,9 @@
                     <!-- EFECTIVO -->
 
                     <td class="nombre-efectivo">
-                        👮 {{ efectivo.nombre }}
+                        <a href="{% url 'casos_por_efectivo' efectivo.id %}">
+                            👮{{ efectivo.nombre }}
+                        </a>
                     </td>
 
 

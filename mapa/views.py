@@ -2171,6 +2171,8 @@ def estadistica(request):
         )
 
         casos_por_efectivo.append({
+            "id": responsable.id,
+
             "nombre": responsable.get_full_name() or responsable.username,
 
             "total": casos_efectivo.count(),
@@ -2244,6 +2246,33 @@ def estadistica(request):
             "riesgos": riesgos,
 
             "puede_descargar": puede_descargar,
+        }
+    )
+
+@login_required
+@grupo_requerido(
+    "Administrador",
+    "Jefe_MP",
+    "Usuario_Estadistica"
+)
+def casos_por_efectivo(request, id):
+
+    efectivo = get_object_or_404(
+        User,
+        pk=id
+    )
+
+    casos = Caso.objects.filter(
+        responsable=efectivo,
+        estado="ACTIVO"
+    ).order_by("-id")
+
+    return render(
+        request,
+        "mapa/casos_por_efectivo.html",
+        {
+            "efectivo": efectivo,
+            "casos": casos,
         }
     )
 

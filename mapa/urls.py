@@ -272,4 +272,10 @@ urlpatterns = [
         name="corregir_niveles_riesgo"
     ),
 
+    path(
+        "casos-por-efectivo/<int:id>/",
+        views.casos_por_efectivo,
+        name="casos_por_efectivo"
+    ),
+
 ]
