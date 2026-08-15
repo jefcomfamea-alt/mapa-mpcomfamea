@@ -123,19 +123,6 @@ USUARIO
     gap:10px;
 }
 
-.btnBuzon{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    background:#0d6efd;
-    color:white;
-    text-decoration:none;
-    padding:8px 14px;
-    border-radius:6px;
-    font-weight:bold;
-    transition:.2s;
-}
-
 .btnAdmin{
 
     display:inline-flex;
@@ -164,13 +151,6 @@ USUARIO
 
     background:#FFD700;
     color:#1B5E20;
-
-}
-
-
-.btnAdmin:hover{
-
-    background:white;
 
 }
 
@@ -247,12 +227,6 @@ USUARIO
     transition:.2s;
 }
 
-.btnBuzon:hover{
-
-    background:#0b5ed7;
-
-}
-
 .contador{
 
     display:inline-block;
@@ -287,10 +261,6 @@ USUARIO
 
 .btnSalir:hover{
     background:#bb2d3b;
-}
-
-.btnBuzon:hover{
-    background:#0b5ed7;
 }
 
 .btnMapaAgresores{
@@ -613,25 +583,27 @@ DESPLEGABLE DE BÚSQUEDA
 
     {% endif %}
 
-        {% if es_admin or es_jefe or es_usuario_mp or es_usuario_investigacion %}
+    {% if es_admin or es_jefe or es_usuario_mp or es_usuario_investigacion or es_usuario_estadistica %}
 
-            {% if es_admin or es_jefe or es_usuario_investigacion %}
-                <button
-                    class="botonMenu azul"
-                    onclick="window.location.href='/registrar-ubicacion-preliminar/'">
+        {% if es_admin or es_jefe or es_usuario_investigacion %}
 
-                    📍 Registrar Ubicación Preliminar
+            <button
+                class="botonMenu azul"
+                onclick="window.location.href='/registrar-ubicacion-preliminar/'">
+
+                📍 Registrar Ubicación Preliminar
 
             </button>
+
         {% endif %}
 
-        <button
-            class="botonMenu rojo"
-            onclick="window.location.href='/mapa-agresores/'">
+    <button
+        class="botonMenu rojo"
+        onclick="window.location.href='/mapa-agresores/'">
 
-            🟥 Mapa de Agresores
+        🟥 Mapa de Agresores
 
-        </button>
+    </button>
 
     {% endif %}
 
@@ -669,7 +641,7 @@ DESPLEGABLE DE BÚSQUEDA
     🔍 Buscar
 </button>
 
-{% if es_admin or es_jefe or es_usuario_mp %}
+{% if es_admin or es_jefe or es_usuario_mp or es_usuario_estadistica %}
 
 <button
     class="botonMenu azul"
@@ -681,7 +653,21 @@ DESPLEGABLE DE BÚSQUEDA
 
 {% endif %}
 
-    {% if es_admin %}
+
+{% if es_admin or es_jefe or es_usuario_mp or es_usuario_estadistica %}
+
+<button
+    class="botonMenu azul"
+    onclick="window.location.href='/estadistica/'">
+
+    📊 Estadística
+
+</button>
+
+{% endif %}
+
+
+{% if es_admin %}
 <button
     class="botonMenu azul"
     onclick="window.location.href='/administrar-usuarios/'">

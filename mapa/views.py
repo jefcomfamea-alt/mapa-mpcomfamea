@@ -4,6 +4,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Q
+from django.http import HttpResponseForbidden
 from datetime import timedelta
 from django.utils import timezone
 from urllib.parse import urlencode
@@ -129,6 +130,10 @@ def inicio(request):
         name="Usuario_Investigacion"
     ).exists()
 
+    es_usuario_estadistica = request.user.groups.filter(
+        name="Usuario_Estadistica"
+    ).exists()
+
     return render(
         request,
         "mapa/inicio.html",
@@ -139,6 +144,7 @@ def inicio(request):
             "es_usuario_mp": es_usuario_mp,
             "es_efectivo_comfamea": es_efectivo_comfamea,
             "es_usuario_investigacion": es_usuario_investigacion,
+            "es_usuario_estadistica": es_usuario_estadistica,
             "notificaciones": notificaciones,
         }
     )
@@ -952,6 +958,12 @@ def seleccionar_rol_preliminar(request, id):
     )
 
 @login_required
+@grupo_requerido(
+    "Administrador",
+    "Jefe_MP",
+    "Usuario_MP",
+    "Usuario_Estadistica"
+)
 def gestion_casos(request):
 
     busqueda = request.GET.get("q", "").strip()
@@ -2025,6 +2037,25 @@ def ubicaciones_preliminares_json(request):
 
 @login_required
 def estadistica(request):
+
+    grupos_estadistica = [
+        "Administrador",
+        "Jefe_MP",
+        "Usuario_MP",
+        "Usuario_Estadistica",
+        "Efectivo_COMFAMEA",
+        "Usuario_Investigacion",
+    ]
+
+    if not (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name__in=grupos_estadistica
+        ).exists()
+    ):
+        return HttpResponseForbidden(
+            "No tiene autorización para acceder a Estadística."
+        )
 
     # ==========================================
     # CASOS ACTIVOS
