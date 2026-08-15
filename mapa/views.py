@@ -2528,7 +2528,9 @@ def corregir_niveles_riesgo(request):
 
     if not (
         request.user.is_superuser
-        or request.user.groups.filter(name="Administrador").exists()
+        or request.user.groups.filter(
+            name="Administrador"
+        ).exists()
     ):
         return HttpResponseForbidden("No autorizado.")
 
