@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 from datetime import timedelta
@@ -2038,24 +2038,28 @@ def ubicaciones_preliminares_json(request):
 @login_required
 def estadistica(request):
 
-    grupos_estadistica = [
-        "Administrador",
-        "Jefe_MP",
-        "Usuario_MP",
-        "Usuario_Estadistica",
-        "Efectivo_COMFAMEA",
-        "Usuario_Investigacion",
-    ]
-
-    if not (
+    # Todos los usuarios pueden visualizar Estadística.
+    # La restricción de descarga se controla por separado.
+    es_admin = (
         request.user.is_superuser
         or request.user.groups.filter(
-            name__in=grupos_estadistica
+            name="Administrador"
         ).exists()
-    ):
-        return HttpResponseForbidden(
-            "No tiene autorización para acceder a Estadística."
-        )
+    )
+
+    es_jefe = request.user.groups.filter(
+        name="Jefe_MP"
+    ).exists()
+
+    es_usuario_estadistica = request.user.groups.filter(
+        name="Usuario_Estadistica"
+    ).exists()
+
+    puede_descargar = (
+        es_admin
+        or es_jefe
+        or es_usuario_estadistica
+    )
 
     # ==========================================
     # CASOS ACTIVOS
@@ -2150,6 +2154,60 @@ def estadistica(request):
     ).count()
 
     # ==========================================
+    # CASOS POR EFECTIVO RESPONSABLE
+    # ==========================================
+
+    casos_por_efectivo = []
+
+    responsables = User.objects.filter(
+        casos_asignados__estado="ACTIVO"
+    ).distinct()
+
+    for responsable in responsables:
+
+        casos_efectivo = Caso.objects.filter(
+            responsable=responsable,
+            estado="ACTIVO"
+        )
+
+        casos_por_efectivo.append({
+            "nombre": responsable.get_full_name() or responsable.username,
+
+            "total": casos_efectivo.count(),
+
+            "leves": casos_efectivo.filter(
+                nivel_riesgo="LEVE"
+            ).count(),
+
+            "moderados": casos_efectivo.filter(
+                nivel_riesgo="MODERADO"
+            ).count(),
+
+            "severos": casos_efectivo.filter(
+                nivel_riesgo="SEVERO"
+            ).count(),
+
+            "severo_extremo": casos_efectivo.filter(
+                nivel_riesgo="SEVERO EXTREMO"
+            ).count(),
+
+            "no_determinado": casos_efectivo.filter(
+                nivel_riesgo="NO DETERMINADO"
+            ).count(),
+
+            "por_vencer": casos_efectivo.filter(
+                fecha_limite__isnull=False,
+                fecha_limite__gte=hoy,
+                fecha_limite__lte=limite
+            ).count(),
+
+            "vencidos": casos_efectivo.filter(
+                fecha_limite__isnull=False,
+                fecha_limite__lt=hoy
+            ).count(),
+        })
+
+    # ==========================================
     # DATOS PARA GRÁFICO DE RIESGO
     # ==========================================
 
@@ -2181,6 +2239,286 @@ def estadistica(request):
 
             "total_agresores": total_agresores,
 
+            "casos_por_efectivo": casos_por_efectivo,
+
             "riesgos": riesgos,
+
+            "puede_descargar": puede_descargar,
         }
     )
+
+@login_required
+def descargar_estadistica(request):
+
+    # ==========================================
+    # VERIFICAR AUTORIZACIÓN DE DESCARGA
+    # ==========================================
+
+    es_admin = (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name="Administrador"
+        ).exists()
+    )
+
+    es_jefe = request.user.groups.filter(
+        name="Jefe_MP"
+    ).exists()
+
+    es_usuario_estadistica = request.user.groups.filter(
+        name="Usuario_Estadistica"
+    ).exists()
+
+    if not (
+        es_admin
+        or es_jefe
+        or es_usuario_estadistica
+    ):
+        return HttpResponseForbidden(
+            "No tiene autorización para descargar Estadística."
+        )
+
+    # ==========================================
+    # IMPORTACIONES
+    # ==========================================
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment
+    from io import BytesIO
+
+    # ==========================================
+    # CASOS ACTIVOS
+    # ==========================================
+
+    casos_activos = Caso.objects.filter(
+        estado="ACTIVO"
+    )
+
+    total_casos = casos_activos.count()
+
+    # ==========================================
+    # CASOS POR NIVEL DE RIESGO
+    # ==========================================
+
+    casos_leves = casos_activos.filter(
+        nivel_riesgo="LEVE"
+    ).count()
+
+    casos_moderados = casos_activos.filter(
+        nivel_riesgo="MODERADO"
+    ).count()
+
+    casos_severos = casos_activos.filter(
+        nivel_riesgo="SEVERO"
+    ).count()
+
+    casos_severo_extremo = casos_activos.filter(
+        nivel_riesgo="SEVERO EXTREMO"
+    ).count()
+
+    casos_no_determinado = casos_activos.filter(
+        nivel_riesgo="NO DETERMINADO"
+    ).count()
+
+    # ==========================================
+    # SEGUIMIENTO
+    # ==========================================
+
+    hoy = timezone.now().date()
+
+    limite = hoy + timedelta(days=3)
+
+    casos_por_vencer = casos_activos.filter(
+        fecha_limite__isnull=False,
+        fecha_limite__gte=hoy,
+        fecha_limite__lte=limite
+    ).count()
+
+    casos_vencidos = casos_activos.filter(
+        fecha_limite__isnull=False,
+        fecha_limite__lt=hoy
+    ).count()
+
+    casos_al_dia = casos_activos.filter(
+        fecha_limite__isnull=False,
+        fecha_limite__gt=limite
+    ).count()
+
+    # ==========================================
+    # PRELIMINARES
+    # ==========================================
+
+    preliminares = UbicacionPreliminar.objects.filter(
+        estado="PRELIMINAR"
+    )
+
+    total_preliminares = 0
+
+    for ubicacion in preliminares:
+
+        if ubicacion.personas.filter(
+            convertida=False
+        ).exists():
+
+            total_preliminares += 1
+
+    # ==========================================
+    # AGRESORES
+    # ==========================================
+
+    total_agresores = Agresor.objects.filter(
+        activo=True
+    ).count()
+
+    # ==========================================
+    # CREAR EXCEL
+    # ==========================================
+
+    wb = Workbook()
+
+    ws = wb.active
+
+    ws.title = "Estadística"
+
+    # ==========================================
+    # TÍTULO
+    # ==========================================
+
+    ws["A1"] = "ESTADÍSTICA - COMFAM PNP EL AGUSTINO"
+
+    ws["A1"].font = Font(
+        bold=True,
+        size=14
+    )
+
+    ws["A1"].alignment = Alignment(
+        horizontal="center"
+    )
+
+    ws.merge_cells("A1:B1")
+
+    # ==========================================
+    # ENCABEZADOS
+    # ==========================================
+
+    ws["A3"] = "INDICADOR"
+    ws["B3"] = "CANTIDAD"
+
+    ws["A3"].font = Font(bold=True)
+    ws["B3"].font = Font(bold=True)
+
+    # ==========================================
+    # DATOS
+    # ==========================================
+
+    datos = [
+
+        (
+            "Total de casos activos",
+            total_casos
+        ),
+
+        (
+            "Casos leves",
+            casos_leves
+        ),
+
+        (
+            "Casos moderados",
+            casos_moderados
+        ),
+
+        (
+            "Casos severos",
+            casos_severos
+        ),
+
+        (
+            "Casos severo extremo",
+            casos_severo_extremo
+        ),
+
+        (
+            "Casos no determinado",
+            casos_no_determinado
+        ),
+
+        (
+            "Casos por vencer en 3 días",
+            casos_por_vencer
+        ),
+
+        (
+            "Casos vencidos",
+            casos_vencidos
+        ),
+
+        (
+            "Casos al día",
+            casos_al_dia
+        ),
+
+        (
+            "Preliminares pendientes",
+            total_preliminares
+        ),
+
+        (
+            "Agresores registrados",
+            total_agresores
+        ),
+
+    ]
+
+    fila = 4
+
+    for indicador, cantidad in datos:
+
+        ws.cell(
+            row=fila,
+            column=1,
+            value=indicador
+        )
+
+        ws.cell(
+            row=fila,
+            column=2,
+            value=cantidad
+        )
+
+        fila += 1
+
+    # ==========================================
+    # ANCHO DE COLUMNAS
+    # ==========================================
+
+    ws.column_dimensions["A"].width = 35
+    ws.column_dimensions["B"].width = 15
+
+    # ==========================================
+    # GENERAR ARCHIVO
+    # ==========================================
+
+    archivo = BytesIO()
+
+    wb.save(archivo)
+
+    archivo.seek(0)
+
+    # ==========================================
+    # RESPUESTA HTTP
+    # ==========================================
+
+    response = HttpResponse(
+        archivo.getvalue(),
+        content_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        )
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="Estadistica_COMFAM.xlsx"'
+    )
+
+    return response

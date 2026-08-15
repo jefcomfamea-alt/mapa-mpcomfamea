@@ -134,6 +134,132 @@
         background: #8e0000;
     }
 
+/* ==========================================
+   TABLA CASOS POR EFECTIVO
+   ========================================== */
+
+.tabla-efectivos {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.tabla-efectivos th,
+.tabla-efectivos td {
+    padding: 11px 10px;
+    text-align: center;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tabla-efectivos th:last-child,
+.tabla-efectivos td:last-child {
+    border-right: none;
+}
+
+/* EFECTIVO */
+
+.encabezado-efectivo {
+    background: #263238;
+    color: white;
+}
+
+/* BLOQUE ACTIVOS */
+
+.encabezado-activos {
+    background: #1B5E20;
+    color: white;
+}
+
+/* BLOQUE RIESGO */
+
+.encabezado-riesgo {
+    background: #8a6d00;
+    color: white;
+}
+
+/* BLOQUE SEGUIMIENTO */
+
+.encabezado-seguimiento {
+    background: #8e0000;
+    color: white;
+}
+
+/* SUBENCABEZADOS */
+
+.subencabezado {
+    background: #f1f3f4;
+    color: #333;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* CELDA DEL EFECTIVO */
+
+.nombre-efectivo {
+    text-align: left !important;
+    font-weight: bold;
+    color: #263238;
+    background: #fafafa;
+    min-width: 230px;
+}
+
+/* TOTAL */
+
+.total-casos-efectivo {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1B5E20;
+}
+
+/* RIESGOS */
+
+.valor-leve {
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+.valor-moderado {
+    font-weight: bold;
+    color: #ef6c00;
+}
+
+.valor-severo {
+    font-weight: bold;
+    color: #d32f2f;
+}
+
+.valor-extremo {
+    font-weight: bold;
+    color: #8e0000;
+}
+
+/* SEGUIMIENTO */
+
+.valor-por-vencer {
+    font-weight: bold;
+    color: #ef6c00;
+}
+
+.valor-vencido {
+    font-weight: bold;
+    color: #b71c1c;
+}
+
+/* FILAS */
+
+.tabla-efectivos tbody tr:hover {
+    background: #f5f5f5;
+}
+
+.tabla-efectivos tbody tr:last-child td {
+    border-bottom: none;
+} 
+
+
 </style>
 
 
@@ -156,6 +282,35 @@
         </p>
 
     </div>
+
+    {% if puede_descargar %}
+
+    <div style="
+        background:white;
+        padding:15px;
+        border-radius:8px;
+        margin-bottom:25px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.10);
+    ">
+
+        <a href="{% url 'descargar_estadistica' %}"
+            style="
+                display:inline-block;
+                background:#1B5E20;
+                color:white;
+                padding:11px 18px;
+                border-radius:6px;
+                text-decoration:none;
+                font-weight:bold;
+            ">
+
+            📥 Descargar Estadística
+
+        </a>
+
+    </div>
+
+    {% endif %}
 
 
     <!-- ============================= -->
@@ -459,6 +614,166 @@
         </table>
 
     </div>
+
+<!-- ==========================================
+     CASOS POR EFECTIVO RESPONSABLE
+     ========================================== -->
+
+<div class="seccion">
+
+    <h2>
+        👮 Casos por efectivo responsable
+    </h2>
+
+    <div style="overflow-x:auto;">
+
+        <table class="tabla-efectivos">
+
+            <thead>
+
+                <!-- BLOQUES PRINCIPALES -->
+
+                <tr>
+
+                    <th
+                        rowspan="2"
+                        class="encabezado-efectivo"
+                    >
+                        EFECTIVO RESPONSABLE
+                    </th>
+
+                    <th
+                        colspan="1"
+                        class="encabezado-activos"
+                    >
+                        CASOS ACTIVOS
+                    </th>
+
+                    <th
+                        colspan="4"
+                        class="encabezado-riesgo"
+                    >
+                        NIVEL DE RIESGO
+                    </th>
+
+                    <th
+                        colspan="2"
+                        class="encabezado-seguimiento"
+                    >
+                        SEGUIMIENTO
+                    </th>
+
+                </tr>
+
+
+                <!-- SUBENCABEZADOS -->
+
+                <tr>
+
+                    <th class="subencabezado">
+                        Total
+                    </th>
+
+                    <th class="subencabezado">
+                        Leves
+                    </th>
+
+                    <th class="subencabezado">
+                        Moderados
+                    </th>
+
+                    <th class="subencabezado">
+                        Severos
+                    </th>
+
+                    <th class="subencabezado">
+                        Severo extremo
+                    </th>
+
+                    <th class="subencabezado">
+                        Por vencer
+                    </th>
+
+                    <th class="subencabezado">
+                        Vencidos
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for efectivo in casos_por_efectivo %}
+
+                <tr>
+
+                    <!-- EFECTIVO -->
+
+                    <td class="nombre-efectivo">
+                        👮 {{ efectivo.nombre }}
+                    </td>
+
+
+                    <!-- CASOS ACTIVOS -->
+
+                    <td class="total-casos-efectivo">
+                        {{ efectivo.total }}
+                    </td>
+
+
+                    <!-- NIVEL DE RIESGO -->
+
+                    <td class="valor-leve">
+                        {{ efectivo.leves }}
+                    </td>
+
+                    <td class="valor-moderado">
+                        {{ efectivo.moderados }}
+                    </td>
+
+                    <td class="valor-severo">
+                        {{ efectivo.severos }}
+                    </td>
+
+                    <td class="valor-extremo">
+                        {{ efectivo.severo_extremo }}
+                    </td>
+
+
+                    <!-- SEGUIMIENTO -->
+
+                    <td class="valor-por-vencer">
+                        {{ efectivo.por_vencer }}
+                    </td>
+
+                    <td class="valor-vencido">
+                        {{ efectivo.vencidos }}
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="8">
+                        No existen casos activos asignados
+                        a efectivos responsables.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
 
 
     <!-- ============================= -->

@@ -260,4 +260,10 @@ urlpatterns = [
         name="estadistica"
     ),
 
+    path(
+        "descargar-estadistica/",
+        views.descargar_estadistica,
+        name="descargar_estadistica"
+    ),
+
 ]
