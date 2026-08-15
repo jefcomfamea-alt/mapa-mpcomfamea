@@ -173,6 +173,12 @@
             ➕ Nuevo Caso
         </a>
 
+        <a href="{% url 'casos_preliminares' %}"
+            class="btn"
+            style="background:#1976d2;">
+            📍 Casos Preliminares
+        </a>
+
 
         {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" or request.user.groups.all.0.name == "Jefe_MP" %}
 
