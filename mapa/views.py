@@ -2022,3 +2022,134 @@ def ubicaciones_preliminares_json(request):
         "features": features
 
     })
+
+@login_required
+def estadistica(request):
+
+    # ==========================================
+    # CASOS ACTIVOS
+    # ==========================================
+
+    casos_activos = Caso.objects.filter(
+        estado="ACTIVO"
+    )
+
+    total_casos = casos_activos.count()
+
+    # ==========================================
+    # CASOS POR NIVEL DE RIESGO
+    # ==========================================
+
+    casos_leves = casos_activos.filter(
+        nivel_riesgo="LEVE"
+    ).count()
+
+    casos_moderados = casos_activos.filter(
+        nivel_riesgo="MODERADO"
+    ).count()
+
+    casos_severos = casos_activos.filter(
+        nivel_riesgo="SEVERO"
+    ).count()
+
+    casos_severo_extremo = casos_activos.filter(
+        nivel_riesgo="SEVERO EXTREMO"
+    ).count()
+
+    casos_no_determinado = casos_activos.filter(
+        nivel_riesgo="NO DETERMINADO"
+    ).count()
+
+    # ==========================================
+    # CASOS POR VENCER
+    # ==========================================
+
+    hoy = timezone.now().date()
+
+    limite = hoy + timedelta(days=3)
+
+    casos_por_vencer = casos_activos.filter(
+        fecha_limite__isnull=False,
+        fecha_limite__gte=hoy,
+        fecha_limite__lte=limite
+    ).count()
+
+    # ==========================================
+    # CASOS VENCIDOS
+    # ==========================================
+
+    casos_vencidos = casos_activos.filter(
+        fecha_limite__isnull=False,
+        fecha_limite__lt=hoy
+    ).count()
+
+    # ==========================================
+    # CASOS AL DÍA
+    # ==========================================
+
+    casos_al_dia = casos_activos.filter(
+        fecha_limite__isnull=False,
+        fecha_limite__gt=limite
+    ).count()
+
+    # ==========================================
+    # PRELIMINARES PENDIENTES
+    # ==========================================
+
+    preliminares = UbicacionPreliminar.objects.filter(
+        estado="PRELIMINAR"
+    )
+
+    total_preliminares = 0
+
+    for ubicacion in preliminares:
+
+        if ubicacion.personas.filter(
+            convertida=False
+        ).exists():
+
+            total_preliminares += 1
+
+    # ==========================================
+    # AGRESORES REGISTRADOS
+    # ==========================================
+
+    total_agresores = Agresor.objects.filter(
+        activo=True
+    ).count()
+
+    # ==========================================
+    # DATOS PARA GRÁFICO DE RIESGO
+    # ==========================================
+
+    riesgos = {
+        "LEVE": casos_leves,
+        "MODERADO": casos_moderados,
+        "SEVERO": casos_severos,
+        "SEVERO EXTREMO": casos_severo_extremo,
+        "NO DETERMINADO": casos_no_determinado,
+    }
+
+    return render(
+        request,
+        "mapa/estadistica.html",
+        {
+            "total_casos": total_casos,
+
+            "casos_leves": casos_leves,
+            "casos_moderados": casos_moderados,
+            "casos_severos": casos_severos,
+            "casos_severo_extremo": casos_severo_extremo,
+            "casos_no_determinado": casos_no_determinado,
+
+            "casos_por_vencer": casos_por_vencer,
+            "casos_vencidos": casos_vencidos,
+            "casos_al_dia": casos_al_dia,
+
+            "total_preliminares": total_preliminares,
+
+            "total_agresores": total_agresores,
+
+            "riesgos": riesgos,
+        }
+    )

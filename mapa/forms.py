@@ -122,6 +122,9 @@ class CasoForm(forms.ModelForm):
         self.usuario = kwargs.pop("usuario", None)
 
         super().__init__(*args, **kwargs)
+
+        self.fields["nivel_riesgo"].required = True
+
         self.fields["comisaria_medida"].label = "Comisaría del sector"
 
         self.fields["estado_ubicacion_agresor"].required = False
@@ -345,6 +348,14 @@ class CasoForm(forms.ModelForm):
     def clean(self):
 
         cleaned_data = super().clean()
+
+        nivel_riesgo = cleaned_data.get("nivel_riesgo")
+
+        if not nivel_riesgo:
+            self.add_error(
+            "nivel_riesgo",
+            "Debe seleccionar un nivel de riesgo."
+        )
 
         notificacion_beneficiario = cleaned_data.get(
             "notificacion_beneficiario"

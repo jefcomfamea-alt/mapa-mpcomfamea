@@ -254,4 +254,10 @@ urlpatterns = [
         name="desactivar_usuario"
     ),
 
+    path(
+        "estadistica/",
+        views.estadistica,
+        name="estadistica"
+    ),
+
 ]

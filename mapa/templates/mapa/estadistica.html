@@ -1,0 +1,504 @@
+{% extends "mapa/base.html" %}
+
+{% block content %}
+
+<style>
+
+    .estadistica-contenedor {
+        width: 95%;
+        margin: 25px auto;
+    }
+
+    .titulo-estadistica {
+        background: #1B5E20;
+        color: white;
+        padding: 18px 22px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+    }
+
+    .titulo-estadistica h1 {
+        margin: 0;
+        font-size: 28px;
+    }
+
+    .titulo-estadistica p {
+        margin: 8px 0 0;
+        opacity: 0.9;
+    }
+
+    .tarjetas {
+        display: grid;
+        grid-template-columns: repeat(
+            auto-fit,
+            minmax(210px, 1fr)
+        );
+        gap: 18px;
+        margin-bottom: 30px;
+    }
+
+    .tarjeta {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        border-left: 6px solid #1B5E20;
+    }
+
+    .tarjeta h3 {
+        margin: 0 0 10px;
+        font-size: 15px;
+        color: #666;
+    }
+
+    .numero {
+        font-size: 32px;
+        font-weight: bold;
+        color: #1B5E20;
+    }
+
+    .seccion {
+        background: white;
+        border-radius: 10px;
+        padding: 22px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+
+    .seccion h2 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+    }
+
+    .tabla-riesgo {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .tabla-riesgo th {
+        background: #1B5E20;
+        color: white;
+        padding: 10px;
+    }
+
+    .tabla-riesgo td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: center;
+    }
+
+    .riesgo-leve {
+        font-weight: bold;
+    }
+
+    .riesgo-moderado {
+        font-weight: bold;
+    }
+
+    .riesgo-severo {
+        font-weight: bold;
+    }
+
+    .riesgo-extremo {
+        font-weight: bold;
+    }
+
+    .barra-contenedor {
+        width: 100%;
+        background: #eeeeee;
+        border-radius: 8px;
+        height: 28px;
+        overflow: hidden;
+    }
+
+    .barra {
+        height: 100%;
+        min-width: 2px;
+    }
+
+    .barra-leve {
+        background: #66bb6a;
+    }
+
+    .barra-moderado {
+        background: #ffa726;
+    }
+
+    .barra-severo {
+        background: #ef5350;
+    }
+
+    .barra-extremo {
+        background: #8e0000;
+    }
+
+</style>
+
+
+<div class="estadistica-contenedor">
+
+
+    <!-- ============================= -->
+    <!-- TITULO -->
+    <!-- ============================= -->
+
+    <div class="titulo-estadistica">
+
+        <h1>
+            📊 Estadística
+        </h1>
+
+        <p>
+            Resumen estadístico de los casos registrados
+            en el sistema.
+        </p>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- TARJETAS -->
+    <!-- ============================= -->
+
+    <div class="tarjetas">
+
+
+        <div class="tarjeta">
+
+            <h3>
+                📂 Total de casos activos
+            </h3>
+
+            <div class="numero">
+                {{ total_casos }}
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta">
+
+            <h3>
+                🔵 Casos leves
+            </h3>
+
+            <div class="numero">
+                {{ casos_leves }}
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta">
+
+            <h3>
+                🟡 Casos moderados
+            </h3>
+
+            <div class="numero">
+                {{ casos_moderados }}
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta">
+
+            <h3>
+                🔴 Casos severos
+            </h3>
+
+            <div class="numero">
+                {{ casos_severos }}
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta">
+
+            <h3>
+                ⚠️ Severo extremo
+            </h3>
+
+            <div class="numero">
+                {{ casos_severo_extremo }}
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta">
+
+            <h3>
+                ⏰ Por vencer en 3 días
+            </h3>
+
+            <div class="numero">
+                {{ casos_por_vencer }}
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta">
+
+            <h3>
+                🚨 Casos vencidos
+            </h3>
+
+            <div class="numero">
+                {{ casos_vencidos }}
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta">
+
+            <h3>
+                🔵 Preliminares pendientes
+            </h3>
+
+            <div class="numero">
+                {{ total_preliminares }}
+            </div>
+
+        </div>
+
+
+        <div class="tarjeta">
+
+            <h3>
+                🟤 Agresores registrados
+            </h3>
+
+            <div class="numero">
+                {{ total_agresores }}
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- RIESGO -->
+    <!-- ============================= -->
+
+    <div class="seccion">
+
+        <h2>
+            📊 Casos por nivel de riesgo
+        </h2>
+
+
+        <table class="tabla-riesgo">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Nivel de riesgo
+                    </th>
+
+                    <th>
+                        Cantidad
+                    </th>
+
+                    <th>
+                        Distribución
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+
+                <tr>
+
+                    <td class="riesgo-leve">
+                        LEVE
+                    </td>
+
+                    <td>
+                        {{ casos_leves }}
+                    </td>
+
+                    <td>
+
+                        <div class="barra-contenedor">
+
+                            {% if total_casos %}
+
+                                <div
+                                    class="barra barra-leve"
+                                    style="
+                                        width:
+                                        {% widthratio casos_leves total_casos 100 %}%;
+                                    "
+                                ></div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                <tr>
+
+                    <td class="riesgo-moderado">
+                        MODERADO
+                    </td>
+
+                    <td>
+                        {{ casos_moderados }}
+                    </td>
+
+                    <td>
+
+                        <div class="barra-contenedor">
+
+                            {% if total_casos %}
+
+                                <div
+                                    class="barra barra-moderado"
+                                    style="
+                                        width:
+                                        {% widthratio casos_moderados total_casos 100 %}%;
+                                    "
+                                ></div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                <tr>
+
+                    <td class="riesgo-severo">
+                        SEVERO
+                    </td>
+
+                    <td>
+                        {{ casos_severos }}
+                    </td>
+
+                    <td>
+
+                        <div class="barra-contenedor">
+
+                            {% if total_casos %}
+
+                                <div
+                                    class="barra barra-severo"
+                                    style="
+                                        width:
+                                        {% widthratio casos_severos total_casos 100 %}%;
+                                    "
+                                ></div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                <tr>
+
+                    <td class="riesgo-extremo">
+                        SEVERO EXTREMO
+                    </td>
+
+                    <td>
+                        {{ casos_severo_extremo }}
+                    </td>
+
+                    <td>
+
+                        <div class="barra-contenedor">
+
+                            {% if total_casos %}
+
+                                <div
+                                    class="barra barra-extremo"
+                                    style="
+                                        width:
+                                        {% widthratio casos_severo_extremo total_casos 100 %}%;
+                                    "
+                                ></div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- INFORMACIÓN OPERATIVA -->
+    <!-- ============================= -->
+
+    <div class="seccion">
+
+        <h2>
+            📌 Resumen operativo
+        </h2>
+
+        <p>
+            <strong>Casos activos:</strong>
+            {{ total_casos }}
+        </p>
+
+        <p>
+            <strong>Casos próximos a vencer:</strong>
+            {{ casos_por_vencer }}
+        </p>
+
+        <p>
+            <strong>Casos vencidos:</strong>
+            {{ casos_vencidos }}
+        </p>
+
+        <p>
+            <strong>Casos preliminares pendientes:</strong>
+            {{ total_preliminares }}
+        </p>
+
+        <p>
+            <strong>Agresores registrados:</strong>
+            {{ total_agresores }}
+        </p>
+
+    </div>
+
+
+</div>
+
+{% endblock %}
