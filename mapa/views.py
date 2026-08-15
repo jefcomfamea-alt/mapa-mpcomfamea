@@ -992,6 +992,47 @@ def gestion_casos(request):
     )
 
 @login_required
+@grupo_requerido("Administrador", "Jefe_MP")
+def casos_preliminares(request):
+
+    ubicaciones = (
+        UbicacionPreliminar.objects
+        .filter(
+            estado="PRELIMINAR"
+        )
+        .prefetch_related(
+            "personas__roles"
+        )
+        .order_by("-fecha_registro", "-id")
+    )
+
+    # Solo mostramos ubicaciones que todavía tengan
+    # personas preliminares sin convertir
+    preliminares = []
+
+    for ubicacion in ubicaciones:
+
+        personas = ubicacion.personas.filter(
+            convertida=False
+        ).prefetch_related("roles")
+
+        if personas.exists():
+
+            preliminares.append({
+                "ubicacion": ubicacion,
+                "personas": personas,
+            })
+
+    return render(
+        request,
+        "mapa/casos_preliminares.html",
+        {
+            "preliminares": preliminares,
+        }
+    )
+
+
+@login_required
 def casos_json(request):
 
     features = []

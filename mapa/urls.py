@@ -43,6 +43,12 @@ urlpatterns = [
     ),
 
     path(
+        "casos-preliminares/",
+        views.casos_preliminares,
+        name="casos_preliminares"
+    ),
+
+    path(
         "casos-json/",
         views.casos_json,
         name="casos_json"
