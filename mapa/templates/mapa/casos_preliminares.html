@@ -1,0 +1,325 @@
+{% extends "mapa/base.html" %}
+
+{% block content %}
+
+<style>
+
+    .contenedor {
+        width: 95%;
+        margin: 25px auto;
+    }
+
+    .contenedor h1 {
+        margin-bottom: 10px;
+    }
+
+    .descripcion {
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .acciones {
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        margin: 3px;
+    }
+
+    .volver {
+        background: #495057;
+    }
+
+    .nuevo {
+        background: #198754;
+    }
+
+    .tabla-contenedor {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    th {
+        background: #1565c0;
+        color: white;
+        padding: 10px;
+        text-align: center;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    tr:hover {
+        background: #f5f9ff;
+    }
+
+    .estado {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 12px;
+        background: #e3f2fd;
+        color: #1565c0;
+        font-weight: bold;
+    }
+
+    .persona {
+        margin-bottom: 8px;
+        padding: 8px;
+        border-radius: 5px;
+        background: #f5f5f5;
+        text-align: left;
+    }
+
+    .persona:last-child {
+        margin-bottom: 0;
+    }
+
+    .rol {
+        font-size: 12px;
+        font-weight: bold;
+        color: #555;
+    }
+
+    .convertir {
+        background: #198754;
+    }
+
+    .mapa {
+        background: #1565c0;
+    }
+
+    .vacio {
+        padding: 25px;
+        color: #777;
+        font-size: 16px;
+    }
+
+</style>
+
+
+<div class="contenedor">
+
+    <h1>🔵 Casos Preliminares</h1>
+
+    <div class="descripcion">
+        Ubicaciones y personas registradas preliminarmente que aún no han sido
+        convertidas en un caso formal.
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- BOTONES -->
+    <!-- ========================= -->
+
+    <div class="acciones">
+
+        <a href="{% url 'gestion_casos' %}"
+           class="btn volver">
+            📂 Volver a Gestión de Casos
+        </a>
+
+        <a href="{% url 'registrar_ubicacion_preliminar' %}"
+           class="btn nuevo">
+            ➕ Registrar Ubicación Preliminar
+        </a>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- TABLA -->
+    <!-- ========================= -->
+
+    <div class="tabla-contenedor">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>📅 Fecha</th>
+
+                    <th>Personas involucradas</th>
+
+                    <th>Tipo de registro</th>
+
+                    <th>Estado</th>
+
+                    <th>Acciones</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for item in preliminares %}
+
+                <tr>
+
+                    <!-- ID UBICACIÓN -->
+
+                    <td>
+                        {{ item.ubicacion.id }}
+                    </td>
+
+
+                    <!-- FECHA -->
+
+                    <td>
+
+                        {% if item.ubicacion.fecha_registro %}
+
+                            {{ item.ubicacion.fecha_registro|date:"d/m/Y H:i" }}
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- PERSONAS -->
+
+                    <td>
+
+                        {% for persona in item.personas %}
+
+                        <div class="persona">
+
+                            <strong>
+                                {{ persona.nombres }}
+                            </strong>
+
+                            <br>
+
+                            <small>
+                                DNI:
+                                {{ persona.dni|default:"-" }}
+                            </small>
+
+                            <br>
+
+                            <small>
+                                Dirección:
+                                {{ persona.direccion|default:"-" }}
+                            </small>
+
+                            <br>
+
+                            <span class="rol">
+
+                                Rol:
+
+                                {% for rol in persona.roles.all %}
+
+                                    {{ rol.rol }}
+
+                                    {% if not forloop.last %}
+                                        ,
+                                    {% endif %}
+
+                                {% empty %}
+
+                                    SIN ROL
+
+                                {% endfor %}
+
+                            </span>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </td>
+
+
+                    <!-- TIPO -->
+
+                    <td>
+
+                        {{ item.ubicacion.tipo_registro|default:"-" }}
+
+                    </td>
+
+
+                    <!-- ESTADO -->
+
+                    <td>
+
+                        <span class="estado">
+                            🔵 PRELIMINAR
+                        </span>
+
+                    </td>
+
+
+                    <!-- ACCIONES -->
+
+                    <td>
+
+                        {% with persona=item.personas|first %}
+
+                            {% if persona %}
+
+                                <a
+                                    href="{% url 'seleccionar_rol_preliminar' persona.id %}"
+                                    class="btn convertir"
+                                >
+                                    ➡️ Continuar / Convertir
+                                </a>
+
+                            {% endif %}
+
+                        {% endwith %}
+
+                    </td>
+
+                </tr>
+
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6" class="vacio">
+
+                        🔵 No existen casos preliminares pendientes.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
