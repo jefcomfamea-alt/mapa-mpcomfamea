@@ -474,104 +474,235 @@
 
 </div>
 
-```html
 <script>
 
 function buscarCasos() {
 
-    const texto = document.getElementById("buscadorCasos").value.trim();
+    const texto =
+        document.getElementById("buscadorCasos").value.trim();
 
     if (!texto) {
         return;
     }
 
-    const url = "{% url 'gestion_casos' %}";
+    const url =
+        "{% url 'gestion_casos' %}";
 
     window.location.href =
-        url + "?q=" + encodeURIComponent(texto);
+        url + "?q=" +
+        encodeURIComponent(texto);
 }
 
 
-const buscador = document.getElementById("buscadorCasos");
-const resultados = document.getElementById("resultadosBusqueda");
+/* =====================================================
+   BUSCADOR PREDICTIVO
+   ===================================================== */
+
+const buscador =
+    document.getElementById("buscadorCasos");
+
+const resultados =
+    document.getElementById("resultadosBusqueda");
 
 let temporizador = null;
 
 
 buscador.addEventListener("input", function() {
 
-    const texto = this.value.trim();
+    const texto =
+        this.value.trim();
 
     clearTimeout(temporizador);
+
+
+    /* -----------------------------------------
+       MENOS DE 2 CARACTERES
+       ----------------------------------------- */
 
     if (texto.length < 2) {
 
         resultados.innerHTML = "";
-        resultados.style.display = "none";
+
+        resultados.style.display =
+            "none";
 
         return;
     }
 
 
-    temporizador = setTimeout(() => {
+    /* -----------------------------------------
+       ESPERAR 250 ms
+       ----------------------------------------- */
+
+    temporizador =
+        setTimeout(() => {
+
 
         fetch(
             "{% url 'buscar_caso' %}?q=" +
             encodeURIComponent(texto)
         )
 
-        .then(response => response.json())
+
+        .then(response => {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Error HTTP " +
+                    response.status
+                );
+
+            }
+
+            return response.json();
+
+        })
+
 
         .then(data => {
 
             resultados.innerHTML = "";
 
-            if (!data.encontrado) {
+
+            /* ---------------------------------
+               SIN RESULTADOS
+               --------------------------------- */
+
+            if (
+                !data.encontrado ||
+                !data.casos ||
+                data.casos.length === 0
+            ) {
 
                 resultados.innerHTML = `
                     <div style="
                         padding:12px;
                         color:#777;
                     ">
-                        No se encontraron casos.
+                        No se encontraron coincidencias.
                     </div>
                 `;
 
-                resultados.style.display = "block";
+                resultados.style.display =
+                    "block";
 
                 return;
             }
 
 
+            /* ---------------------------------
+               MOSTRAR RESULTADOS
+               --------------------------------- */
+
             data.casos.forEach(caso => {
+
 
                 const opcion =
                     document.createElement("div");
 
-                opcion.style.padding = "10px";
-                opcion.style.cursor = "pointer";
+
+                opcion.style.padding =
+                    "10px";
+
+                opcion.style.cursor =
+                    "pointer";
+
                 opcion.style.borderBottom =
                     "1px solid #eee";
 
 
-                opcion.innerHTML = `
-                    <strong>
-                        ${caso.beneficiario || "Sin beneficiario"}
-                    </strong>
-                    <br>
+                /* ---------------------------------
+                   PRELIMINAR
+                   --------------------------------- */
 
-                    <small>
-                        DNI: ${caso.dni || "-"}
-                        |
-                        Expediente: ${caso.expediente || "-"}
-                    </small>
-                `;
+                if (
+                    caso.tipo === "PRELIMINAR"
+                ) {
 
+                    opcion.style.background =
+                        "#eef7ff";
+
+
+                    opcion.innerHTML = `
+
+                        <strong style="
+                            color:#1565c0;
+                        ">
+                            🔵 PRELIMINAR
+                        </strong>
+
+                        <br>
+
+                        <strong>
+                            ${caso.beneficiario ||
+                              "Sin nombre"}
+                        </strong>
+
+                        <br>
+
+                        <small>
+                            DNI:
+                            ${caso.dni || "-"}
+                        </small>
+
+                        <br>
+
+                        <small style="
+                            color:#1565c0;
+                            font-weight:bold;
+                        ">
+                            Presunta víctima
+                        </small>
+
+                    `;
+
+                }
+
+
+                /* ---------------------------------
+                   CASO FORMAL
+                   --------------------------------- */
+
+                else {
+
+                    opcion.innerHTML = `
+
+                        <strong>
+                            ${caso.beneficiario ||
+                              "Sin beneficiario"}
+                        </strong>
+
+                        <br>
+
+                        <small>
+
+                            DNI:
+                            ${caso.dni || "-"}
+
+                            |
+
+                            Expediente:
+                            ${caso.expediente || "-"}
+
+                        </small>
+
+                    `;
+
+                }
+
+
+                /* ---------------------------------
+                   EFECTO AL PASAR MOUSE
+                   --------------------------------- */
 
                 opcion.addEventListener(
                     "mouseenter",
                     () => {
-                        opcion.style.background = "#f0f5f0";
+
+                        opcion.style.background =
+                            "#f0f5f0";
+
                     }
                 );
 
@@ -579,35 +710,71 @@ buscador.addEventListener("input", function() {
                 opcion.addEventListener(
                     "mouseleave",
                     () => {
-                        opcion.style.background = "white";
+
+                        if (
+                            caso.tipo ===
+                            "PRELIMINAR"
+                        ) {
+
+                            opcion.style.background =
+                                "#eef7ff";
+
+                        } else {
+
+                            opcion.style.background =
+                                "white";
+
+                        }
+
                     }
                 );
 
+
+                /* ---------------------------------
+                   CLICK
+                   --------------------------------- */
 
                 opcion.addEventListener(
                     "click",
                     () => {
 
-                        const url =
-                            "{% url 'gestion_casos' %}";
+                        if (
+                            caso.tipo ===
+                            "PRELIMINAR"
+                        ) {
 
-                        window.location.href =
-                            url + "?q=" +
-                            encodeURIComponent(
-                                caso.beneficiario || ""
-                            );
+                            window.location.href =
+                                "{% url 'casos_preliminares' %}";
+
+                        }
+
+                        else {
+
+                            window.location.href =
+                                "{% url 'gestion_casos' %}" +
+                                "?q=" +
+                                encodeURIComponent(
+                                    caso.beneficiario || ""
+                                );
+
+                        }
+
                     }
                 );
 
 
-                resultados.appendChild(opcion);
+                resultados.appendChild(
+                    opcion
+                );
 
             });
 
 
-            resultados.style.display = "block";
+            resultados.style.display =
+                "block";
 
         })
+
 
         .catch(error => {
 
@@ -618,23 +785,32 @@ buscador.addEventListener("input", function() {
 
         });
 
+
     }, 250);
 
 });
 
 
-document.addEventListener("click", function(event) {
+/* =====================================================
+   CERRAR RESULTADOS AL HACER CLICK AFUERA
+   ===================================================== */
 
-    if (
-        !buscador.contains(event.target) &&
-        !resultados.contains(event.target)
-    ) {
+document.addEventListener(
+    "click",
+    function(event) {
 
-        resultados.style.display = "none";
+        if (
+            !buscador.contains(event.target) &&
+            !resultados.contains(event.target)
+        ) {
+
+            resultados.style.display =
+                "none";
+
+        }
 
     }
-
-});
+);
 
 </script>
 

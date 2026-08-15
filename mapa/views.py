@@ -1611,6 +1611,7 @@ def buscar_caso(request):
             "longitud": caso.longitud,
             "riesgo": caso.nivel_riesgo,
             "tipo": "CASO",
+            "url": "/gestion-casos/?q=" + str(caso.beneficiario),
         })
 
 
@@ -1619,7 +1620,7 @@ def buscar_caso(request):
     # SOLO LAS QUE APARECEN COMO PRESUNTA VÍCTIMA
     # =====================================================
 
-    if tipo in ["beneficiario", "dni"]:
+    if tipo in ["", "beneficiario", "dni"]:
 
         personas_preliminares = PersonaPreliminar.objects.filter(
             convertida=False
@@ -1679,6 +1680,9 @@ def buscar_caso(request):
 
                 "rol":
                     "BENEFICIARIO",
+
+                "url":
+                "/casos-preliminares/",
 
             })
 
