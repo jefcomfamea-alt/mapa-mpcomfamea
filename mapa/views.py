@@ -2522,3 +2522,30 @@ def descargar_estadistica(request):
     )
 
     return response
+
+@login_required
+def corregir_niveles_riesgo(request):
+
+    if not (
+        request.user.is_superuser
+        or request.user.groups.filter(name="Administrador").exists()
+    ):
+        return HttpResponseForbidden("No autorizado.")
+
+    from django.db import transaction
+
+    with transaction.atomic():
+
+        Caso.objects.filter(
+            nivel_riesgo="SEVERO1"
+        ).update(
+            nivel_riesgo="SEVERO"
+        )
+
+        Caso.objects.filter(
+            nivel_riesgo="SEVERO2"
+        ).update(
+            nivel_riesgo="SEVERO EXTREMO"
+        )
+
+    return redirect("estadistica")
