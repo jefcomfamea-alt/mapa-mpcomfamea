@@ -1023,6 +1023,18 @@ def casos_preliminares(request):
                 "personas": personas,
             })
 
+    # ==========================================
+    # PAGINACIÓN: 20 CASOS PRELIMINARES POR PÁGINA
+    # ==========================================
+
+    from django.core.paginator import Paginator
+
+    paginator = Paginator(preliminares, 20)
+
+    pagina = request.GET.get("page")
+
+    preliminares = paginator.get_page(pagina)
+
     return render(
         request,
         "mapa/casos_preliminares.html",
