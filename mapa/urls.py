@@ -266,4 +266,10 @@ urlpatterns = [
         name="descargar_estadistica"
     ),
 
+    path(
+        "corregir-niveles-riesgo/",
+        views.corregir_niveles_riesgo,
+        name="corregir_niveles_riesgo"
+    ),
+
 ]
