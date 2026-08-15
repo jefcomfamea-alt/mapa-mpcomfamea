@@ -276,7 +276,9 @@
                     </td>
 
 
+                    <!-- ========================= -->
                     <!-- ACCIONES -->
+                    <!-- ========================= -->
 
                     <td>
 
@@ -294,6 +296,32 @@
                             {% endif %}
 
                         {% endwith %}
+
+
+                        {% if request.user.is_superuser or request.user.groups.all.0.name == "Administrador" %}
+
+                            <form
+                                method="POST"
+                                action="{% url 'eliminar_caso_preliminar' item.ubicacion.id %}"
+                                style="display:inline;"
+                                onsubmit="return confirm(
+                                    '⚠️ ATENCIÓN: este caso preliminar y todas las personas asociadas serán eliminados definitivamente.\\n\\n¿Desea continuar?'
+                                );"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="btn"
+                                    style="background:#8b0000;"
+                                >
+                                    🗑️ Eliminar
+                                </button>
+
+                            </form>
+
+                        {% endif %}
 
                     </td>
 

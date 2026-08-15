@@ -1043,6 +1043,38 @@ def casos_preliminares(request):
         }
     )
 
+@login_required
+@grupo_requerido("Administrador")
+def eliminar_caso_preliminar(request, id):
+
+    ubicacion = get_object_or_404(
+        UbicacionPreliminar,
+        pk=id,
+        estado="PRELIMINAR"
+    )
+
+    if request.method == "POST":
+
+        # ==========================================
+        # ELIMINAR PERSONAS ASOCIADAS
+        # ==========================================
+
+        personas = PersonaPreliminar.objects.filter(
+            ubicacion_preliminar=ubicacion
+        )
+
+        personas.delete()
+
+        # ==========================================
+        # ELIMINAR UBICACIÓN PRELIMINAR
+        # ==========================================
+
+        ubicacion.delete()
+
+        return redirect("casos_preliminares")
+
+    return redirect("casos_preliminares")
+
 
 @login_required
 def casos_json(request):

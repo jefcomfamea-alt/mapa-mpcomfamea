@@ -49,6 +49,12 @@ urlpatterns = [
     ),
 
     path(
+        "eliminar-caso-preliminar/<int:id>/",
+        views.eliminar_caso_preliminar,
+        name="eliminar_caso_preliminar"
+    ),
+
+    path(
         "casos-json/",
         views.casos_json,
         name="casos_json"
