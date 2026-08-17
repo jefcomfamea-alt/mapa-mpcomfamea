@@ -29,9 +29,9 @@ SECRET_KEY = 'django-insecure-!ice^e7gyq6ss5wxhu#)#*ri#79xs*$akrdcsx7a(9uan+5@d9
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'mapa-mpcomfamea.onrender.com',
+    "mapa-mpcomfamea.onrender.com",
+    "localhost",
+    "127.0.0.1",
 ]
 
 
