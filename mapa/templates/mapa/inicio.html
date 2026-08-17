@@ -664,6 +664,47 @@ DESPLEGABLE DE BÚSQUEDA
 
 </button>
 
+<hr style="margin:20px 0;">
+
+<h3 style="color:white; text-align:center; margin-bottom:10px;">
+    🔎 Filtrar Mapa
+</h3>
+
+<select
+    id="filtroAnio"
+    style="width:100%; padding:8px; margin-bottom:10px;"
+>
+    <option value="TODOS">Todos los años</option>
+</select>
+
+<select
+    id="filtroRiesgo"
+    style="width:100%; padding:8px; margin-bottom:10px;"
+>
+    <option value="TODOS">Todos los niveles</option>
+    <option value="LEVE">LEVE</option>
+    <option value="MODERADO">MODERADO</option>
+    <option value="SEVERO">SEVERO</option>
+    <option value="SEVERO EXTREMO">SEVERO EXTREMO</option>
+    <option value="NO DETERMINADO">NO DETERMINADO</option>
+</select>
+
+<button
+    class="botonMenu verde"
+    onclick="aplicarFiltrosMapa()"
+    style="margin-bottom:10px;"
+>
+    🔍 Aplicar filtro
+</button>
+
+<button
+    class="botonMenu"
+    onclick="limpiarFiltrosMapa()"
+    style="background:#6c757d;"
+>
+    🔄 Mostrar todos
+</button>
+
 {% endif %}
 
 
@@ -730,6 +771,8 @@ if (btnNuevoCaso) {
 
 }
 
+var capaCasos = null;
+
 /*=========================
 CARGAR CASOS
 =========================*/
@@ -740,7 +783,7 @@ fetch("/casos-json/")
 
 .then(data=>{
 
-    L.geoJSON(data,{
+    capaCasos = L.geoJSON(data,{
 
     pointToLayer:function(feature,latlng){
 
@@ -1770,6 +1813,206 @@ function buscarCaso(){
     });
   
 }
+
+/*=========================
+FILTRO POR AÑO Y NIVEL DE RIESGO
+=========================*/
+
+function cargarAnios(){
+
+    let selectAnio = document.getElementById("filtroAnio");
+
+    let anios = [];
+
+    marcadoresCasos.forEach(function(layer){
+
+        let fecha = layer.datos["fecha_registro"];
+
+        if(!fecha){
+            return;
+        }
+
+        let fechaObj = new Date(fecha);
+
+        if(isNaN(fechaObj.getTime())){
+            return;
+        }
+
+        let anio = fechaObj.getFullYear();
+
+        if(!anios.includes(anio)){
+            anios.push(anio);
+        }
+
+    });
+
+    anios.sort(function(a,b){
+        return b-a;
+    });
+
+    anios.forEach(function(anio){
+
+        let opcion = document.createElement("option");
+
+        opcion.value = anio;
+        opcion.textContent = anio;
+
+        selectAnio.appendChild(opcion);
+
+    });
+
+}
+
+
+/*=========================
+APLICAR FILTROS
+=========================*/
+
+function aplicarFiltrosMapa(){
+
+    let anioSeleccionado =
+        document.getElementById("filtroAnio").value;
+
+    let riesgoSeleccionado =
+        document.getElementById("filtroRiesgo").value;
+
+
+    marcadoresCasos.forEach(function(layer){
+
+        let mostrar = true;
+
+        let fecha =
+            layer.datos["fecha_registro"];
+
+        let riesgo =
+            (layer.datos["NIVEL RIESGO"] || "")
+            .trim()
+            .toUpperCase();
+
+
+        /*=========================
+        FILTRO POR AÑO
+        =========================*/
+
+        if(anioSeleccionado !== "TODOS"){
+
+            if(!fecha){
+
+                mostrar = false;
+
+            }
+            else{
+
+                let fechaObj = new Date(fecha);
+
+                if(isNaN(fechaObj.getTime())){
+
+                    mostrar = false;
+
+                }
+                else{
+
+                    let anioCaso =
+                        fechaObj.getFullYear();
+
+                    if(
+                        String(anioCaso) !==
+                        String(anioSeleccionado)
+                    ){
+
+                        mostrar = false;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        /*=========================
+        FILTRO POR RIESGO
+        =========================*/
+
+        if(riesgoSeleccionado !== "TODOS"){
+
+            if(
+                riesgo !==
+                riesgoSeleccionado
+            ){
+
+                mostrar = false;
+
+            }
+
+        }
+
+
+        /*=========================
+        MOSTRAR / OCULTAR
+        =========================*/
+
+        if(mostrar){
+
+            if(!map.hasLayer(layer)){
+
+                layer.addTo(map);
+
+            }
+
+        }
+        else{
+
+            if(map.hasLayer(layer)){
+
+                map.removeLayer(layer);
+
+            }
+
+        }
+
+    });
+
+}
+
+
+/*=========================
+LIMPIAR FILTROS
+=========================*/
+
+function limpiarFiltrosMapa(){
+
+    document.getElementById("filtroAnio").value =
+        "TODOS";
+
+    document.getElementById("filtroRiesgo").value =
+        "TODOS";
+
+
+    marcadoresCasos.forEach(function(layer){
+
+        if(!map.hasLayer(layer)){
+
+            layer.addTo(map);
+
+        }
+
+    });
+
+}
+
+
+/*=========================
+CARGAR AÑOS DESPUÉS
+DE CARGAR LOS CASOS
+=========================*/
+
+setTimeout(function(){
+
+    cargarAnios();
+
+},1000);
 
 </script>
 
