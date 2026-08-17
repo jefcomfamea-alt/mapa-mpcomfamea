@@ -316,6 +316,148 @@
     border-bottom: none;
 } 
 
+/* ==========================================
+   COMPARATIVO ANUAL Y MENSUAL
+   ========================================== */
+
+.tabla-comparativo {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.tabla-comparativo th,
+.tabla-comparativo td {
+    padding: 11px 10px;
+    text-align: center;
+    border-right: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tabla-comparativo th:last-child,
+.tabla-comparativo td:last-child {
+    border-right: none;
+}
+
+.tabla-comparativo th {
+    color: white;
+}
+
+.encabezado-anio {
+    background: #263238;
+}
+
+.encabezado-total {
+    background: #1B5E20;
+}
+
+.encabezado-leve {
+    background: #00b050;
+}
+
+.encabezado-moderado {
+    background: #b59b00;
+}
+
+.encabezado-severo {
+    background: #ff0000;
+}
+
+.encabezado-extremo {
+    background: #990000;
+}
+
+.encabezado-no-determinado {
+    background: #800080;
+}
+
+.boton-anio {
+    background: none;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    color: #1B5E20;
+    text-decoration: underline;
+}
+
+.boton-anio:hover {
+    color: #8e0000;
+}
+
+.detalle-anio {
+    display: none;
+    background: #f8faf8;
+}
+
+.detalle-anio.activo {
+    display: table-row;
+}
+
+.detalle-anio td {
+    padding: 20px;
+}
+
+.tabla-mensual {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.tabla-mensual th {
+    background: #263238;
+    color: white;
+    padding: 9px;
+    font-size: 13px;
+}
+
+.tabla-mensual td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.tabla-mensual tr:hover {
+    background: #eeeeee;
+}
+
+.mes {
+    text-align: left !important;
+    font-weight: bold;
+}
+
+.total-mes {
+    font-weight: bold;
+    color: #1B5E20;
+}
+
+.valor-leve-mes {
+    font-weight: bold;
+    color: #00b050;
+}
+
+.valor-moderado-mes {
+    font-weight: bold;
+    color: #8a7600;
+}
+
+.valor-severo-mes {
+    font-weight: bold;
+    color: #ff0000;
+}
+
+.valor-extremo-mes {
+    font-weight: bold;
+    color: #990000;
+}
+
+.valor-no-determinado-mes {
+    font-weight: bold;
+    color: #800080;
+}
 
 </style>
 
@@ -886,6 +1028,227 @@
 
 </div>
 
+<!-- ==========================================
+     COMPARATIVO DE CASOS POR AÑO
+     ========================================== -->
+
+<div class="seccion">
+
+    <h2>
+        📊 Comparativo de casos por año
+    </h2>
+
+    <p style="
+        color:#666;
+        margin-top:-5px;
+        margin-bottom:20px;
+    ">
+        Haga clic sobre un año para visualizar
+        el detalle mensual de los casos registrados.
+    </p>
+
+    <div style="overflow-x:auto;">
+
+        <table class="tabla-comparativo">
+
+            <thead>
+
+                <tr>
+
+                    <th class="encabezado-anio">
+                        AÑO
+                    </th>
+
+                    <th class="encabezado-total">
+                        TOTAL
+                    </th>
+
+                    <th class="encabezado-leve">
+                        LEVE
+                    </th>
+
+                    <th class="encabezado-moderado">
+                        MODERADO
+                    </th>
+
+                    <th class="encabezado-severo">
+                        SEVERO
+                    </th>
+
+                    <th class="encabezado-extremo">
+                        SEVERO EXTREMO
+                    </th>
+
+                    <th class="encabezado-no-determinado">
+                        NO DETERMINADO
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for anio in comparativo_anual %}
+
+                <!-- FILA PRINCIPAL DEL AÑO -->
+
+                <tr>
+
+                    <td>
+
+                        <button
+                            type="button"
+                            class="boton-anio"
+                            onclick="mostrarDetalleAnio('{{ anio.anio }}')"
+                        >
+
+                            📅 {{ anio.anio }}
+
+                        </button>
+
+                    </td>
+
+                    <td class="total-mes">
+                        {{ anio.total }}
+                    </td>
+
+                    <td class="valor-leve-mes">
+                        {{ anio.leves }}
+                    </td>
+
+                    <td class="valor-moderado-mes">
+                        {{ anio.moderados }}
+                    </td>
+
+                    <td class="valor-severo-mes">
+                        {{ anio.severos }}
+                    </td>
+
+                    <td class="valor-extremo-mes">
+                        {{ anio.severo_extremo }}
+                    </td>
+
+                    <td class="valor-no-determinado-mes">
+                        {{ anio.no_determinado }}
+                    </td>
+
+                </tr>
+
+
+                <!-- DETALLE MENSUAL -->
+
+                <tr
+                    id="detalle-{{ anio.anio }}"
+                    class="detalle-anio"
+                >
+
+                    <td colspan="7">
+
+                        <h3 style="
+                            margin-top:0;
+                            color:#1B5E20;
+                        ">
+
+                            📅 Detalle mensual —
+                            {{ anio.anio }}
+
+                        </h3>
+
+                        <table class="tabla-mensual">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        MES
+                                    </th>
+
+                                    <th>
+                                        TOTAL
+                                    </th>
+
+                                    <th>
+                                        LEVE
+                                    </th>
+
+                                    <th>
+                                        MODERADO
+                                    </th>
+
+                                    <th>
+                                        SEVERO
+                                    </th>
+
+                                    <th>
+                                        SEVERO EXTREMO
+                                    </th>
+
+                                    <th>
+                                        NO DETERMINADO
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for mes in anio.meses %}
+
+                                <tr>
+
+                                    <td class="mes">
+                                        {{ mes.nombre }}
+                                    </td>
+
+                                    <td class="total-mes">
+                                        {{ mes.total }}
+                                    </td>
+
+                                    <td class="valor-leve-mes">
+                                        {{ mes.leves }}
+                                    </td>
+
+                                    <td class="valor-moderado-mes">
+                                        {{ mes.moderados }}
+                                    </td>
+
+                                    <td class="valor-severo-mes">
+                                        {{ mes.severos }}
+                                    </td>
+
+                                    <td class="valor-extremo-mes">
+                                        {{ mes.severo_extremo }}
+                                    </td>
+
+                                    <td class="valor-no-determinado-mes">
+                                        {{ mes.no_determinado }}
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
 
     <!-- ============================= -->
     <!-- INFORMACIÓN OPERATIVA -->
@@ -926,5 +1289,31 @@
 
 
 </div>
+
+<script>
+
+function mostrarDetalleAnio(anio) {
+
+    const detalle = document.getElementById(
+        "detalle-" + anio
+    );
+
+    if (!detalle) {
+        return;
+    }
+
+    if (detalle.classList.contains("activo")) {
+
+        detalle.classList.remove("activo");
+
+    } else {
+
+        detalle.classList.add("activo");
+
+    }
+
+}
+
+</script>
 
 {% endblock %}

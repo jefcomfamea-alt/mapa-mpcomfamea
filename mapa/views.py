@@ -2221,6 +2221,111 @@ def estadistica(request):
         "NO DETERMINADO": casos_no_determinado,
     }
 
+
+        # ==========================================
+    # COMPARATIVO DE LOS ÚLTIMOS 5 AÑOS
+    # ==========================================
+
+    anio_actual = timezone.now().year
+
+    anios_comparativo = list(
+        range(anio_actual - 4, anio_actual + 1)
+    )
+
+    comparativo_anual = []
+
+    nombres_meses = [
+        "",
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre",
+    ]
+
+    for anio in anios_comparativo:
+
+        casos_anio = Caso.objects.filter(
+            fecha_registro__year=anio
+        )
+
+        meses = []
+
+        for mes in range(1, 13):
+
+            casos_mes = casos_anio.filter(
+                fecha_registro__month=mes
+            )
+
+            meses.append({
+                "mes": mes,
+
+                "nombre": nombres_meses[mes],
+
+                "total": casos_mes.count(),
+
+                "leves": casos_mes.filter(
+                    nivel_riesgo="LEVE"
+                ).count(),
+
+                "moderados": casos_mes.filter(
+                    nivel_riesgo="MODERADO"
+                ).count(),
+
+                "severos": casos_mes.filter(
+                    nivel_riesgo="SEVERO"
+                ).count(),
+
+                "severo_extremo": casos_mes.filter(
+                    nivel_riesgo="SEVERO EXTREMO"
+                ).count(),
+
+                "no_determinado": casos_mes.filter(
+                    nivel_riesgo="NO DETERMINADO"
+                ).count(),
+            })
+
+        # ==========================================
+        # AGREGAR EL AÑO
+        # ==========================================
+
+        comparativo_anual.append({
+
+            "anio": anio,
+
+            "total": casos_anio.count(),
+
+            "leves": casos_anio.filter(
+                nivel_riesgo="LEVE"
+            ).count(),
+
+            "moderados": casos_anio.filter(
+                nivel_riesgo="MODERADO"
+            ).count(),
+
+            "severos": casos_anio.filter(
+                nivel_riesgo="SEVERO"
+            ).count(),
+
+            "severo_extremo": casos_anio.filter(
+                nivel_riesgo="SEVERO EXTREMO"
+            ).count(),
+
+            "no_determinado": casos_anio.filter(
+                nivel_riesgo="NO DETERMINADO"
+            ).count(),
+
+            "meses": meses,
+        })
+
+
     return render(
         request,
         "mapa/estadistica.html",
@@ -2246,9 +2351,12 @@ def estadistica(request):
             "riesgos": riesgos,
 
             "puede_descargar": puede_descargar,
+
+            "comparativo_anual": comparativo_anual,
         }
     )
 
+    
 @login_required
 @grupo_requerido(
     "Administrador",
