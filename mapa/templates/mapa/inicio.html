@@ -770,35 +770,7 @@ fetch("/casos-json/")
         color="#800080";
     }
 
-    .icono-riesgo {
-        display: inline-block;
-        width: 13px;
-        height: 13px;
-        border-radius: 50%;
-        margin-right: 6px;
-        vertical-align: middle;
-    }
-
-    .icono-leve {
-        background: #00b050;
-    }
-
-    .icono-moderado {
-        background: #ffd966;
-    }
-
-    .icono-severo {
-        background: #ff0000;
-    }
-
-    .icono-extremo {
-        background: #990000;
-    }
-
-    .icono-no-determinado {
-        background: #800080;
-    }
-
+    
     let marcador = L.circleMarker(latlng,{
         radius:7,
         fillColor:color,
@@ -968,10 +940,13 @@ fetch("/ubicaciones-preliminares-json/")
 
         return (
             feature.properties.CONVERTIDA !== true &&
-            feature.properties.COLOR === "AZUL"
-        );
+        (
+            feature.properties.COLOR === "AZUL" ||
+            feature.properties.COLOR === "AMBOS"
+        )
+    );
 
-    });
+});
 
     if (data.features.length === 0) {
         return;
