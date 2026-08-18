@@ -1252,7 +1252,16 @@ def editar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
 
-    # Marcar como leído el mensaje del usuario para este caso
+    # =====================================================
+    # RESPONSABLE ANTERIOR
+    # =====================================================
+
+    responsable_anterior = caso.responsable
+
+    # =====================================================
+    # MARCAR COMO LEÍDO EL MENSAJE DEL CASO
+    # =====================================================
+
     Mensaje.objects.filter(
         destinatario=request.user,
         caso=caso,
@@ -1261,6 +1270,10 @@ def editar_caso(request, id):
         leido=True,
         fecha_lectura=timezone.now()
     )
+
+    # =====================================================
+    # ROLES
+    # =====================================================
 
     es_admin = (
         request.user.is_superuser
@@ -1289,18 +1302,31 @@ def editar_caso(request, id):
         caso.responsable == request.user
     )
 
+    # =====================================================
+    # EFECTIVO COMFAMEA: SOLO VISUALIZA
+    # =====================================================
+
     if es_efectivo_comfamea:
         return redirect("gestion_casos")
-    
-    # Administrador y Jefe siempre pueden editar
+
+    # =====================================================
+    # ADMINISTRADOR Y JEFE
+    # =====================================================
+
     if es_admin or es_jefe:
         pass
 
-    # El responsable puede editar si tiene autorización
+    # =====================================================
+    # RESPONSABLE CON AUTORIZACIÓN
+    # =====================================================
+
     elif es_responsable and caso.edicion_autorizada:
         pass
 
-    # Primera edición del caso asignado mediante mensaje
+    # =====================================================
+    # PRIMERA EDICIÓN POR ASIGNACIÓN
+    # =====================================================
+
     elif es_responsable and Mensaje.objects.filter(
         destinatario=request.user,
         caso=caso,
@@ -1308,16 +1334,28 @@ def editar_caso(request, id):
     ).exists():
 
         caso.edicion_autorizada = True
-        caso.save(update_fields=["edicion_autorizada"])
+        caso.save(
+            update_fields=["edicion_autorizada"]
+        )
 
-    # Responsable sin autorización
+    # =====================================================
+    # RESPONSABLE SIN AUTORIZACIÓN
+    # =====================================================
+
     elif es_responsable:
 
-        return redirect("solicitar_modificacion", id=caso.id)
+        return redirect(
+            "solicitar_modificacion",
+            id=caso.id
+        )
 
     else:
 
         return redirect("gestion_casos")
+
+    # =====================================================
+    # GUARDAR CAMBIOS
+    # =====================================================
 
     if request.method == "POST":
 
@@ -1331,33 +1369,119 @@ def editar_caso(request, id):
 
             caso = form.save(commit=False)
 
-            if caso.responsable:
-                nombre = f"{caso.responsable.first_name} {caso.responsable.last_name}".strip()
-                caso.efectivo = nombre if nombre else caso.responsable.username
+            # =================================================
+            # RESPONSABLE NUEVO
+            # =================================================
+
+            responsable_nuevo = caso.responsable
+
+            if responsable_nuevo:
+
+                nombre = (
+                    f"{responsable_nuevo.first_name} "
+                    f"{responsable_nuevo.last_name}"
+                ).strip()
+
+                caso.efectivo = (
+                    nombre
+                    if nombre
+                    else responsable_nuevo.username
+                )
+
+            # =================================================
+            # DETECTAR CAMBIO DE RESPONSABLE
+            # =================================================
+
+            responsable_cambio = (
+                responsable_anterior != responsable_nuevo
+            )
+
+            # =================================================
+            # SI CAMBIÓ EL RESPONSABLE
+            # =================================================
+
+            if responsable_cambio:
+
+                caso.edicion_autorizada = False
 
             caso.save()
+
+            # =================================================
+            # MENSAJE AL NUEVO RESPONSABLE
+            # =================================================
+
+            if (
+                responsable_cambio
+                and responsable_nuevo
+            ):
+
+                Mensaje.objects.create(
+
+                    destinatario=responsable_nuevo,
+
+                    caso=caso,
+
+                    asunto="🔔 Nuevo caso asignado",
+
+                    contenido=(
+                        "Se le comunica que se le ha "
+                        "asignado el expediente N.° "
+                        f"{caso.expediente or caso.folder} "
+                        "para realizar la ejecución y "
+                        "seguimiento de las medidas de "
+                        "protección."
+                    )
+                )
+
+            # =================================================
+            # SI EL RESPONSABLE ACTUAL EDITÓ
+            # =================================================
 
             if es_responsable:
 
                 caso.edicion_autorizada = False
-                caso.save()
+
+                caso.save(
+                    update_fields=[
+                        "edicion_autorizada"
+                    ]
+                )
+
+            # =================================================
+            # UTILIZAR SOLICITUD APROBADA
+            # =================================================
 
             elif es_usuario:
 
-                solicitud = SolicitudModificacion.objects.filter(
-                    caso=caso,
-                    solicitante=request.user,
-                    estado="APROBADA"
-                ).order_by("-fecha_autorizacion").first()
+                solicitud = (
+                    SolicitudModificacion.objects.filter(
+                        caso=caso,
+                        solicitante=request.user,
+                        estado="APROBADA"
+                    )
+                    .order_by(
+                        "-fecha_autorizacion"
+                    )
+                    .first()
+                )
 
                 if solicitud:
 
                     solicitud.estado = "UTILIZADA"
-                    solicitud.fecha_utilizacion = timezone.now()
+
+                    solicitud.fecha_utilizacion = (
+                        timezone.now()
+                    )
+
                     solicitud.save()
 
                     caso.edicion_autorizada = False
-                    caso.save()
+
+                    caso.save(
+                        update_fields=[
+                            "edicion_autorizada"
+                        ]
+                    )
 
             return redirect("gestion_casos")
 
