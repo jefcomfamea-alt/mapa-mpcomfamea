@@ -65,47 +65,76 @@ def cargar_distritos(request):
 @login_required
 def inicio(request):
 
+    # ==========================================================
+    # 1. MENSAJES NO LEÍDOS
+    # ==========================================================
+
     pendientes_mensajes = Mensaje.objects.filter(
         destinatario=request.user,
         leido=False
     ).count()
 
+
+    # ==========================================================
+    # 2. CASOS PRÓXIMOS A VENCER NO LEÍDOS
+    # ==========================================================
+
     hoy = timezone.now().date()
     limite = hoy + timedelta(days=3)
 
-    if (
+    casos_por_vencer = Caso.objects.filter(
+        estado="ACTIVO",
+        fecha_limite__isnull=False,
+        fecha_limite__gte=hoy,
+        fecha_limite__lte=limite,
+        notificacion_vencimiento_leida=False
+    ).filter(
+        Q(fecha_registro__year__gte=2026) |
+        Q(ultima_visita__year__gte=2026)
+    )
+
+
+    # Administrador y Jefe ven todos los casos.
+    # Los demás usuarios solo sus casos asignados.
+
+    if not (
         request.user.is_superuser
         or request.user.groups.filter(
             name__in=["Administrador", "Jefe_MP"]
         ).exists()
     ):
-
-        notificaciones = Caso.objects.filter(
-            estado="ACTIVO",
-            fecha_limite__isnull=False,
-            fecha_limite__lte=limite
-        ).filter(
-            Q(fecha_registro__year__gte=2026) |
-            Q(ultima_visita__year__gte=2026)
-        ).order_by("fecha_limite")
-
-    else:
-
-        notificaciones = Caso.objects.filter(
-            estado="ACTIVO",
-            responsable=request.user,
-            fecha_limite__isnull=False,
-            fecha_limite__lte=limite
-        ).filter(
-            Q(fecha_registro__year__gte=2026) |
-            Q(ultima_visita__year__gte=2026)
-        ).order_by("fecha_limite")
+        casos_por_vencer = casos_por_vencer.filter(
+            responsable=request.user
+        )
 
 
-    pendientes_casos = notificaciones.count()
+    pendientes_casos = casos_por_vencer.count()
 
-    pendientes = pendientes_mensajes + pendientes_casos
 
+    # ==========================================================
+    # 3. SOLICITUDES DE MODIFICACIÓN NO LEÍDAS
+    # ==========================================================
+
+    pendientes_solicitudes = SolicitudModificacion.objects.filter(
+        estado="PENDIENTE",
+        notificacion_leida=False
+    ).count()
+
+
+    # ==========================================================
+    # 4. TOTAL DEL CONTADOR
+    # ==========================================================
+
+    pendientes = (
+        pendientes_mensajes
+        + pendientes_casos
+        + pendientes_solicitudes
+    )
+
+
+    # ==========================================================
+    # 5. ROLES
+    # ==========================================================
 
     es_admin = (
         request.user.is_superuser
@@ -134,18 +163,25 @@ def inicio(request):
         name="Usuario_Estadistica"
     ).exists()
 
+
+    # ==========================================================
+    # 6. RESPUESTA
+    # ==========================================================
+
     return render(
         request,
         "mapa/inicio.html",
         {
             "pendientes": pendientes,
+
             "es_admin": es_admin,
             "es_jefe": es_jefe,
             "es_usuario_mp": es_usuario_mp,
             "es_efectivo_comfamea": es_efectivo_comfamea,
             "es_usuario_investigacion": es_usuario_investigacion,
             "es_usuario_estadistica": es_usuario_estadistica,
-            "notificaciones": notificaciones,
+
+            "notificaciones": casos_por_vencer,
         }
     )
 

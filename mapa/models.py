@@ -292,7 +292,11 @@ class Caso(models.Model):
         "Próximo seguimiento",
         null=True,
         blank=True
-)
+    )
+
+    notificacion_vencimiento_leida = models.BooleanField(
+        default=False
+    )
 
     notificacion_beneficiario = models.CharField(
         max_length=15,
@@ -663,6 +667,11 @@ class SolicitudModificacion(models.Model):
         default="PENDIENTE"
     )
 
+    
+    notificacion_leida = models.BooleanField(
+        default=False
+    )
+
     fecha = models.DateTimeField(
         auto_now_add=True
     )
@@ -681,8 +690,8 @@ class SolicitudModificacion(models.Model):
     )
 
     fecha_utilizacion = models.DateTimeField(
-    null=True,
-    blank=True
+        null=True,
+        blank=True
     )
 
     def __str__(self):
