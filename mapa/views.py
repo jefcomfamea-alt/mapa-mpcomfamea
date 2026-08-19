@@ -1,3 +1,5 @@
+import re
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.models import User, Group
@@ -2245,11 +2247,62 @@ def ubicaciones_preliminares_json(request):
 
     })
 
+def obtener_nombre_calle(domicilio):
+    """
+    Obtiene el nombre base de la calle desde el domicilio
+    para poder agrupar las medidas de protección.
+    """
+
+    if not domicilio:
+        return "DOMICILIO NO REGISTRADO"
+
+    direccion = domicilio.strip().upper()
+
+    # Normalizar espacios
+    direccion = re.sub(r"\s+", " ", direccion)
+
+    # Eliminar desde donde empiezan los datos internos
+    # del inmueble.
+    patrones = [
+        r"\s+DPTO\.?\s*.*$",
+        r"\s+DEPARTAMENTO\s*.*$",
+        r"\s+EDIFICIO\s*.*$",
+        r"\s+BLOCK\s*.*$",
+        r"\s+BL\.?\s*.*$",
+        r"\s+INTERIOR\s*.*$",
+        r"\s+INT\.?\s*.*$",
+        r"\s+PISO\s*.*$",
+        r"\s+MZ\.?\s*.*$",
+        r"\s+MANZANA\s*.*$",
+        r"\s+LT\.?\s*.*$",
+        r"\s+LOTE\s*.*$",
+        r"\s+N[°º.]?\s*\d+.*$",
+        r"\s+NUMERO\s*\d+.*$",
+    ]
+
+    for patron in patrones:
+        direccion = re.sub(
+            patron,
+            "",
+            direccion,
+            flags=re.IGNORECASE
+        )
+
+    # Quitar guiones sobrantes al final
+    direccion = re.sub(r"\s*-\s*$", "", direccion).strip()
+
+    if not direccion:
+        return "DOMICILIO NO REGISTRADO"
+
+    return direccion
+
 @login_required
 def estadistica(request):
 
-    # Todos los usuarios pueden visualizar Estadística.
-    # La restricción de descarga se controla por separado.
+    # ==========================================
+    # PERMISOS
+    # ==========================================
+
     es_admin = (
         request.user.is_superuser
         or request.user.groups.filter(
@@ -2306,12 +2359,16 @@ def estadistica(request):
     ).count()
 
     # ==========================================
-    # CASOS POR VENCER
+    # FECHAS DE SEGUIMIENTO
     # ==========================================
 
     hoy = timezone.now().date()
 
     limite = hoy + timedelta(days=3)
+
+    # ==========================================
+    # CASOS POR VENCER
+    # ==========================================
 
     casos_por_vencer = casos_activos.filter(
         fecha_limite__isnull=False,
@@ -2383,7 +2440,10 @@ def estadistica(request):
         casos_por_efectivo.append({
             "id": responsable.id,
 
-            "nombre": responsable.get_full_name() or responsable.username,
+            "nombre": (
+                responsable.get_full_name()
+                or responsable.username
+            ),
 
             "total": casos_efectivo.count(),
 
@@ -2431,8 +2491,7 @@ def estadistica(request):
         "NO DETERMINADO": casos_no_determinado,
     }
 
-
-        # ==========================================
+    # ==========================================
     # COMPARATIVO DE LOS ÚLTIMOS 5 AÑOS
     # ==========================================
 
@@ -2502,10 +2561,6 @@ def estadistica(request):
                 ).count(),
             })
 
-        # ==========================================
-        # AGREGAR EL AÑO
-        # ==========================================
-
         comparativo_anual.append({
 
             "anio": anio,
@@ -2535,6 +2590,61 @@ def estadistica(request):
             "meses": meses,
         })
 
+    # ==========================================
+    # CALLES CON MÁS MEDIDAS DE PROTECCIÓN
+    # ==========================================
+
+    calles_dict = {}
+
+    for caso in casos_activos.order_by("-id"):
+
+        calle = obtener_nombre_calle(
+            caso.domicilio
+        )
+
+        if calle not in calles_dict:
+            calles_dict[calle] = []
+
+        calles_dict[calle].append(caso)
+
+    # Ordenar de mayor a menor cantidad de casos
+    calles_con_medidas = sorted(
+        calles_dict.items(),
+        key=lambda x: len(x[1]),
+        reverse=True
+    )
+
+    calles_estadistica = []
+
+    for calle, casos_calle in calles_con_medidas:
+
+        detalles = []
+
+        for caso in casos_calle:
+
+            detalles.append({
+                "id": caso.id,
+                "beneficiario": caso.beneficiario,
+                "dni": caso.dni_beneficiario,
+                "folder": caso.folder,
+                "expediente": caso.expediente,
+                "riesgo": caso.nivel_riesgo,
+                "domicilio": caso.domicilio,
+                "telefono": caso.telefono,
+                "fecha_registro": caso.fecha_registro,
+                "ultima_visita": caso.ultima_visita,
+                "fecha_limite": caso.fecha_limite,
+            })
+
+        calles_estadistica.append({
+            "nombre": calle,
+            "total": len(casos_calle),
+            "casos": detalles,
+        })
+
+    # ==========================================
+    # MOSTRAR ESTADÍSTICA
+    # ==========================================
 
     return render(
         request,
@@ -2563,9 +2673,10 @@ def estadistica(request):
             "puede_descargar": puede_descargar,
 
             "comparativo_anual": comparativo_anual,
+
+            "calles_estadistica": calles_estadistica,
         }
     )
-
     
 @login_required
 @grupo_requerido(
@@ -2640,6 +2751,56 @@ def descargar_estadistica(request):
     casos_activos = Caso.objects.filter(
         estado="ACTIVO"
     )
+
+        # ==========================================
+    # CALLES CON MÁS MEDIDAS DE PROTECCIÓN
+    # ==========================================
+
+    calles_dict = {}
+
+    for caso in casos_activos.order_by("-id"):
+
+        calle = obtener_nombre_calle(caso.domicilio)
+
+        if calle not in calles_dict:
+            calles_dict[calle] = []
+
+        calles_dict[calle].append(caso)
+
+    # Ordenar calles de mayor a menor cantidad
+    calles_con_medidas = sorted(
+        calles_dict.items(),
+        key=lambda x: len(x[1]),
+        reverse=True
+    )
+
+    calles_estadistica = []
+
+    for calle, casos_calle in calles_con_medidas:
+
+        detalles = []
+
+        for caso in casos_calle:
+
+            detalles.append({
+                "id": caso.id,
+                "beneficiario": caso.beneficiario,
+                "dni": caso.dni_beneficiario,
+                "folder": caso.folder,
+                "expediente": caso.expediente,
+                "riesgo": caso.nivel_riesgo,
+                "domicilio": caso.domicilio,
+                "telefono": caso.telefono,
+                "fecha_registro": caso.fecha_registro,
+                "ultima_visita": caso.ultima_visita,
+                "fecha_limite": caso.fecha_limite,
+            })
+
+        calles_estadistica.append({
+            "nombre": calle,
+            "total": len(casos_calle),
+            "casos": detalles,
+        })
 
     total_casos = casos_activos.count()
 

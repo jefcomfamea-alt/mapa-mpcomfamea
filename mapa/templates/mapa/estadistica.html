@@ -459,6 +459,86 @@
     color: #800080;
 }
 
+/* ==========================================
+   CALLES CON MÁS MEDIDAS
+   ========================================== */
+
+.tabla-calles {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-calles th {
+    background: #1B5E20;
+    color: white;
+    padding: 12px;
+    text-align: center;
+}
+
+.tabla-calles td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.fila-calle {
+    cursor: pointer;
+}
+
+.fila-calle:hover {
+    background: #f1f8f1;
+}
+
+.nombre-calle {
+    font-weight: bold;
+    color: #1B5E20;
+    text-align: left;
+}
+
+.cantidad-calle {
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.detalle-calle {
+    display: none;
+    background: #f8faf8;
+}
+
+.detalle-calle.activo {
+    display: table-row;
+}
+
+.detalle-calle td {
+    padding: 18px;
+}
+
+.tabla-detalle-calle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-detalle-calle th {
+    background: #263238;
+    color: white;
+    padding: 9px;
+    font-size: 13px;
+}
+
+.tabla-detalle-calle td {
+    padding: 9px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.tabla-detalle-calle td.domicilio {
+    text-align: left;
+}
+
+.riesgo-calle {
+    font-weight: bold;
+}
+
 </style>
 
 
@@ -860,175 +940,6 @@
     </div>
 
 <!-- ==========================================
-     CASOS POR EFECTIVO RESPONSABLE
-     ========================================== -->
-
-<div class="seccion">
-
-    <h2>
-        👮 Casos por efectivo responsable
-    </h2>
-
-    <div style="overflow-x:auto;">
-
-        <table class="tabla-efectivos">
-
-            <thead>
-
-                <!-- BLOQUES PRINCIPALES -->
-
-                <tr>
-
-                    <th
-                        rowspan="2"
-                        class="encabezado-efectivo"
-                    >
-                        EFECTIVO RESPONSABLE
-                    </th>
-
-                    <th
-                        colspan="1"
-                        class="encabezado-activos"
-                    >
-                        CASOS ACTIVOS
-                    </th>
-
-                    <th
-                        colspan="5"
-                        class="encabezado-riesgo"
-                    >
-                        NIVEL DE RIESGO
-                    </th>
-
-                    <th
-                        colspan="2"
-                        class="encabezado-seguimiento"
-                    >
-                        SEGUIMIENTO
-                    </th>
-
-                </tr>
-
-
-                <!-- SUBENCABEZADOS -->
-
-                <tr>
-
-                    <th class="subencabezado">
-                        Total
-                    </th>
-
-                    <th class="subencabezado">
-                        Leves
-                    </th>
-
-                    <th class="subencabezado">
-                        Moderados
-                    </th>
-
-                    <th class="subencabezado">
-                        Severos
-                    </th>
-
-                    <th class="subencabezado">
-                        Severo extremo
-                    </th>
-
-                    <th class="subencabezado">
-                        No determinado
-                    </th>
-
-                    <th class="subencabezado">
-                        Por vencer
-                    </th>
-
-                    <th class="subencabezado">
-                        Vencidos
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {% for efectivo in casos_por_efectivo %}
-
-                <tr>
-
-                    <!-- EFECTIVO -->
-
-                    <td class="nombre-efectivo">
-                        <a href="{% url 'casos_por_efectivo' efectivo.id %}">
-                            👮{{ efectivo.nombre }}
-                        </a>
-                    </td>
-
-
-                    <!-- CASOS ACTIVOS -->
-
-                    <td class="total-casos-efectivo">
-                        {{ efectivo.total }}
-                    </td>
-
-
-                    <!-- NIVEL DE RIESGO -->
-
-                    <td class="valor-leve">
-                        {{ efectivo.leves }}
-                    </td>
-
-                    <td class="valor-moderado">
-                        {{ efectivo.moderados }}
-                    </td>
-
-                    <td class="valor-severo">
-                        {{ efectivo.severos }}
-                    </td>
-
-                    <td class="valor-extremo">
-                        {{ efectivo.severo_extremo }}
-                    </td>
-
-                     <td class="valor-no-determinado">
-                        {{ efectivo.no_determinado }}
-                    </td>   
-
-                    <!-- SEGUIMIENTO -->
-
-                    <td class="valor-por-vencer">
-                        {{ efectivo.por_vencer }}
-                    </td>
-
-                    <td class="valor-vencido">
-                        {{ efectivo.vencidos }}
-                    </td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="8">
-                        No existen casos activos asignados
-                        a efectivos responsables.
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-<!-- ==========================================
      COMPARATIVO DE CASOS POR AÑO
      ========================================== -->
 
@@ -1290,6 +1201,388 @@
 
 </div>
 
+<!-- ==========================================
+     CASOS POR EFECTIVO RESPONSABLE
+     ========================================== -->
+
+<div class="seccion">
+
+    <h2>
+        👮 Casos por efectivo responsable
+    </h2>
+
+    <div style="overflow-x:auto;">
+
+        <table class="tabla-efectivos">
+
+            <thead>
+
+                <!-- BLOQUES PRINCIPALES -->
+
+                <tr>
+
+                    <th
+                        rowspan="2"
+                        class="encabezado-efectivo"
+                    >
+                        EFECTIVO RESPONSABLE
+                    </th>
+
+                    <th
+                        colspan="1"
+                        class="encabezado-activos"
+                    >
+                        CASOS ACTIVOS
+                    </th>
+
+                    <th
+                        colspan="5"
+                        class="encabezado-riesgo"
+                    >
+                        NIVEL DE RIESGO
+                    </th>
+
+                    <th
+                        colspan="2"
+                        class="encabezado-seguimiento"
+                    >
+                        SEGUIMIENTO
+                    </th>
+
+                </tr>
+
+
+                <!-- SUBENCABEZADOS -->
+
+                <tr>
+
+                    <th class="subencabezado">
+                        Total
+                    </th>
+
+                    <th class="subencabezado">
+                        Leves
+                    </th>
+
+                    <th class="subencabezado">
+                        Moderados
+                    </th>
+
+                    <th class="subencabezado">
+                        Severos
+                    </th>
+
+                    <th class="subencabezado">
+                        Severo extremo
+                    </th>
+
+                    <th class="subencabezado">
+                        No determinado
+                    </th>
+
+                    <th class="subencabezado">
+                        Por vencer
+                    </th>
+
+                    <th class="subencabezado">
+                        Vencidos
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for efectivo in casos_por_efectivo %}
+
+                <tr>
+
+                    <!-- EFECTIVO -->
+
+                    <td class="nombre-efectivo">
+                        <a href="{% url 'casos_por_efectivo' efectivo.id %}">
+                            👮{{ efectivo.nombre }}
+                        </a>
+                    </td>
+
+
+                    <!-- CASOS ACTIVOS -->
+
+                    <td class="total-casos-efectivo">
+                        {{ efectivo.total }}
+                    </td>
+
+
+                    <!-- NIVEL DE RIESGO -->
+
+                    <td class="valor-leve">
+                        {{ efectivo.leves }}
+                    </td>
+
+                    <td class="valor-moderado">
+                        {{ efectivo.moderados }}
+                    </td>
+
+                    <td class="valor-severo">
+                        {{ efectivo.severos }}
+                    </td>
+
+                    <td class="valor-extremo">
+                        {{ efectivo.severo_extremo }}
+                    </td>
+
+                     <td class="valor-no-determinado">
+                        {{ efectivo.no_determinado }}
+                    </td>   
+
+                    <!-- SEGUIMIENTO -->
+
+                    <td class="valor-por-vencer">
+                        {{ efectivo.por_vencer }}
+                    </td>
+
+                    <td class="valor-vencido">
+                        {{ efectivo.vencidos }}
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="8">
+                        No existen casos activos asignados
+                        a efectivos responsables.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+     CALLES CON MÁS MEDIDAS DE PROTECCIÓN
+     ========================================== -->
+
+<div class="seccion">
+
+    <h2>
+        📍 Calles con más medidas de protección
+    </h2>
+
+    <p style="
+        color:#666;
+        margin-top:-5px;
+        margin-bottom:20px;
+    ">
+        Las calles se muestran de mayor a menor
+        cantidad de casos registrados en el mapa principal.
+        Haga clic sobre una calle para visualizar
+        el detalle de sus casos.
+    </p>
+
+    <div style="overflow-x:auto;">
+
+        <table class="tabla-calles">
+
+            <thead>
+
+                <tr>
+
+                    <th style="width:70px;">
+                        #
+                    </th>
+
+                    <th>
+                        CALLE
+                    </th>
+
+                    <th style="width:150px;">
+                        MEDIDAS
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for calle in calles_estadistica %}
+
+                <!-- FILA DE LA CALLE -->
+
+                <tr
+                    class="fila-calle"
+                    onclick="mostrarDetalleCalle({{ forloop.counter }})"
+                >
+
+                    <td style="text-align:center;">
+                        {{ forloop.counter }}
+                    </td>
+
+                    <td class="nombre-calle">
+
+                        📍 {{ calle.nombre }}
+
+                        <span
+                            id="flecha-calle-{{ forloop.counter }}"
+                            style="float:right;"
+                        >
+                            ▶
+                        </span>
+
+                    </td>
+
+                    <td class="cantidad-calle">
+
+                        {{ calle.total }}
+
+                    </td>
+
+                </tr>
+
+
+                <!-- DETALLE DE LOS CASOS -->
+
+                <tr
+                    id="detalle-calle-{{ forloop.counter }}"
+                    class="detalle-calle"
+                >
+
+                    <td colspan="3">
+
+                        <h3 style="
+                            margin-top:0;
+                            color:#1B5E20;
+                        ">
+
+                            📍 {{ calle.nombre }}
+
+                            — {{ calle.total }} medidas
+
+                        </h3>
+
+                        <div style="overflow-x:auto;">
+
+                            <table class="tabla-detalle-calle">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Beneficiario/a
+                                        </th>
+
+                                        <th>
+                                            DNI
+                                        </th>
+
+                                        <th>
+                                            Folder
+                                        </th>
+
+                                        <th>
+                                            Expediente
+                                        </th>
+
+                                        <th>
+                                            Nivel de riesgo
+                                        </th>
+
+                                        <th>
+                                            Domicilio
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {% for caso in calle.casos %}
+
+                                    <tr>
+
+                                        <td>
+                                            {{ caso.beneficiario }}
+                                        </td>
+
+                                        <td>
+                                            {{ caso.dni|default:"-" }}
+                                        </td>
+
+                                        <td>
+                                            {{ caso.folder|default:"-" }}
+                                        </td>
+
+                                        <td>
+                                            {{ caso.expediente|default:"-" }}
+                                        </td>
+
+                                        <td class="riesgo-calle">
+                                            {{ caso.riesgo|default:"NO DETERMINADO" }}
+                                        </td>
+
+                                        <td class="domicilio">
+                                            {{ caso.domicilio|default:"-" }}
+                                        </td>
+
+                                    </tr>
+
+                                    {% empty %}
+
+                                    <tr>
+
+                                        <td colspan="6">
+                                            No existen casos registrados.
+                                        </td>
+
+                                    </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="3">
+                        No existen casos activos con domicilio registrado.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
 <script>
 
 function mostrarDetalleAnio(anio) {
@@ -1309,6 +1602,40 @@ function mostrarDetalleAnio(anio) {
     } else {
 
         detalle.classList.add("activo");
+
+    }
+
+}
+
+function mostrarDetalleCalle(numero) {
+
+    const detalle = document.getElementById(
+        "detalle-calle-" + numero
+    );
+
+    const flecha = document.getElementById(
+        "flecha-calle-" + numero
+    );
+
+    if (!detalle) {
+        return;
+    }
+
+    if (detalle.classList.contains("activo")) {
+
+        detalle.classList.remove("activo");
+
+        if (flecha) {
+            flecha.textContent = "▶";
+        }
+
+    } else {
+
+        detalle.classList.add("activo");
+
+        if (flecha) {
+            flecha.textContent = "▼";
+        }
 
     }
 
