@@ -599,16 +599,33 @@
 
     <div class="botones">
 
+        {% if form.instance.pk %}
+
+            <a
+                href="{% url 'actualizar_ubicacion_caso' form.instance.pk %}"
+                style="
+                    display:inline-block;
+                    background:#1565C0;
+                    color:white;
+                    text-decoration:none;
+                    padding:13px 25px;
+                    border-radius:7px;
+                    font-size:16px;
+                    font-weight:bold;
+                    margin-right:10px;
+                "
+            >
+                📍 Actualizar domicilio / ubicación
+            </a>
+
+        {% endif %}
+
         <button type="submit">
 
             {% if form.instance.pk %}
-
                 Guardar Cambios
-
             {% else %}
-
                 Guardar Caso
-
             {% endif %}
 
         </button>

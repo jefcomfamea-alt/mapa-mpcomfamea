@@ -1533,19 +1533,158 @@ def editar_caso(request, id):
             usuario=request.user
         )
 
-    response = render(
-        request,
-        "mapa/nuevo_caso.html",
-        {
-            "form": form
-        }
-    )
+        response = render(
+            request,
+            "mapa/nuevo_caso.html",
+            {
+                "form": form,
+                "caso": caso,
+            }
+        )
 
     response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response["Pragma"] = "no-cache"
     response["Expires"] = "0"
 
     return response
+
+@login_required
+def actualizar_ubicacion_caso(request, id):
+
+    caso = get_object_or_404(Caso, pk=id)
+
+    # =====================================================
+    # ROLES
+    # =====================================================
+
+    es_admin = (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name="Administrador"
+        ).exists()
+    )
+
+    es_jefe = request.user.groups.filter(
+        name="Jefe_MP"
+    ).exists()
+
+    es_usuario = request.user.groups.filter(
+        name="Usuario_MP"
+    ).exists()
+
+    es_efectivo_comfamea = request.user.groups.filter(
+        name="Efectivo_COMFAMEA"
+    ).exists()
+
+    es_responsable = (
+        caso.responsable == request.user
+    )
+
+    # =====================================================
+    # EFECTIVO COMFAMEA NO PUEDE MODIFICAR
+    # =====================================================
+
+    if es_efectivo_comfamea:
+        return redirect("gestion_casos")
+
+    # =====================================================
+    # ADMIN / JEFE
+    # =====================================================
+
+    if es_admin or es_jefe:
+        puede_actualizar = True
+
+    # =====================================================
+    # RESPONSABLE
+    # =====================================================
+
+    elif es_responsable:
+
+        if caso.edicion_autorizada:
+
+            puede_actualizar = True
+
+        elif Mensaje.objects.filter(
+            destinatario=request.user,
+            caso=caso,
+            asunto="🔔 Nuevo caso asignado",
+            leido=False
+        ).exists():
+
+            puede_actualizar = True
+
+        else:
+
+            return redirect(
+                "solicitar_modificacion",
+                id=caso.id
+            )
+
+    # =====================================================
+    # OTROS USUARIOS
+    # =====================================================
+
+    else:
+
+        return redirect("gestion_casos")
+
+    # =====================================================
+    # ACTUALIZAR UBICACIÓN
+    # =====================================================
+
+    if request.method == "POST":
+
+        latitud = request.POST.get("latitud")
+        longitud = request.POST.get("longitud")
+        domicilio = request.POST.get("domicilio")
+
+        if latitud and longitud:
+
+            caso.latitud = latitud
+            caso.longitud = longitud
+
+        if domicilio is not None:
+
+            caso.domicilio = domicilio
+
+        caso.save(
+            update_fields=[
+                "latitud",
+                "longitud",
+                "domicilio"
+            ]
+        )
+
+        # ================================================
+        # SI ERA RESPONSABLE, CONSUMIR AUTORIZACIÓN
+        # ================================================
+
+        if es_responsable:
+
+            caso.edicion_autorizada = False
+
+            caso.save(
+                update_fields=[
+                    "edicion_autorizada"
+                ]
+            )
+
+        return redirect(
+            "editar_caso",
+            id=caso.id
+        )
+
+    # =====================================================
+    # MAPA
+    # =====================================================
+
+    return render(
+        request,
+        "mapa/actualizar_ubicacion_caso.html",
+        {
+            "caso": caso
+        }
+    )
 
 @login_required
 @grupo_requerido("Administrador", "Jefe_MP")

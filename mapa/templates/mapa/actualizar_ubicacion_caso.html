@@ -1,0 +1,302 @@
+{% extends "mapa/base.html" %}
+
+{% block content %}
+
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+
+<style>
+
+.contenedor-ubicacion {
+    width: 95%;
+    margin: 25px auto;
+}
+
+.panel-ubicacion {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    margin-bottom: 20px;
+}
+
+.panel-ubicacion h2 {
+    margin-top: 0;
+    color: #1B5E20;
+}
+
+.campo-domicilio {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+#mapa-ubicacion {
+    width: 100%;
+    height: 500px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+}
+
+.botones {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-guardar {
+    background: #1B5E20;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-cancelar {
+    background: #777;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.coordenadas {
+    margin-top: 12px;
+    color: #555;
+}
+
+</style>
+
+
+<div class="contenedor-ubicacion">
+
+    <div class="panel-ubicacion">
+
+        <h2>
+            📍 Actualizar ubicación del domicilio
+        </h2>
+
+        <p>
+            Caso:
+            <strong>
+                {{ caso.beneficiario }}
+            </strong>
+        </p>
+
+        <p>
+            Seleccione en el mapa la nueva ubicación del domicilio.
+        </p>
+
+        <label>
+            <strong>Nuevo domicilio</strong>
+        </label>
+
+        <br><br>
+
+        <input
+            type="text"
+            id="domicilio"
+            class="campo-domicilio"
+            value="{{ caso.domicilio }}"
+            placeholder="Ingrese el nuevo domicilio"
+        >
+
+    </div>
+
+
+    <div class="panel-ubicacion">
+
+        <h2>
+            🗺️ Nueva ubicación
+        </h2>
+
+        <div id="mapa-ubicacion"></div>
+
+        <div class="coordenadas">
+
+            Latitud:
+            <strong id="latitud-mostrar">
+                {{ caso.latitud|default:"-" }}
+            </strong>
+
+            &nbsp;&nbsp;
+
+            Longitud:
+            <strong id="longitud-mostrar">
+                {{ caso.longitud|default:"-" }}
+            </strong>
+
+        </div>
+
+
+        <form
+            method="POST"
+            id="formulario-ubicacion"
+        >
+
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="latitud"
+                id="latitud"
+                value="{{ caso.latitud|default:'' }}"
+            >
+
+            <input
+                type="hidden"
+                name="longitud"
+                id="longitud"
+                value="{{ caso.longitud|default:'' }}"
+            >
+
+            <input
+                type="hidden"
+                name="domicilio"
+                id="domicilio-hidden"
+                value="{{ caso.domicilio }}"
+            >
+
+            <div class="botones">
+
+                <button
+                    type="submit"
+                    class="btn-guardar"
+                >
+                    💾 Guardar nueva ubicación
+                </button>
+
+                <a
+                    href="{% url 'editar_caso' caso.id %}"
+                    class="btn-cancelar"
+                >
+                    Cancelar
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+const latInicial = {{ caso.latitud|default:"-12.0435" }};
+const lngInicial = {{ caso.longitud|default:"-76.9950" }};
+
+const mapa = L.map(
+    "mapa-ubicacion"
+).setView(
+    [latInicial, lngInicial],
+    16
+);
+
+
+L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap"
+    }
+).addTo(mapa);
+
+
+let marcador = L.marker(
+    [latInicial, lngInicial],
+    {
+        draggable: true
+    }
+).addTo(mapa);
+
+
+function actualizarCoordenadas(lat, lng) {
+
+    document.getElementById(
+        "latitud"
+    ).value = lat;
+
+    document.getElementById(
+        "longitud"
+    ).value = lng;
+
+    document.getElementById(
+        "latitud-mostrar"
+    ).textContent = lat.toFixed(7);
+
+    document.getElementById(
+        "longitud-mostrar"
+    ).textContent = lng.toFixed(7);
+}
+
+
+marcador.on(
+    "dragend",
+    function(event) {
+
+        const posicion =
+            event.target.getLatLng();
+
+        actualizarCoordenadas(
+            posicion.lat,
+            posicion.lng
+        );
+
+    }
+);
+
+
+mapa.on(
+    "click",
+    function(event) {
+
+        marcador.setLatLng(
+            event.latlng
+        );
+
+        actualizarCoordenadas(
+            event.latlng.lat,
+            event.latlng.lng
+        );
+
+    }
+);
+
+
+document.getElementById(
+    "formulario-ubicacion"
+).addEventListener(
+    "submit",
+    function() {
+
+        document.getElementById(
+            "domicilio-hidden"
+        ).value =
+            document.getElementById(
+                "domicilio"
+            ).value;
+
+    }
+);
+
+
+actualizarCoordenadas(
+    latInicial,
+    lngInicial
+);
+
+</script>
+
+{% endblock %}
