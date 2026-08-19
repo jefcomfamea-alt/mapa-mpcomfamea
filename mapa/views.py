@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 from datetime import timedelta
@@ -1245,31 +1245,16 @@ def casos_json(request):
         "features": features
     })
 
-
-
 @login_required
 def editar_caso(request, id):
 
     caso = get_object_or_404(Caso, pk=id)
 
     # =====================================================
-    # RESPONSABLE ANTERIOR
+    # DATOS ANTERIORES
     # =====================================================
 
     responsable_anterior = caso.responsable
-
-    # =====================================================
-    # MARCAR COMO LEÍDO EL MENSAJE DEL CASO
-    # =====================================================
-
-    Mensaje.objects.filter(
-        destinatario=request.user,
-        caso=caso,
-        leido=False
-    ).update(
-        leido=True,
-        fecha_lectura=timezone.now()
-    )
 
     # =====================================================
     # ROLES
@@ -1294,16 +1279,12 @@ def editar_caso(request, id):
         name="Efectivo_COMFAMEA"
     ).exists()
 
-    es_usuario_investigacion = request.user.groups.filter(
-        name="Usuario_Investigacion"
-    ).exists()
-
     es_responsable = (
         caso.responsable == request.user
     )
 
     # =====================================================
-    # EFECTIVO COMFAMEA: SOLO VISUALIZA
+    # EFECTIVO COMFAMEA: NO EDITA
     # =====================================================
 
     if es_efectivo_comfamea:
@@ -1311,50 +1292,63 @@ def editar_caso(request, id):
 
     # =====================================================
     # ADMINISTRADOR Y JEFE
+    # PUEDEN EDITAR SIEMPRE
     # =====================================================
 
     if es_admin or es_jefe:
-        pass
+        puede_editar = True
 
     # =====================================================
-    # RESPONSABLE CON AUTORIZACIÓN
-    # =====================================================
-
-    elif es_responsable and caso.edicion_autorizada:
-        pass
-
-    # =====================================================
-    # PRIMERA EDICIÓN POR ASIGNACIÓN
-    # =====================================================
-
-    elif es_responsable and Mensaje.objects.filter(
-        destinatario=request.user,
-        caso=caso,
-        asunto="🔔 Nuevo caso asignado"
-    ).exists():
-
-        caso.edicion_autorizada = True
-        caso.save(
-            update_fields=["edicion_autorizada"]
-        )
-
-    # =====================================================
-    # RESPONSABLE SIN AUTORIZACIÓN
+    # RESPONSABLE
     # =====================================================
 
     elif es_responsable:
 
-        return redirect(
-            "solicitar_modificacion",
-            id=caso.id
-        )
+        # -------------------------------------------------
+        # AUTORIZACIÓN YA CONCEDIDA
+        # -------------------------------------------------
+
+        if caso.edicion_autorizada:
+            puede_editar = True
+
+        # -------------------------------------------------
+        # PRIMERA EDICIÓN POR NUEVA ASIGNACIÓN
+        #
+        # IMPORTANTE:
+        # SOLO comprobamos el mensaje.
+        # NO ponemos edicion_autorizada=True aquí.
+        # -------------------------------------------------
+
+        elif Mensaje.objects.filter(
+            destinatario=request.user,
+            caso=caso,
+            asunto="🔔 Nuevo caso asignado",
+            leido=False
+        ).exists():
+
+            puede_editar = True
+
+        # -------------------------------------------------
+        # SIN AUTORIZACIÓN
+        # -------------------------------------------------
+
+        else:
+
+            return redirect(
+                "solicitar_modificacion",
+                id=caso.id
+            )
+
+    # =====================================================
+    # NO ES RESPONSABLE
+    # =====================================================
 
     else:
 
         return redirect("gestion_casos")
 
     # =====================================================
-    # GUARDAR CAMBIOS
+    # FORMULARIO
     # =====================================================
 
     if request.method == "POST":
@@ -1367,11 +1361,11 @@ def editar_caso(request, id):
 
         if form.is_valid():
 
-            caso = form.save(commit=False)
-
             # =================================================
             # RESPONSABLE NUEVO
             # =================================================
+
+            caso = form.save(commit=False)
 
             responsable_nuevo = caso.responsable
 
@@ -1404,7 +1398,30 @@ def editar_caso(request, id):
 
                 caso.edicion_autorizada = False
 
+            # =================================================
+            # SI EL RESPONSABLE ACTUAL GUARDÓ
+            #
+            # LA AUTORIZACIÓN SE CONSUME AQUÍ
+            # =================================================
+
+            elif es_responsable:
+
+                caso.edicion_autorizada = False
+
             caso.save()
+
+            # =================================================
+            # MARCAR MENSAJES DEL CASO COMO LEÍDOS
+            # =================================================
+
+            Mensaje.objects.filter(
+                destinatario=request.user,
+                caso=caso,
+                leido=False
+            ).update(
+                leido=True,
+                fecha_lectura=timezone.now()
+            )
 
             # =================================================
             # MENSAJE AL NUEVO RESPONSABLE
@@ -1434,24 +1451,10 @@ def editar_caso(request, id):
                 )
 
             # =================================================
-            # SI EL RESPONSABLE ACTUAL EDITÓ
+            # SOLICITUD DE MODIFICACIÓN APROBADA
             # =================================================
 
-            if es_responsable:
-
-                caso.edicion_autorizada = False
-
-                caso.save(
-                    update_fields=[
-                        "edicion_autorizada"
-                    ]
-                )
-
-            # =================================================
-            # UTILIZAR SOLICITUD APROBADA
-            # =================================================
-
-            elif es_usuario:
+            if es_usuario:
 
                 solicitud = (
                     SolicitudModificacion.objects.filter(
@@ -1492,13 +1495,19 @@ def editar_caso(request, id):
             usuario=request.user
         )
 
-    return render(
+    response = render(
         request,
         "mapa/nuevo_caso.html",
         {
             "form": form
         }
     )
+
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+
+    return response
 
 @login_required
 @grupo_requerido("Administrador", "Jefe_MP")
