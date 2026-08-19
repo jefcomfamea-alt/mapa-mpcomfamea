@@ -1689,33 +1689,74 @@ def solicitar_modificacion(request, id):
 )
 def mensajes(request):
 
+    # =========================
+    # MENSAJES NO LEÍDOS
+    # =========================
+
     mensajes_nuevos = Mensaje.objects.filter(
         destinatario=request.user,
         leido=False
     ).order_by("-fecha")
+
+
+    # =========================
+    # HISTORIAL
+    # SOLO MENSAJES YA LEÍDOS
+    # =========================
 
     historial_mensajes = Mensaje.objects.filter(
         destinatario=request.user,
         leido=True
     ).order_by("-fecha_lectura", "-fecha")
 
+
+    # =========================
+    # SOLICITUDES PENDIENTES
+    # =========================
+
     solicitudes = SolicitudModificacion.objects.filter(
         estado="PENDIENTE"
     ).order_by("-fecha")
 
 
+    # =========================
+    # CASOS PRÓXIMOS A VENCER
+    # =========================
+
     hoy = timezone.now().date()
     limite = hoy + timedelta(days=3)
 
-    casos_por_vencer = Caso.objects.filter(
-        estado="ACTIVO",
-        fecha_limite__isnull=False,
-        fecha_limite__gte=hoy,
-        fecha_limite__lte=limite
-    ).filter(
-        Q(fecha_registro__year__gte=2026) |
-        Q(ultima_visita__year__gte=2026)
-    ).order_by("fecha_limite")
+
+    if (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name__in=["Administrador", "Jefe_MP"]
+        ).exists()
+    ):
+
+        casos_por_vencer = Caso.objects.filter(
+            estado="ACTIVO",
+            fecha_limite__isnull=False,
+            fecha_limite__gte=hoy,
+            fecha_limite__lte=limite
+        ).filter(
+            Q(fecha_registro__year__gte=2026) |
+            Q(ultima_visita__year__gte=2026)
+        ).order_by("fecha_limite")
+
+    else:
+
+        casos_por_vencer = Caso.objects.filter(
+            estado="ACTIVO",
+            responsable=request.user,
+            fecha_limite__isnull=False,
+            fecha_limite__gte=hoy,
+            fecha_limite__lte=limite
+        ).filter(
+            Q(fecha_registro__year__gte=2026) |
+            Q(ultima_visita__year__gte=2026)
+        ).order_by("fecha_limite")
+
 
     return render(
         request,
