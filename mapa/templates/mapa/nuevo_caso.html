@@ -1,8 +1,12 @@
-<!DOCTYPE html>
+{% load static %}
 
+<!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
+
     <title>
         {% if form.instance.pk %}
             Editar Caso
@@ -11,841 +15,2294 @@
         {% endif %}
     </title>
 
-<style>
+    <style>
 
-    *{
-        box-sizing:border-box;
-    }
-
-    body{
-        font-family:Arial, Helvetica, sans-serif;
-        margin:0;
-        padding:35px;
-        background:#eef2ef;
-    }
-
-    .contenedor{
-        max-width:1000px;
-        margin:auto;
-    }
-
-    h2{
-        color:#1B5E20;
-        text-align:center;
-        margin-bottom:25px;
-    }
-
-    form{
-        background:white;
-        padding:30px;
-        border-radius:12px;
-        box-shadow:0 3px 12px rgba(0,0,0,0.12);
-    }
-
-    .seccion{
-        margin-bottom:30px;
-        padding:22px;
-        border:1px solid #d8e2d9;
-        border-radius:10px;
-        background:#f9fbf9;
-    }
-
-    .titulo-seccion{
-        margin:0 0 20px 0;
-        padding:12px 15px;
-        color:white;
-        background:#1B5E20;
-        border-radius:7px;
-        font-size:18px;
-        font-weight:bold;
-    }
-
-    .grid{
-        display:grid;
-        grid-template-columns:repeat(2, 1fr);
-        gap:18px;
-    }
-
-    .campo{
-        display:flex;
-        flex-direction:column;
-    }
-
-    .campo-completo{
-        grid-column:1 / -1;
-    }
-
-    label{
-        font-weight:bold;
-        color:#263238;
-        margin-bottom:7px;
-    }
-
-    input,
-    select,
-    textarea{
-        width:100%;
-        padding:10px;
-        border:1px solid #b8c7ba;
-        border-radius:6px;
-        font-size:14px;
-        background:white;
-    }
-
-    textarea{
-        min-height:85px;
-        resize:vertical;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus{
-        outline:none;
-        border-color:#1B5E20;
-        box-shadow:0 0 0 2px rgba(27,94,32,0.12);
-    }
-
-    .errores{
-        color:#b71c1c;
-        font-size:13px;
-        margin-top:5px;
-    }
-
-    .botones{
-        display:flex;
-        justify-content:center;
-        margin-top:25px;
-    }
-
-    button{
-        background:#1B5E20;
-        color:white;
-        border:none;
-        padding:13px 35px;
-        cursor:pointer;
-        border-radius:7px;
-        font-size:16px;
-        font-weight:bold;
-    }
-
-    button:hover{
-        background:#13451a;
-    }
-
-    @media(max-width:700px){
+        *{
+            box-sizing:border-box;
+        }
 
         body{
-            padding:15px;
+            font-family:Arial, Helvetica, sans-serif;
+            margin:0;
+            padding:35px;
+            background:#eef2ef;
+        }
+
+        .contenedor{
+            max-width:1000px;
+            margin:auto;
+        }
+
+        h2{
+            color:#1B5E20;
+            text-align:center;
+            margin-bottom:25px;
         }
 
         form{
-            padding:18px;
+            background:white;
+            padding:30px;
+            border-radius:12px;
+            box-shadow:0 3px 12px rgba(0,0,0,0.12);
+        }
+
+        .seccion{
+            margin-bottom:30px;
+            padding:22px;
+            border:1px solid #d8e2d9;
+            border-radius:10px;
+            background:#f9fbf9;
+        }
+
+        .titulo-seccion{
+            margin:0 0 20px 0;
+            padding:12px 15px;
+            color:white;
+            background:#1B5E20;
+            border-radius:7px;
+            font-size:18px;
+            font-weight:bold;
         }
 
         .grid{
-            grid-template-columns:1fr;
+            display:grid;
+            grid-template-columns:repeat(2, 1fr);
+            gap:18px;
         }
 
-    }
+        .campo{
+            display:flex;
+            flex-direction:column;
+        }
 
-    .violencias{
+        .campo-completo{
+            grid-column:1 / -1;
+        }
 
-        display:grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap:15px 40px;
+        .subseccion{
+            margin-top:10px;
+            padding:18px;
+            border:1px solid #d5dfd7;
+            border-radius:8px;
+            background:#ffffff;
+        }
 
-        padding:15px 0;
+        .subtitulo{
+            margin:0 0 18px 0;
+            padding-bottom:8px;
+            border-bottom:2px solid #1B5E20;
+            color:#1B5E20;
+            font-size:15px;
+            font-weight:bold;
+        }
 
-    }
+        .grid-domicilio{
+            display:grid;
+            grid-template-columns:repeat(2, 1fr);
+            gap:16px;
+        }
 
+        .grid-notificacion{
+            display:grid;
+            grid-template-columns:repeat(2, 1fr);
+            gap:16px;
+        }
 
-    .violencias label{
+        .domicilio-generado{
+            margin-top:15px;
+            padding:12px 15px;
+            border-left:4px solid #1B5E20;
+            background:#f1f7f2;
+            border-radius:5px;
+            color:#263238;
+            font-size:14px;
+        }
 
-        display:flex;
-        align-items:center;
-        gap:10px;
+        .domicilio-generado strong{
+            color:#1B5E20;
+        }
 
-        font-weight:normal;
+        #domicilio_mostrado,
+        #domicilio_agresor_mostrado{
+            margin-left:5px;
+        }
 
-    }
+        label{
+            font-weight:bold;
+            color:#263238;
+            margin-bottom:7px;
+        }
 
+        input,
+        select,
+        textarea{
+            width:100%;
+            padding:10px;
+            border:1px solid #b8c7ba;
+            border-radius:6px;
+            font-size:14px;
+            background:white;
+        }
 
-    .violencias input[type="checkbox"]{
+        textarea{
+            min-height:85px;
+            resize:vertical;
+        }
 
-        width:18px;
-        height:18px;
+        input:focus,
+        select:focus,
+        textarea:focus{
+            outline:none;
+            border-color:#1B5E20;
+            box-shadow:0 0 0 2px rgba(27,94,32,0.12);
+        }
 
-    }
+        .errores{
+            color:#b71c1c;
+            font-size:13px;
+            margin-top:5px;
+        }
 
-</style>
+        .botones{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            margin-top:25px;
+            flex-wrap:wrap;
+            gap:10px;
+        }
+
+        button{
+            background:#1B5E20;
+            color:white;
+            border:none;
+            padding:13px 35px;
+            cursor:pointer;
+            border-radius:7px;
+            font-size:16px;
+            font-weight:bold;
+        }
+
+        button:hover{
+            background:#13451a;
+        }
+
+        .violencias{
+            display:grid;
+            grid-template-columns:repeat(2, 1fr);
+            gap:15px 40px;
+            padding:15px 0;
+        }
+
+        .violencias label{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            font-weight:normal;
+        }
+
+        .violencias input[type="checkbox"]{
+            width:18px;
+            height:18px;
+        }
+
+        @media(max-width:700px){
+
+            body{
+                padding:15px;
+            }
+
+            form{
+                padding:18px;
+            }
+
+            .grid,
+            .grid-domicilio,
+            .grid-notificacion,
+            .violencias{
+                grid-template-columns:1fr;
+            }
+
+        }
+
+    </style>
 
 </head>
+
 
 <body>
 
 <div class="contenedor">
 
-<h2>
-
-    {% if form.instance.pk %}
-        Editar Caso
-    {% else %}
-        Registrar Nuevo Caso
-    {% endif %}
-
-</h2>
-
-<form method="post">
-
-    {% csrf_token %}
-
-    {{ form.non_field_errors }}
-
-    {% if form.errors %}
-
-    <div class="errores">
-
-        {{ form.errors }}
-
-    </div>
-
-{% endif %}
-
-    <!-- DATOS DE LA PERSONA BENEFICIARIA -->
-
-    <section class="seccion">
-
-        <h3 class="titulo-seccion">
-            DATOS DE LA PERSONA BENEFICIARIA
-        </h3>
-
-        <div class="grid">
-
-            <div class="campo campo-completo">
-
-                {{ form.beneficiario.label_tag }}
-
-                {{ form.beneficiario }}
-
-                {% if form.beneficiario.errors %}
-
-                    <div class="errores">
-
-                        {{ form.beneficiario.errors }}
-
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-
-            <div class="campo">
-
-                {{ form.dni_beneficiario.label_tag }}
-
-                {{ form.dni_beneficiario }}
-
-                {% if form.dni_beneficiario.errors %}
-
-                    <div class="errores">
-
-                        {{ form.dni_beneficiario.errors }}
-
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-
-            <div class="campo">
-
-                {{ form.telefono.label_tag }}
-
-                {{ form.telefono }}
-
-                {% if form.telefono.errors %}
-
-                    <div class="errores">
-
-                        {{ form.telefono.errors }}
-
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-
-            <div class="campo campo-completo">
-
-                {{ form.domicilio.label_tag }}
-
-                {{ form.domicilio }}
-
-                {% if form.domicilio.errors %}
-
-                    <div class="errores">
-
-                        {{ form.domicilio.errors }}
-
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-            
-            <div class="campo" id="campo_notificacion_beneficiario">
-
-                {{ form.notificacion_beneficiario.label_tag }}
-
-                {{ form.notificacion_beneficiario }}
-
-            </div>
-
-            <div
-                class="campo campo-completo"
-                id="contenedor_motivo_beneficiario"
-            >
-
-                {{ form.motivo_notificacion_beneficiario_pendiente.label_tag }}
-
-                {{ form.motivo_notificacion_beneficiario_pendiente }}
-
-            </div>
-
-
-            <div class="campo">
-
-                {{ form.fecha_notificacion_beneficiario.label_tag }}
-
-                {{ form.fecha_notificacion_beneficiario }}
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- DATOS DE LA PERSONA AGRESORA -->
-
-    <section class="seccion">
-
-        <h3 class="titulo-seccion">
-            DATOS DE LA PERSONA AGRESORA
-        </h3>
-
-        <div class="grid">
-
-            <div class="campo campo-completo">
-
-                {{ form.agresor.label_tag }}
-
-                {{ form.agresor }}
-
-            </div>
-
-
-            <div class="campo">
-
-                {{ form.dni_agresor.label_tag }}
-
-                {{ form.dni_agresor }}
-
-            </div>
-
-
-            <div class="campo">
-
-                {{ form.telefono_agresor.label_tag }}
-
-                {{ form.telefono_agresor }}
-
-            </div>
-
-
-            <div class="campo campo-completo">
-
-                {{ form.direccion_agresor.label_tag }}
-
-                {{ form.direccion_agresor }}
-
-            </div>
-
-
-            <div class="campo" id="campo_notificacion_agresor">
-
-                {{ form.notificacion_agresor.label_tag }}
-
-                {{ form.notificacion_agresor }}
-
-            </div>
-
-            <div
-                class="campo campo-completo"
-                id="contenedor_motivo_agresor"
-            >
-
-                {{ form.motivo_notificacion_agresor_pendiente.label_tag }}
-
-                {{ form.motivo_notificacion_agresor_pendiente }}
-
-            </div>
-
-
-            <div class="campo">
-
-                {{ form.fecha_notificacion_agresor.label_tag }}
-
-                {{ form.fecha_notificacion_agresor }}
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- DATOS DEL CASO -->
-
-    <section class="seccion">
-
-        <h3 class="titulo-seccion">
-            DATOS DE LA DENUNCIA
-        </h3>
-
-        <div class="grid">
-
-            <div class="campo">
-
-                {{ form.fecha_denuncia.label_tag }}
-
-                {{ form.fecha_denuncia }}
-
-            </div>
-            
-            <div class="campo">
-
-                {{ form.comisaria_denuncia.label_tag }}
-
-                {{ form.comisaria_denuncia }}
-
-            </div>
-
-            
-            <div class="campo">
-                {{ form.region_denuncia.label_tag }}
-                {{ form.region_denuncia }}
-            </div>
-
-            <div class="campo">
-                {{ form.provincia_denuncia.label_tag }}
-                {{ form.provincia_denuncia }}
-            </div>
-
-            <div class="campo">
-                {{ form.distrito_denuncia.label_tag }}
-                {{ form.distrito_denuncia }}
-            </div>
-
-             
-            <div class="campo campo-completo">
-
-                <label>
-                    Tipo de violencia
-                </label>
-
-                <div class="violencias">
-
-                    <label>
-                        {{ form.violencia_fisica }}
-                        Violencia física
-                    </label>
-
-                    <label>
-                        {{ form.violencia_psicologica }}
-                         Violencia psicológica
-                    </label>
-
-                    <label>
-                        {{ form.violencia_sexual }}
-                         Violencia sexual
-                    </label>
-
-                    <label>
-                        {{ form.violencia_economica }}
-                        Violencia económica o patrimonial
-                    </label>
-
-                </div>
-
-            </div>
-            
-        </div>
-
-    </section>
-
-        <section class="seccion">
-
-<h3 class="titulo-seccion">
-    DATOS DE LA MEDIDA DE PROTECCIÓN
-</h3>
-
-<div class="grid">
-
-    <div class="campo">
-
-        {{ form.comisaria_medida.label_tag }}
-
-        {{ form.comisaria_medida }}
-    </div>
-
-        <div class="campo">
-            {{ form.region_medida.label_tag }}
-            {{ form.region_medida }}
-        </div>
-
-        <div class="campo">
-            {{ form.provincia_medida.label_tag }}
-            {{ form.provincia_medida }}
-        </div>
-
-        <div class="campo">
-            {{ form.distrito_medida.label_tag }}
-            {{ form.distrito_medida }}
-        </div>
-
-    <div class="campo">
-
-    {{ form.nivel_riesgo.label_tag }}
-
-    {{ form.nivel_riesgo }}
-
-</div>        
-
-    <div class="campo">
-
-        <label>
-            Efectivo responsable
-        </label>
-
-        {{ form.responsable }}
-
-    </div>
-
-
-    <div class="campo">
-
-        {{ form.folder.label_tag }}
-
-        {{ form.folder }}
-
-    </div>
-
-
-    <div class="campo">
-
-        {{ form.expediente.label_tag }}
-
-        {{ form.expediente }}
-
-    </div>
-
-
-    <div class="campo">
-
-        {{ form.fecha_registro.label_tag }}
-
-        {{ form.fecha_registro }}
-
-    </div>
-
-
-    <div class="campo">
-
-        {{ form.ultima_visita.label_tag }}
-
-        {{ form.ultima_visita }}
-
-    </div>
-
-
-    <div class="campo">
-
-        {{ form.estado.label_tag }}
-
-        {{ form.estado }}
-
-</div>
-
-</div>
-
-</section>
-
-
-    <!-- CAMPOS OCULTOS DEL MAPA -->
-
-    {{ form.latitud }}
-
-    {{ form.longitud }}
-
-    {{ form.latitud_agresor }}
-
-    {{ form.longitud_agresor }}
-
-
-    <div class="botones">
+    <h2>
 
         {% if form.instance.pk %}
+            Editar Caso
+        {% else %}
+            Registrar Nuevo Caso
+        {% endif %}
 
-            <a
-                href="{% url 'actualizar_ubicacion_caso' form.instance.pk %}"
-                style="
-                    display:inline-block;
-                    background:#1565C0;
-                    color:white;
-                    text-decoration:none;
-                    padding:13px 25px;
-                    border-radius:7px;
-                    font-size:16px;
-                    font-weight:bold;
-                    margin-right:10px;
-                "
-            >
-                📍 Actualizar domicilio / ubicación
-            </a>
+    </h2>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+
+        {% if form.errors %}
+
+            <div class="errores">
+                {{ form.errors }}
+            </div>
 
         {% endif %}
 
-        <button type="submit">
+
+        <!-- =====================================================
+             DATOS DE LA PERSONA BENEFICIARIA
+        ====================================================== -->
+
+        <section class="seccion">
+
+            <h3 class="titulo-seccion">
+                DATOS DE LA PERSONA BENEFICIARIA
+            </h3>
+
+
+            <div class="grid">
+
+
+                <div class="campo campo-completo">
+
+                    {{ form.beneficiario.label_tag }}
+                    {{ form.beneficiario }}
+                    
+                    {% if form.beneficiario.errors %}
+                        <div class="errores">
+                            {{ form.beneficiario.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.dni_beneficiario.label_tag }}
+                    {{ form.dni_beneficiario }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.telefono.label_tag }}
+                    {{ form.telefono }}
+
+                </div>
+
+
+                <!-- =================================================
+                     DOMICILIO BENEFICIARIA
+                ================================================== -->
+
+                <div class="subseccion campo-completo">
+
+                    <h4 class="subtitulo">
+                        DOMICILIO DE LA PERSONA BENEFICIARIA
+                    </h4>
+
+
+                    <div class="grid-domicilio">
+
+
+                        <div class="campo">
+
+                            {{ form.region_domicilio.label_tag }}
+                            {{ form.region_domicilio }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            {{ form.provincia_domicilio.label_tag }}
+                            {{ form.provincia_domicilio }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            {{ form.distrito_domicilio.label_tag }}
+                            {{ form.distrito_domicilio }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            <label for="{{ form.tipo_via.id_for_label }}">
+                                Tipo de vía
+                            </label>
+
+                            {{ form.tipo_via }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            <label for="{{ form.nombre_via.id_for_label }}">
+                                Nombre de vía
+                            </label>
+
+                            {{ form.nombre_via }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            <label for="{{ form.numero_via.id_for_label }}">
+                                Número
+                            </label>
+
+                            {{ form.numero_via }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            <label for="{{ form.complemento_domicilio.id_for_label }}">
+                                Complemento / referencia
+                            </label>
+
+                            {{ form.complemento_domicilio }}
+
+                        </div>
+
+                    </div>
+
+
+                    <div style="display:none;">
+
+                        {{ form.domicilio }}
+
+                    </div>
+
+
+                    <div class="domicilio-generado">
+
+                        <strong>Domicilio registrado:</strong>
+
+                        <span id="domicilio_mostrado">
+                            —
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     NOTIFICACIÓN BENEFICIARIA
+                ================================================== -->
+
+                <div class="subseccion campo-completo">
+
+                    <h4 class="subtitulo">
+                        NOTIFICACIÓN DE LA PERSONA BENEFICIARIA
+                    </h4>
+
+
+                    <div class="grid-notificacion">
+
+
+                        <div class="campo">
+
+                            {{ form.notificacion_beneficiario.label_tag }}
+                            {{ form.notificacion_beneficiario }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            {{ form.fecha_notificacion_beneficiario.label_tag }}
+                            {{ form.fecha_notificacion_beneficiario }}
+
+                        </div>
+
+
+                        <div
+                            class="campo campo-completo"
+                            id="contenedor_motivo_beneficiario"
+                        >
+
+                            {{ form.motivo_notificacion_beneficiario_pendiente.label_tag }}
+
+                            {{ form.motivo_notificacion_beneficiario_pendiente }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             DATOS DE LA PERSONA AGRESORA
+        ====================================================== -->
+
+        <section class="seccion">
+
+            <h3 class="titulo-seccion">
+                DATOS DE LA PERSONA AGRESORA
+            </h3>
+
+
+            <div class="grid">
+
+
+                <div class="campo campo-completo">
+
+                    {{ form.agresor.label_tag }}
+                    {{ form.agresor }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.dni_agresor.label_tag }}
+                    {{ form.dni_agresor }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.telefono_agresor.label_tag }}
+                    {{ form.telefono_agresor }}
+
+                </div>
+
+
+                <!-- =================================================
+                     DOMICILIO AGRESOR
+                ================================================== -->
+
+                <div class="subseccion campo-completo">
+
+                    <h4 class="subtitulo">
+                        DOMICILIO DE LA PERSONA AGRESORA
+                    </h4>
+
+
+                    <div class="grid-domicilio">
+
+
+                        <div class="campo">
+
+                            {{ form.region_agresor.label_tag }}
+                            {{ form.region_agresor }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            {{ form.provincia_agresor.label_tag }}
+                            {{ form.provincia_agresor }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            {{ form.distrito_agresor.label_tag }}
+                            {{ form.distrito_agresor }}
+
+                        </div>
+
+
+                        <!-- TIPO DE VÍA AGRESOR -->
+
+                        <div class="campo">
+
+                            <label for="{{ form.tipo_via_agresor.id_for_label }}">
+                                Tipo de vía
+                            </label>
+
+                            {{ form.tipo_via_agresor }}
+
+                        </div>
+
+
+                        <!-- NOMBRE DE VÍA AGRESOR -->
+
+                        <div class="campo">
+
+                            <label for="{{ form.nombre_via_agresor.id_for_label }}">
+                                Nombre de vía
+                            </label>
+
+                            {{ form.nombre_via_agresor }}
+
+                        </div>
+
+
+                        <!-- NÚMERO AGRESOR -->
+
+                        <div class="campo">
+
+                            <label for="{{ form.numero_via_agresor.id_for_label }}">
+                                Número
+                            </label>
+
+                            {{ form.numero_via_agresor }}
+
+                        </div>
+
+
+                        <!-- COMPLEMENTO AGRESOR -->
+
+                        <div class="campo">
+
+                            <label for="{{ form.complemento_domicilio_agresor.id_for_label }}">
+                                Complemento / referencia
+                            </label>
+
+                            {{ form.complemento_domicilio_agresor }}
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- CAMPO REAL DE DJANGO -->
+
+                    <div style="display:none;">
+
+                        {{ form.direccion_agresor }}
+
+                    </div>
+
+
+                    <!-- DOMICILIO GENERADO -->
+
+                    <div class="domicilio-generado">
+
+                        <strong>Domicilio registrado:</strong>
+
+                        <span id="domicilio_agresor_mostrado">
+                            —
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     NOTIFICACIÓN AGRESOR
+                ================================================== -->
+
+                <div class="subseccion campo-completo">
+
+                    <h4 class="subtitulo">
+                        NOTIFICACIÓN DE LA PERSONA AGRESORA
+                    </h4>
+
+
+                    <div class="grid-notificacion">
+
+
+                        <div class="campo">
+
+                            {{ form.notificacion_agresor.label_tag }}
+                            {{ form.notificacion_agresor }}
+
+                        </div>
+
+
+                        <div class="campo">
+
+                            {{ form.fecha_notificacion_agresor.label_tag }}
+                            {{ form.fecha_notificacion_agresor }}
+
+                        </div>
+
+
+                        <div
+                            class="campo campo-completo"
+                            id="contenedor_motivo_agresor"
+                        >
+
+                            {{ form.motivo_notificacion_agresor_pendiente.label_tag }}
+
+                            {{ form.motivo_notificacion_agresor_pendiente }}
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             DATOS DE LA DENUNCIA
+        ====================================================== -->
+
+        <section class="seccion">
+
+            <h3 class="titulo-seccion">
+                DATOS DE LA DENUNCIA
+            </h3>
+
+
+            <div class="grid">
+
+
+                <div class="campo">
+
+                    {{ form.fecha_denuncia.label_tag }}
+                    {{ form.fecha_denuncia }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.comisaria_denuncia.label_tag }}
+                    {{ form.comisaria_denuncia }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.region_denuncia.label_tag }}
+                    {{ form.region_denuncia }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.provincia_denuncia.label_tag }}
+                    {{ form.provincia_denuncia }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.distrito_denuncia.label_tag }}
+                    {{ form.distrito_denuncia }}
+
+                </div>
+
+
+                <div class="campo campo-completo">
+
+                    <label>
+                        Tipo de violencia
+                    </label>
+
+
+                    <div class="violencias">
+
+
+                        <label>
+
+                            {{ form.violencia_fisica }}
+
+                            Violencia física
+
+                        </label>
+
+
+                        <label>
+
+                            {{ form.violencia_psicologica }}
+
+                            Violencia psicológica
+
+                        </label>
+
+
+                        <label>
+
+                            {{ form.violencia_sexual }}
+
+                            Violencia sexual
+
+                        </label>
+
+
+                        <label>
+
+                            {{ form.violencia_economica }}
+
+                            Violencia económica o patrimonial
+
+                        </label>
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             DATOS DE LA MEDIDA DE PROTECCIÓN
+        ====================================================== -->
+
+        <section class="seccion">
+
+            <h3 class="titulo-seccion">
+                DATOS DE LA MEDIDA DE PROTECCIÓN
+            </h3>
+
+
+            <div class="grid">
+
+
+                <div class="campo">
+
+                    {{ form.comisaria_medida.label_tag }}
+                    {{ form.comisaria_medida }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.region_medida.label_tag }}
+                    {{ form.region_medida }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.provincia_medida.label_tag }}
+                    {{ form.provincia_medida }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.distrito_medida.label_tag }}
+                    {{ form.distrito_medida }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.nivel_riesgo.label_tag }}
+                    {{ form.nivel_riesgo }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    <label>
+                        Efectivo responsable
+                    </label>
+
+                    {{ form.responsable }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.folder.label_tag }}
+                    {{ form.folder }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.expediente.label_tag }}
+                    {{ form.expediente }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.fecha_registro.label_tag }}
+                    {{ form.fecha_registro }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.ultima_visita.label_tag }}
+                    {{ form.ultima_visita }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    {{ form.estado.label_tag }}
+                    {{ form.estado }}
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             CAMPOS OCULTOS DEL MAPA
+        ====================================================== -->
+
+        {{ form.latitud }}
+        {{ form.longitud }}
+
+        {{ form.latitud_agresor }}
+        {{ form.longitud_agresor }}
+
+
+
+        <!-- =====================================================
+             BOTONES
+        ====================================================== -->
+
+        <div class="botones">
+
 
             {% if form.instance.pk %}
-                Guardar Cambios
-            {% else %}
-                Guardar Caso
+
+                <a
+                    href="{% url 'actualizar_ubicacion_caso' form.instance.pk %}"
+                    style="
+                        display:inline-block;
+                        background:#1565C0;
+                        color:white;
+                        text-decoration:none;
+                        padding:13px 25px;
+                        border-radius:7px;
+                        font-size:16px;
+                        font-weight:bold;
+                    "
+                >
+                    📍 Actualizar domicilio / ubicación
+                </a>
+
             {% endif %}
 
-        </button>
 
-    </div>
+            <button type="submit">
 
-</form>
-```
+                {% if form.instance.pk %}
+                    Guardar Cambios
+                {% else %}
+                    Guardar Caso
+                {% endif %}
+
+            </button>
+
+
+        </div>
+
+
+    </form>
 
 </div>
 
+
+
 <script>
 
-function actualizarNotificacion(){
+/* ==========================================================
+   DOMICILIO BENEFICIARIA
+========================================================== */
 
-    const estadoBeneficiario =
-        document.getElementById("id_notificacion_beneficiario");
+function actualizarDomicilio() {
 
-    const estadoAgresor =
-        document.getElementById("id_notificacion_agresor");
+    const tipoVia =
+        document.getElementById("id_tipo_via");
 
-    const motivoBeneficiario =
-        document.getElementById("contenedor_motivo_beneficiario");
+    const nombreVia =
+        document.getElementById("id_nombre_via");
 
-    const motivoAgresor =
-        document.getElementById("contenedor_motivo_agresor");
+    const numeroVia =
+        document.getElementById("id_numero_via");
+
+    const complemento =
+        document.getElementById("id_complemento_domicilio");
+
+    const region =
+        document.getElementById("id_region_domicilio");
+
+    const provincia =
+        document.getElementById("id_provincia_domicilio");
+
+    const distrito =
+        document.getElementById("id_distrito_domicilio");
+
+    const domicilio =
+        document.getElementById("id_domicilio");
+
+    const domicilioMostrado =
+        document.getElementById("domicilio_mostrado");
 
 
-    if(estadoBeneficiario.value==="PENDIENTE"){
+    if (!domicilio) {
+        return;
+    }
 
-        estadoBeneficiario.style.background="#ffebee";
-        estadoBeneficiario.style.border="2px solid #d32f2f";
 
-        motivoBeneficiario.style.display="flex";
+    let tipoTexto = "";
 
-    }else{
+    if (tipoVia && tipoVia.value) {
 
-        estadoBeneficiario.style.background="#e8f5e9";
-        estadoBeneficiario.style.border="2px solid #2e7d32";
+        const opcion =
+            tipoVia.options[tipoVia.selectedIndex];
 
-        motivoBeneficiario.style.display="none";
+        if (opcion) {
+            tipoTexto =
+                opcion.textContent.trim();
+        }
+    }
+
+
+    const nombre =
+        nombreVia
+            ? nombreVia.value.trim()
+            : "";
+
+
+    const numero =
+        numeroVia
+            ? numeroVia.value.trim()
+            : "";
+
+
+    const complementoTexto =
+        complemento
+            ? complemento.value.trim()
+            : "";
+
+
+    let regionTexto = "";
+    let provinciaTexto = "";
+    let distritoTexto = "";
+
+
+    if (region && region.value) {
+
+        const opcion =
+            region.options[region.selectedIndex];
+
+        if (opcion) {
+            regionTexto =
+                opcion.textContent.trim();
+        }
+    }
+
+
+    if (provincia && provincia.value) {
+
+        const opcion =
+            provincia.options[provincia.selectedIndex];
+
+        if (opcion) {
+            provinciaTexto =
+                opcion.textContent.trim();
+        }
+    }
+
+
+    if (distrito && distrito.value) {
+
+        const opcion =
+            distrito.options[distrito.selectedIndex];
+
+        if (opcion) {
+            distritoTexto =
+                opcion.textContent.trim();
+        }
+    }
+
+
+    const partes = [];
+
+
+    if (tipoTexto && nombre) {
+
+        partes.push(
+            tipoTexto + " " + nombre
+        );
+
+    } else if (nombre) {
+
+        partes.push(nombre);
+
+    } else if (tipoTexto) {
+
+        partes.push(tipoTexto);
 
     }
 
 
-    if(estadoAgresor.value==="PENDIENTE"){
+    if (numero) {
 
-        estadoAgresor.style.background="#ffebee";
-        estadoAgresor.style.border="2px solid #d32f2f";
+        partes.push(
+            "N° " + numero
+        );
 
-        motivoAgresor.style.display="flex";
+    }
 
-    }else{
 
-        estadoAgresor.style.background="#e8f5e9";
-        estadoAgresor.style.border="2px solid #2e7d32";
+    if (complementoTexto) {
 
-        motivoAgresor.style.display="none";
+        partes.push(
+            complementoTexto
+        );
+
+    }
+
+
+    if (distritoTexto) {
+
+        partes.push(
+            distritoTexto
+        );
+
+    }
+
+
+    if (provinciaTexto) {
+
+        partes.push(
+            provinciaTexto
+        );
+
+    }
+
+
+    if (regionTexto) {
+
+        partes.push(
+            regionTexto
+        );
+
+    }
+
+
+    const domicilioFinal =
+        partes.join(", ");
+
+
+    domicilio.value =
+        domicilioFinal;
+
+
+    if (domicilioMostrado) {
+
+        domicilioMostrado.textContent =
+            domicilioFinal || "—";
 
     }
 
 }
 
-document
-.getElementById("id_notificacion_beneficiario")
-.addEventListener("change", actualizarNotificacion);
 
-document
-.getElementById("id_notificacion_agresor")
-.addEventListener("change", actualizarNotificacion);
+/* ==========================================================
+   DOMICILIO AGRESOR
+========================================================== */
 
-actualizarNotificacion();
+function actualizarDomicilioAgresor() {
 
-// ==========================================
-// UBIGEO EN CASCADA
-// DENUNCIA + MEDIDA
-// ==========================================
+    const tipoVia =
+        document.getElementById(
+            "id_tipo_via_agresor"
+        );
 
-function cargarProvincias(regionSelectId, provinciaSelectId, distritoSelectId) {
+    const nombreVia =
+        document.getElementById(
+            "id_nombre_via_agresor"
+        );
 
-    const region = document.getElementById(regionSelectId);
-    const provincia = document.getElementById(provinciaSelectId);
-    const distrito = document.getElementById(distritoSelectId);
+    const numeroVia =
+        document.getElementById(
+            "id_numero_via_agresor"
+        );
 
-    if (!region || !provincia || !distrito) {
+    const complemento =
+        document.getElementById(
+            "id_complemento_domicilio_agresor"
+        );
+
+    const direccion =
+        document.getElementById(
+            "id_direccion_agresor"
+        );
+
+    const region =
+        document.getElementById(
+            "id_region_agresor"
+        );
+
+    const provincia =
+        document.getElementById(
+            "id_provincia_agresor"
+        );
+
+    const distrito =
+        document.getElementById(
+            "id_distrito_agresor"
+        );
+
+    const domicilioMostrado =
+        document.getElementById(
+            "domicilio_agresor_mostrado"
+        );
+
+
+    if (!direccion) {
         return;
     }
 
-    region.addEventListener("change", function () {
-        
-        console.log("Cambio de región:", this.value);
 
-        const regionId = this.value;
+    let tipoTexto = "";
+    let regionTexto = "";
+    let provinciaTexto = "";
+    let distritoTexto = "";
 
-        provincia.innerHTML =
-            '<option value="">Seleccione una provincia</option>';
 
-        distrito.innerHTML =
-            '<option value="">Seleccione un distrito</option>';
+    if (tipoVia && tipoVia.value) {
 
-        distrito.disabled = true;
+        const opcion =
+            tipoVia.options[tipoVia.selectedIndex];
 
-        if (!regionId) {
+        if (opcion) {
+            tipoTexto =
+                opcion.textContent.trim();
+        }
+    }
 
-            provincia.disabled = true;
-            return;
+
+    if (region && region.value) {
+
+        const opcion =
+            region.options[region.selectedIndex];
+
+        if (opcion) {
+            regionTexto =
+                opcion.textContent.trim();
+        }
+    }
+
+
+    if (provincia && provincia.value) {
+
+        const opcion =
+            provincia.options[provincia.selectedIndex];
+
+        if (opcion) {
+            provinciaTexto =
+                opcion.textContent.trim();
+        }
+    }
+
+
+    if (distrito && distrito.value) {
+
+        const opcion =
+            distrito.options[distrito.selectedIndex];
+
+        if (opcion) {
+            distritoTexto =
+                opcion.textContent.trim();
+        }
+    }
+
+
+    const nombre =
+        nombreVia
+            ? nombreVia.value.trim()
+            : "";
+
+
+    const numero =
+        numeroVia
+            ? numeroVia.value.trim()
+            : "";
+
+
+    const complementoTexto =
+        complemento
+            ? complemento.value.trim()
+            : "";
+
+
+    const partes = [];
+
+
+    if (tipoTexto && nombre) {
+
+        partes.push(
+            tipoTexto + " " + nombre
+        );
+
+    } else if (nombre) {
+
+        partes.push(nombre);
+
+    } else if (tipoTexto) {
+
+        partes.push(tipoTexto);
+
+    }
+
+
+    if (numero) {
+
+        partes.push(
+            "N° " + numero
+        );
+
+    }
+
+
+    if (complementoTexto) {
+
+        partes.push(
+            complementoTexto
+        );
+
+    }
+
+
+    if (distritoTexto) {
+
+        partes.push(
+            distritoTexto
+        );
+
+    }
+
+
+    if (provinciaTexto) {
+
+        partes.push(
+            provinciaTexto
+        );
+
+    }
+
+
+    if (regionTexto) {
+
+        partes.push(
+            regionTexto
+        );
+
+    }
+
+
+    const domicilioFinal =
+        partes.join(", ");
+
+
+    direccion.value =
+        domicilioFinal;
+
+
+    if (domicilioMostrado) {
+
+        domicilioMostrado.textContent =
+            domicilioFinal || "—";
+
+    }
+
+}
+
+
+/* ==========================================================
+   EVENTOS DOMICILIO BENEFICIARIA
+========================================================== */
+
+const campoTipoVia =
+    document.getElementById(
+        "id_tipo_via"
+    );
+
+const campoNombreVia =
+    document.getElementById(
+        "id_nombre_via"
+    );
+
+const campoNumeroVia =
+    document.getElementById(
+        "id_numero_via"
+    );
+
+const campoComplemento =
+    document.getElementById(
+        "id_complemento_domicilio"
+    );
+
+const campoRegionDomicilio =
+    document.getElementById(
+        "id_region_domicilio"
+    );
+
+const campoProvinciaDomicilio =
+    document.getElementById(
+        "id_provincia_domicilio"
+    );
+
+const campoDistritoDomicilio =
+    document.getElementById(
+        "id_distrito_domicilio"
+    );
+
+
+if (campoTipoVia) {
+
+    campoTipoVia.addEventListener(
+        "change",
+        actualizarDomicilio
+    );
+
+}
+
+
+if (campoNombreVia) {
+
+    campoNombreVia.addEventListener(
+        "input",
+        actualizarDomicilio
+    );
+
+}
+
+
+if (campoNumeroVia) {
+
+    campoNumeroVia.addEventListener(
+        "input",
+        actualizarDomicilio
+    );
+
+}
+
+
+if (campoComplemento) {
+
+    campoComplemento.addEventListener(
+        "input",
+        actualizarDomicilio
+    );
+
+}
+
+
+if (campoRegionDomicilio) {
+
+    campoRegionDomicilio.addEventListener(
+        "change",
+        actualizarDomicilio
+    );
+
+}
+
+
+if (campoProvinciaDomicilio) {
+
+    campoProvinciaDomicilio.addEventListener(
+        "change",
+        actualizarDomicilio
+    );
+
+}
+
+
+if (campoDistritoDomicilio) {
+
+    campoDistritoDomicilio.addEventListener(
+        "change",
+        actualizarDomicilio
+    );
+
+}
+
+
+/* ==========================================================
+   EVENTOS DOMICILIO AGRESOR
+========================================================== */
+
+const campoTipoViaAgresor =
+    document.getElementById(
+        "id_tipo_via_agresor"
+    );
+
+const campoNombreViaAgresor =
+    document.getElementById(
+        "id_nombre_via_agresor"
+    );
+
+const campoNumeroViaAgresor =
+    document.getElementById(
+        "id_numero_via_agresor"
+    );
+
+const campoComplementoAgresor =
+    document.getElementById(
+        "id_complemento_domicilio_agresor"
+    );
+
+const campoRegionAgresor =
+    document.getElementById(
+        "id_region_agresor"
+    );
+
+const campoProvinciaAgresor =
+    document.getElementById(
+        "id_provincia_agresor"
+    );
+
+const campoDistritoAgresor =
+    document.getElementById(
+        "id_distrito_agresor"
+    );
+
+
+if (campoTipoViaAgresor) {
+
+    campoTipoViaAgresor.addEventListener(
+        "change",
+        actualizarDomicilioAgresor
+    );
+
+}
+
+
+if (campoNombreViaAgresor) {
+
+    campoNombreViaAgresor.addEventListener(
+        "input",
+        actualizarDomicilioAgresor
+    );
+
+}
+
+
+if (campoNumeroViaAgresor) {
+
+    campoNumeroViaAgresor.addEventListener(
+        "input",
+        actualizarDomicilioAgresor
+    );
+
+}
+
+
+if (campoComplementoAgresor) {
+
+    campoComplementoAgresor.addEventListener(
+        "input",
+        actualizarDomicilioAgresor
+    );
+
+}
+
+
+if (campoRegionAgresor) {
+
+    campoRegionAgresor.addEventListener(
+        "change",
+        actualizarDomicilioAgresor
+    );
+
+}
+
+
+if (campoProvinciaAgresor) {
+
+    campoProvinciaAgresor.addEventListener(
+        "change",
+        actualizarDomicilioAgresor
+    );
+
+}
+
+
+if (campoDistritoAgresor) {
+
+    campoDistritoAgresor.addEventListener(
+        "change",
+        actualizarDomicilioAgresor
+    );
+
+}
+
+
+/* ==========================================================
+   NOTIFICACIONES
+========================================================== */
+
+function actualizarNotificacion() {
+
+    const estadoBeneficiario =
+        document.getElementById(
+            "id_notificacion_beneficiario"
+        );
+
+    const estadoAgresor =
+        document.getElementById(
+            "id_notificacion_agresor"
+        );
+
+    const motivoBeneficiario =
+        document.getElementById(
+            "contenedor_motivo_beneficiario"
+        );
+
+    const motivoAgresor =
+        document.getElementById(
+            "contenedor_motivo_agresor"
+        );
+
+
+    if (
+        estadoBeneficiario &&
+        motivoBeneficiario
+    ) {
+
+        if (
+            estadoBeneficiario.value === "PENDIENTE"
+        ) {
+
+            estadoBeneficiario.style.background =
+                "#ffebee";
+
+            estadoBeneficiario.style.border =
+                "2px solid #d32f2f";
+
+            motivoBeneficiario.style.display =
+                "flex";
+
+        } else {
+
+            estadoBeneficiario.style.background =
+                "#e8f5e9";
+
+            estadoBeneficiario.style.border =
+                "2px solid #2e7d32";
+
+            motivoBeneficiario.style.display =
+                "none";
 
         }
 
-        provincia.disabled = true;
+    }
 
-        fetch(
-            "{% url 'cargar_provincias' %}?region_id=" + regionId
-        )
-        .then(response => {
 
-            if (!response.ok) {
-                throw new Error("Error al cargar provincias");
-            }
+    if (
+        estadoAgresor &&
+        motivoAgresor
+    ) {
 
-            return response.json();
+        if (
+            estadoAgresor.value === "PENDIENTE"
+        ) {
 
-        })
-        .then(data => {
+            estadoAgresor.style.background =
+                "#ffebee";
+
+            estadoAgresor.style.border =
+                "2px solid #d32f2f";
+
+            motivoAgresor.style.display =
+                "flex";
+
+        } else {
+
+            estadoAgresor.style.background =
+                "#e8f5e9";
+
+            estadoAgresor.style.border =
+                "2px solid #2e7d32";
+
+            motivoAgresor.style.display =
+                "none";
+
+        }
+
+    }
+
+}
+
+
+const estadoBeneficiario =
+    document.getElementById(
+        "id_notificacion_beneficiario"
+    );
+
+const estadoAgresor =
+    document.getElementById(
+        "id_notificacion_agresor"
+    );
+
+
+if (estadoBeneficiario) {
+
+    estadoBeneficiario.addEventListener(
+        "change",
+        actualizarNotificacion
+    );
+
+}
+
+
+if (estadoAgresor) {
+
+    estadoAgresor.addEventListener(
+        "change",
+        actualizarNotificacion
+    );
+
+}
+
+
+/* ==========================================================
+   UBIGEO EN CASCADA
+========================================================== */
+
+function cargarProvincias(
+    regionSelectId,
+    provinciaSelectId,
+    distritoSelectId
+) {
+
+    const region =
+        document.getElementById(
+            regionSelectId
+        );
+
+    const provincia =
+        document.getElementById(
+            provinciaSelectId
+        );
+
+    const distrito =
+        document.getElementById(
+            distritoSelectId
+        );
+
+
+    if (
+        !region ||
+        !provincia ||
+        !distrito
+    ) {
+
+        return;
+
+    }
+
+
+    region.addEventListener(
+        "change",
+        function () {
+
+            const regionId =
+                this.value;
+
 
             provincia.innerHTML =
                 '<option value="">Seleccione una provincia</option>';
 
-            data.forEach(function (item) {
-
-                const option =
-                    document.createElement("option");
-
-                option.value = item.id;
-                option.textContent = item.nombre;
-
-                provincia.appendChild(option);
-
-            });
-
-            provincia.disabled = false;
-
-        })
-        .catch(error => {
-
-            console.error(error);
-
-            provincia.innerHTML =
-                '<option value="">Error al cargar provincias</option>';
-
-        });
-
-    });
+            distrito.innerHTML =
+                '<option value="">Seleccione un distrito</option>';
 
 
-    provincia.addEventListener("change", function () {
+            provincia.disabled =
+                true;
 
-        const provinciaId = this.value;
+            distrito.disabled =
+                true;
 
-        distrito.innerHTML =
-            '<option value="">Seleccione un distrito</option>';
 
-        if (!provinciaId) {
+            if (!regionId) {
 
-            distrito.disabled = true;
-            return;
+                if (
+                    regionSelectId ===
+                    "id_region_domicilio"
+                ) {
+                    actualizarDomicilio();
+                }
 
-        }
+                if (
+                    regionSelectId ===
+                    "id_region_agresor"
+                ) {
+                    actualizarDomicilioAgresor();
+                }
 
-        distrito.disabled = true;
-
-        fetch(
-            "{% url 'cargar_distritos' %}?provincia_id=" + provinciaId
-        )
-        .then(response => {
-
-            if (!response.ok) {
-                throw new Error("Error al cargar distritos");
+                return;
             }
 
-            return response.json();
 
-        })
-        .then(data => {
+            fetch(
+                "{% url 'cargar_provincias' %}?region_id="
+                +
+                encodeURIComponent(regionId)
+            )
+
+            .then(
+                response => {
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Error al cargar provincias"
+                        );
+
+                    }
+
+                    return response.json();
+
+                }
+            )
+
+            .then(
+                data => {
+
+                    provincia.innerHTML =
+                        '<option value="">Seleccione una provincia</option>';
+
+
+                    data.forEach(
+                        function(item) {
+
+                            const option =
+                                document.createElement(
+                                    "option"
+                                );
+
+                            option.value =
+                                item.id;
+
+                            option.textContent =
+                                item.nombre;
+
+                            provincia.appendChild(
+                                option
+                            );
+
+                        }
+                    );
+
+
+                    provincia.disabled =
+                        false;
+
+
+                    if (
+                        regionSelectId ===
+                        "id_region_domicilio"
+                    ) {
+
+                        actualizarDomicilio();
+
+                    }
+
+
+                    if (
+                        regionSelectId ===
+                        "id_region_agresor"
+                    ) {
+
+                        actualizarDomicilioAgresor();
+
+                    }
+
+                }
+            )
+
+            .catch(
+                error => {
+
+                    console.error(
+                        "Error provincias:",
+                        error
+                    );
+
+                    provincia.innerHTML =
+                        '<option value="">Error al cargar provincias</option>';
+
+                    provincia.disabled =
+                        true;
+
+                }
+            );
+
+        }
+    );
+
+
+    provincia.addEventListener(
+        "change",
+        function () {
+
+            const provinciaId =
+                this.value;
+
 
             distrito.innerHTML =
                 '<option value="">Seleccione un distrito</option>';
 
-            data.forEach(function (item) {
+            distrito.disabled =
+                true;
 
-                const option =
-                    document.createElement("option");
 
-                option.value = item.id;
-                option.textContent = item.nombre;
+            if (!provinciaId) {
 
-                distrito.appendChild(option);
+                if (
+                    provinciaSelectId ===
+                    "id_provincia_domicilio"
+                ) {
+                    actualizarDomicilio();
+                }
 
-            });
+                if (
+                    provinciaSelectId ===
+                    "id_provincia_agresor"
+                ) {
+                    actualizarDomicilioAgresor();
+                }
 
-            distrito.disabled = false;
+                return;
 
-        })
-        .catch(error => {
+            }
 
-            console.error(error);
 
-            distrito.innerHTML =
-                '<option value="">Error al cargar distritos</option>';
+            fetch(
+                "{% url 'cargar_distritos' %}?provincia_id="
+                +
+                encodeURIComponent(provinciaId)
+            )
 
-        });
+            .then(
+                response => {
 
-    });
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Error al cargar distritos"
+                        );
+
+                    }
+
+                    return response.json();
+
+                }
+            )
+
+            .then(
+                data => {
+
+                    distrito.innerHTML =
+                        '<option value="">Seleccione un distrito</option>';
+
+
+                    data.forEach(
+                        function(item) {
+
+                            const option =
+                                document.createElement(
+                                    "option"
+                                );
+
+                            option.value =
+                                item.id;
+
+                            option.textContent =
+                                item.nombre;
+
+                            distrito.appendChild(
+                                option
+                            );
+
+                        }
+                    );
+
+
+                    distrito.disabled =
+                        false;
+
+
+                    if (
+                        provinciaSelectId ===
+                        "id_provincia_domicilio"
+                    ) {
+
+                        actualizarDomicilio();
+
+                    }
+
+
+                    if (
+                        provinciaSelectId ===
+                        "id_provincia_agresor"
+                    ) {
+
+                        actualizarDomicilioAgresor();
+
+                    }
+
+                }
+            )
+
+            .catch(
+                error => {
+
+                    console.error(
+                        "Error distritos:",
+                        error
+                    );
+
+                    distrito.innerHTML =
+                        '<option value="">Error al cargar distritos</option>';
+
+                    distrito.disabled =
+                        true;
+
+                }
+            );
+
+        }
+    );
 
 }
 
 
-// ==========================================
-// UBIGEO DE LA DENUNCIA
-// ==========================================
+/* ==========================================================
+   CARGAR PROVINCIAS INICIAL AL EDITAR
+========================================================== */
+
+function cargarProvinciasInicial(
+    regionId,
+    provinciaId,
+    provinciaSelectId,
+    distritoId,
+    distritoSelectId
+) {
+
+    const provincia =
+        document.getElementById(
+            provinciaSelectId
+        );
+
+    const distrito =
+        document.getElementById(
+            distritoSelectId
+        );
+
+
+    if (
+        !regionId ||
+        !provincia
+    ) {
+
+        return Promise.resolve();
+
+    }
+
+
+    return fetch(
+        "{% url 'cargar_provincias' %}?region_id="
+        +
+        encodeURIComponent(regionId)
+    )
+
+    .then(
+        response => {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Error al cargar provincias iniciales"
+                );
+
+            }
+
+            return response.json();
+
+        }
+    )
+
+    .then(
+        data => {
+
+            provincia.innerHTML =
+                '<option value="">Seleccione una provincia</option>';
+
+
+            data.forEach(
+                function(item) {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        item.id;
+
+                    option.textContent =
+                        item.nombre;
+
+
+                    if (
+                        provinciaId &&
+                        String(item.id) ===
+                        String(provinciaId)
+                    ) {
+
+                        option.selected =
+                            true;
+
+                    }
+
+
+                    provincia.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+
+            provincia.disabled =
+                false;
+
+
+            if (
+                provinciaId &&
+                distrito
+            ) {
+
+                return fetch(
+                    "{% url 'cargar_distritos' %}?provincia_id="
+                    +
+                    encodeURIComponent(
+                        provinciaId
+                    )
+                );
+
+            }
+
+
+            return null;
+
+        }
+    )
+
+    .then(
+        response => {
+
+            if (!response) {
+
+                return null;
+
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Error al cargar distritos iniciales"
+                );
+
+            }
+
+
+            return response.json();
+
+        }
+    )
+
+    .then(
+        data => {
+
+            if (
+                !data ||
+                !distrito
+            ) {
+
+                return;
+
+            }
+
+
+            distrito.innerHTML =
+                '<option value="">Seleccione un distrito</option>';
+
+
+            data.forEach(
+                function(item) {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        item.id;
+
+                    option.textContent =
+                        item.nombre;
+
+
+                    if (
+                        distritoId &&
+                        String(item.id) ===
+                        String(distritoId)
+                    ) {
+
+                        option.selected =
+                            true;
+
+                    }
+
+
+                    distrito.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+
+            distrito.disabled =
+                false;
+
+        }
+    )
+
+    .catch(
+        error => {
+
+            console.error(
+                "Error cargando ubigeo inicial:",
+                error
+            );
+
+        }
+    );
+
+}
+
+
+/* ==========================================================
+   UBIGEO INICIAL DENUNCIA / MEDIDA
+========================================================== */
+
+function cargarUbigeoInicial(
+    regionSelectId,
+    provinciaSelectId,
+    distritoSelectId,
+    provinciaId,
+    distritoId
+) {
+
+    const region =
+        document.getElementById(
+            regionSelectId
+        );
+
+
+    if (
+        !region ||
+        !region.value
+    ) {
+
+        return;
+
+    }
+
+
+    cargarProvinciasInicial(
+        region.value,
+        provinciaId,
+        provinciaSelectId,
+        distritoId,
+        distritoSelectId
+    );
+
+}
+
+
+/* ==========================================================
+   CASCADA BENEFICIARIA
+========================================================== */
+
+cargarProvincias(
+    "id_region_domicilio",
+    "id_provincia_domicilio",
+    "id_distrito_domicilio"
+);
+
+
+/* ==========================================================
+   CASCADA AGRESOR
+========================================================== */
+
+cargarProvincias(
+    "id_region_agresor",
+    "id_provincia_agresor",
+    "id_distrito_agresor"
+);
+
+
+/* ==========================================================
+   CASCADA DENUNCIA
+========================================================== */
 
 cargarProvincias(
     "id_region_denuncia",
@@ -854,9 +2311,9 @@ cargarProvincias(
 );
 
 
-// ==========================================
-// UBIGEO DE LA MEDIDA
-// ==========================================
+/* ==========================================================
+   CASCADA MEDIDA
+========================================================== */
 
 cargarProvincias(
     "id_region_medida",
@@ -864,7 +2321,160 @@ cargarProvincias(
     "id_distrito_medida"
 );
 
+
+/* ==========================================================
+   CARGAR DOMICILIO BENEFICIARIA AL EDITAR
+========================================================== */
+
+const regionDomicilioInicial =
+    document.getElementById(
+        "id_region_domicilio"
+    );
+
+
+if (
+    regionDomicilioInicial &&
+    regionDomicilioInicial.value
+) {
+
+    cargarProvinciasInicial(
+
+        regionDomicilioInicial.value,
+
+        "{{ form.provincia_domicilio.value|default:'' }}",
+
+        "id_provincia_domicilio",
+
+        "{{ form.distrito_domicilio.value|default:'' }}",
+
+        "id_distrito_domicilio"
+
+    ).then(
+        function() {
+
+            actualizarDomicilio();
+
+        }
+    );
+
+}
+
+
+/* ==========================================================
+   CARGAR DOMICILIO AGRESOR AL EDITAR
+========================================================== */
+
+const regionAgresorInicial =
+    document.getElementById(
+        "id_region_agresor"
+    );
+
+
+if (
+    regionAgresorInicial &&
+    regionAgresorInicial.value
+) {
+
+    cargarProvinciasInicial(
+
+        regionAgresorInicial.value,
+
+        "{{ form.provincia_agresor.value|default:'' }}",
+
+        "id_provincia_agresor",
+
+        "{{ form.distrito_agresor.value|default:'' }}",
+
+        "id_distrito_agresor"
+
+    ).then(
+        function() {
+
+            actualizarDomicilioAgresor();
+
+        }
+    );
+
+}
+
+
+/* ==========================================================
+   CARGAR DENUNCIA AL EDITAR
+========================================================== */
+
+const regionDenunciaInicial =
+    document.getElementById(
+        "id_region_denuncia"
+    );
+
+
+if (
+    regionDenunciaInicial &&
+    regionDenunciaInicial.value
+) {
+
+    cargarUbigeoInicial(
+
+        "id_region_denuncia",
+
+        "id_provincia_denuncia",
+
+        "id_distrito_denuncia",
+
+        "{{ form.provincia_denuncia.value|default:'' }}",
+
+        "{{ form.distrito_denuncia.value|default:'' }}"
+
+    );
+
+}
+
+
+/* ==========================================================
+   CARGAR MEDIDA AL EDITAR
+========================================================== */
+
+const regionMedidaInicial =
+    document.getElementById(
+        "id_region_medida"
+    );
+
+
+if (
+    regionMedidaInicial &&
+    regionMedidaInicial.value
+) {
+
+    cargarUbigeoInicial(
+
+        "id_region_medida",
+
+        "id_provincia_medida",
+
+        "id_distrito_medida",
+
+        "{{ form.provincia_medida.value|default:'' }}",
+
+        "{{ form.distrito_medida.value|default:'' }}"
+
+    );
+
+}
+
+
+/* ==========================================================
+   EJECUCIÓN INICIAL
+========================================================== */
+
+actualizarDomicilio();
+
+actualizarDomicilioAgresor();
+
+actualizarNotificacion();
+
+
 </script>
+
 
 </body>
 </html>
