@@ -30,6 +30,21 @@ from .models import (
 from .decorators import grupo_requerido
 from .forms_solicitudes import SolicitudModificacionForm
 
+@login_required
+def cargar_regiones(request):
+
+    regiones = Region.objects.all().order_by("nombre")
+
+    data = [
+        {
+            "id": region.id,
+            "nombre": region.nombre,
+        }
+        for region in regiones
+    ]
+
+    return JsonResponse(data, safe=False)
+
 def cargar_provincias(request):
     region_id = request.GET.get("region_id")
 

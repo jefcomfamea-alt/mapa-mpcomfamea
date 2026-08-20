@@ -1,593 +1,1843 @@
-  {% extends "mapa/base.html" %}
+{% extends "mapa/base.html" %}
 
 {% block content %}
 
+<style>
+
+    .panel{
+        max-width:1000px;
+        margin:25px auto;
+        padding:25px;
+        background:white;
+        border-radius:12px;
+        box-shadow:0 3px 12px rgba(0,0,0,.12);
+    }
+
+    .panelTitulo{
+        background:#1B5E20;
+        color:white;
+        padding:15px 18px;
+        border-radius:8px;
+        font-size:20px;
+        font-weight:bold;
+        margin-bottom:20px;
+    }
+
+    .seccion{
+        margin-bottom:25px;
+        padding:20px;
+        border:1px solid #d8e2d9;
+        border-radius:10px;
+        background:#f9fbf9;
+    }
+
+    .seccion h4{
+        margin-top:0;
+        color:#1B5E20;
+        border-bottom:2px solid #1B5E20;
+        padding-bottom:8px;
+    }
+
+    .persona{
+        background:white;
+        border:1px solid #d5dfd7;
+        border-radius:9px;
+        padding:18px;
+        margin-bottom:18px;
+    }
+
+    .persona h5{
+        color:#1B5E20;
+        margin-top:0;
+        font-size:16px;
+    }
+
+    .grid-persona{
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:15px;
+    }
+
+    .campo{
+        display:flex;
+        flex-direction:column;
+    }
+
+    .campo-completo{
+        grid-column:1 / -1;
+    }
+
+    label{
+        font-weight:bold;
+        color:#263238;
+        margin-bottom:6px;
+    }
+
+    input,
+    select{
+        width:100%;
+        padding:10px;
+        border:1px solid #b8c7ba;
+        border-radius:6px;
+        font-size:14px;
+        background:white;
+    }
+
+    input:focus,
+    select:focus{
+        outline:none;
+        border-color:#1B5E20;
+        box-shadow:0 0 0 2px rgba(27,94,32,.12);
+    }
+
+    .subseccion{
+        grid-column:1 / -1;
+        margin-top:8px;
+        padding:16px;
+        border:1px solid #d5dfd7;
+        border-radius:8px;
+        background:#f9fbf9;
+    }
+
+    .subtitulo{
+        margin:0 0 15px 0;
+        color:#1B5E20;
+        font-size:15px;
+        font-weight:bold;
+        border-bottom:2px solid #1B5E20;
+        padding-bottom:7px;
+    }
+
+    .grid-domicilio{
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:14px;
+    }
+
+    .domicilio-generado{
+        margin-top:15px;
+        padding:12px 15px;
+        border-left:4px solid #1B5E20;
+        background:#f1f7f2;
+        border-radius:5px;
+        color:#263238;
+        font-size:14px;
+    }
+
+    .domicilio-generado strong{
+        color:#1B5E20;
+    }
+
+    .mapa-persona{
+        display:none;
+        height:300px;
+        margin-top:15px;
+        border:1px solid #ccc;
+        border-radius:8px;
+        overflow:hidden;
+    }
+
+    .botones-persona{
+        margin-top:15px;
+        display:flex;
+        justify-content:flex-end;
+    }
+
+    .btn{
+        border:none;
+        border-radius:6px;
+        padding:9px 15px;
+        cursor:pointer;
+        color:white;
+        font-weight:bold;
+    }
+
+    .btn-danger{
+        background:#b71c1c;
+    }
+
+    .btn-danger:hover{
+        background:#8b0000;
+    }
+
+    .btn-secondary{
+        background:#6c757d;
+    }
+
+    .btn-secondary:hover{
+        background:#545b62;
+    }
+
+    .btnGuardar{
+        display:block;
+        margin:25px auto 5px auto;
+        padding:13px 30px;
+        background:#1B5E20;
+        color:white;
+        border:none;
+        border-radius:7px;
+        font-size:16px;
+        font-weight:bold;
+        cursor:pointer;
+    }
+
+    .btnGuardar:hover{
+        background:#13451a;
+    }
+
+    .error{
+        color:#b71c1c;
+        background:#ffebee;
+        border:1px solid #ef9a9a;
+        padding:10px;
+        border-radius:6px;
+        margin-bottom:15px;
+    }
+
+    @media(max-width:700px){
+
+        .panel{
+            margin:10px;
+            padding:15px;
+        }
+
+        .grid-persona,
+        .grid-domicilio{
+            grid-template-columns:1fr;
+        }
+
+        .campo-completo{
+            grid-column:auto;
+        }
+
+        .subseccion{
+            grid-column:auto;
+        }
+
+    }
+
+</style>
+
+
 <div class="panel">
 
-<div class="panelTitulo">
-📍 Registro de Ubicación Preliminar
+    <div class="panelTitulo">
+        📍 Registro de Ubicación Preliminar
+    </div>
+
+
+    <p style="margin-bottom:25px;">
+        Registre la información obtenida durante el primer contacto
+        y ubique a las personas relacionadas al hecho.
+    </p>
+
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+
+        {% if form.errors %}
+
+            <div class="error">
+                {{ form.errors }}
+            </div>
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             DATOS DEL REGISTRO
+        ====================================================== -->
+
+        <div class="seccion">
+
+            <h4>
+                📄 Datos del registro preliminar
+            </h4>
+
+
+            <div class="grid-persona">
+
+                <div class="campo">
+
+                    <label>
+                        Tipo de registro
+                    </label>
+
+                    {{ form.tipo_registro }}
+
+                </div>
+
+
+                <div class="campo">
+
+                    <label>
+                        Tipo de intervención
+                    </label>
+
+                    {{ form.tipo_intervencion }}
+
+                </div>
+
+            </div>
+
+
+            {{ form.latitud }}
+            {{ form.longitud }}
+
+        </div>
+
+
+
+        <!-- =====================================================
+             PERSONAS
+        ====================================================== -->
+
+        <div class="seccion">
+
+            <h4>
+                👥 Personas involucradas
+            </h4>
+
+
+            <p>
+                Registre todas las personas relacionadas al hecho.
+                Luego se asignarán sus roles:
+                <strong>
+                    DENUNCIANTE, PRESUNTA VÍCTIMA,
+                    DENUNCIADO o PARTICIPANTE.
+                </strong>
+            </p>
+
+
+            <div id="personas">
+
+
+                <!-- =================================================
+                     PERSONA 1
+                ================================================== -->
+
+                <div class="persona">
+
+
+                    <h5>
+                        Persona 1
+                    </h5>
+
+
+                    <div class="grid-persona">
+
+
+                        <!-- NOMBRES -->
+
+                        <div class="campo campo-completo">
+
+                            <label>
+                                Nombres completos
+                            </label>
+
+                            <input
+                                type="text"
+                                name="nombres"
+                                class="form-control"
+                            >
+
+                        </div>
+
+
+                        <!-- DNI -->
+
+                        <div class="campo">
+
+                            <label>
+                                DNI
+                            </label>
+
+                            <input
+                                type="text"
+                                name="dni"
+                                class="form-control"
+                            >
+
+                        </div>
+
+
+                        <!-- TELEFONO -->
+
+                        <div class="campo">
+
+                            <label>
+                                Teléfono
+                            </label>
+
+                            <input
+                                type="text"
+                                name="telefono"
+                                class="form-control"
+                            >
+
+                        </div>
+
+
+                        <!-- =========================================
+                             DOMICILIO
+                        ========================================== -->
+
+                        <div class="subseccion">
+
+
+                            <h6 class="subtitulo">
+                                🏠 Domicilio de la persona
+                            </h6>
+
+
+                            <div class="grid-domicilio">
+
+
+                                <!-- REGION -->
+
+                                <div class="campo">
+
+                                    <label>
+                                        Región
+                                    </label>
+
+                                    <select
+                                        name="region_persona"
+                                        class="region-persona"
+                                    >
+
+                                        <option value="">
+                                            Seleccione una región
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- PROVINCIA -->
+
+                                <div class="campo">
+
+                                    <label>
+                                        Provincia
+                                    </label>
+
+                                    <select
+                                        name="provincia_persona"
+                                        class="provincia-persona"
+                                        disabled
+                                    >
+
+                                        <option value="">
+                                            Seleccione una provincia
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- DISTRITO -->
+
+                                <div class="campo">
+
+                                    <label>
+                                        Distrito
+                                    </label>
+
+                                    <select
+                                        name="distrito_persona"
+                                        class="distrito-persona"
+                                        disabled
+                                    >
+
+                                        <option value="">
+                                            Seleccione un distrito
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- TIPO VIA -->
+
+                                <div class="campo">
+
+                                    <label>
+                                        Tipo de vía
+                                    </label>
+
+                                    <select
+                                        name="tipo_via_persona"
+                                        class="tipo-via-persona"
+                                    >
+
+                                        <option value="">
+                                            Seleccione
+                                        </option>
+
+                                        <option value="AV.">
+                                            AV.
+                                        </option>
+
+                                        <option value="JR.">
+                                            JR.
+                                        </option>
+
+                                        <option value="CALLE">
+                                            CALLE
+                                        </option>
+
+                                        <option value="PASAJE">
+                                            PASAJE
+                                        </option>
+
+                                        <option value="CARRETERA">
+                                            CARRETERA
+                                        </option>
+
+                                        <option value="OTRO">
+                                            OTRO
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- NOMBRE VIA -->
+
+                                <div class="campo">
+
+                                    <label>
+                                        Nombre de vía
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="nombre_via_persona"
+                                        class="nombre-via-persona"
+                                    >
+
+                                </div>
+
+
+                                <!-- NUMERO -->
+
+                                <div class="campo">
+
+                                    <label>
+                                        Número
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="numero_via_persona"
+                                        class="numero-via-persona"
+                                    >
+
+                                </div>
+
+
+                                <!-- COMPLEMENTO -->
+
+                                <div class="campo campo-completo">
+
+                                    <label>
+                                        Complemento / referencia
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="complemento_persona"
+                                        class="complemento-persona"
+                                    >
+
+                                </div>
+
+
+                            </div>
+
+
+                            <!-- CAMPO QUE SIGUE ENVIÁNDOSE A DJANGO -->
+
+                            <input
+                                type="hidden"
+                                name="direccion"
+                                class="direccion-persona"
+                            >
+
+
+                            <div class="domicilio-generado">
+
+                                <strong>
+                                    Domicilio registrado:
+                                </strong>
+
+                                <span class="domicilio-mostrado">
+                                    —
+                                </span>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- =========================================
+                             ROL
+                        ========================================== -->
+
+                        <div class="campo campo-completo">
+
+                            <label>
+                                Rol
+                            </label>
+
+
+                            <select
+                                name="rol"
+                                class="form-control rol-persona"
+                                onchange="mostrarMapa(this)"
+                            >
+
+                                <option value="">
+                                    Seleccione rol
+                                </option>
+
+                                <option value="DENUNCIANTE">
+                                    Denunciante
+                                </option>
+
+                                <option value="PRESUNTA_VICTIMA">
+                                    Presunta víctima
+                                </option>
+
+                                <option value="DENUNCIADO">
+                                    Denunciado
+                                </option>
+
+                                <option value="PARTICIPANTE">
+                                    Participante
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- MAPA -->
+
+                        <div
+                            class="campo-completo mapa-persona"
+                        >
+                        </div>
+
+
+                        <input
+                            type="hidden"
+                            name="latitud_persona"
+                            class="latitud-persona"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="longitud_persona"
+                            class="longitud-persona"
+                        >
+
+
+                    </div>
+
+
+                    <div class="botones-persona">
+
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            onclick="eliminarPersona(this)"
+                        >
+                            ❌ Eliminar persona
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="agregarPersona()"
+            >
+                ➕ Agregar otra persona
+            </button>
+
+
+        </div>
+
+
+
+        <!-- =====================================================
+             GUARDAR
+        ====================================================== -->
+
+        <button
+            type="submit"
+            class="btnGuardar"
+        >
+            💾 Guardar Registro Preliminar
+        </button>
+
+
+    </form>
+
 </div>
-
-
-<p style="margin-bottom:25px;">
-Registre la información obtenida durante el primer contacto y ubique a las personas relacionadas al hecho.
-</p>
-
-
-<form method="POST">
-
-{% csrf_token %}
-
-
-<div class="seccion">
-
-
-<h4>📄 Datos del registro preliminar</h4>
-
-
-<label>
-Tipo de registro
-</label>
-
-{{ form.tipo_registro }}
-
-
-
-<label>
-Tipo de intervención
-</label>
-
-{{ form.tipo_intervencion }}
-
-
-
-{{ form.latitud }}
-
-{{ form.longitud }}
-
-
-</div>
-
-
-
-
-
-<div class="seccion">
-
-
-<h4>👥 Personas involucradas</h4>
-
-
-<p>
-Registre todas las personas relacionadas al hecho.
-Luego se asignarán sus roles:
-DENUNCIANTE, PRESUNTA VÍCTIMA, DENUNCIADO o PARTICIPANTE.
-</p>
-
-
-
-<div id="personas">
-
-
-
-<div class="persona card p-3 mb-3">
-
-
-<h5>
-Persona 1
-</h5>
-
-
-
-<label>
-Nombres completos
-</label>
-
-<input 
-type="text"
-name="nombres"
-class="form-control"
->
-
-
-
-<label>
-DNI
-</label>
-
-<input 
-type="text"
-name="dni"
-class="form-control"
->
-
-
-
-<label>
-Teléfono
-</label>
-
-<input 
-type="text"
-name="telefono"
-class="form-control"
->
-
-
-
-<label>
-Dirección
-</label>
-
-<input 
-type="text"
-name="direccion"
-class="form-control"
->
-
-
-
-<label>
-Rol
-</label>
-
-
-<select 
-name="rol"
-class="form-control rol-persona"
-onchange="mostrarMapa(this)"
->
-
-
-<option value="">
-Seleccione rol
-</option>
-
-
-<option value="DENUNCIANTE">
-Denunciante
-</option>
-
-
-<option value="PRESUNTA_VICTIMA">
-Presunta víctima
-</option>
-
-
-<option value="DENUNCIADO">
-Denunciado
-</option>
-
-
-<option value="PARTICIPANTE">
-Participante
-</option>
-
-
-</select>
-
-
-
-<div 
-class="mapa-persona"
-style="display:none;height:300px;margin-top:15px;">
-</div>
-
-
-
-<input 
-type="hidden"
-name="latitud_persona"
-class="latitud-persona"
->
-
-
-
-<input 
-type="hidden"
-name="longitud_persona"
-class="longitud-persona"
->
-
-
-
-<button
-type="button"
-class="btn btn-danger mt-2"
-onclick="this.parentElement.remove()"
->
-
-❌ Eliminar persona
-
-</button>
-
-</div>
-`;
-
-</div>
-
-<button 
-type="button"
-class="btn btn-secondary"
-onclick="agregarPersona()"
->
-
-➕ Agregar otra persona
-
-</button>
-
-
-</div>
-
-
-
-
-
-<button
-type="submit"
-class="btnGuardar"
->
-
-💾 Guardar Registro Preliminar
-
-</button>
-
-
-
-</form>
-
-
-</div>
-
 
 
 
 <link
-rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
 />
-
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 
-
 <script>
 
+/* ==========================================================
+   VARIABLES
+========================================================== */
 
 let contadorPersonas = 1;
 
+let mapasPersonas = new Map;
 
-let mapasPersonas = new Map();
 
+/* ==========================================================
+   GENERAR DOMICILIO
+========================================================== */
 
+function actualizarDomicilioPersona(persona){
 
-function agregarPersona(){
+    const tipoVia =
+        persona.querySelector(".tipo-via-persona");
 
+    const nombreVia =
+        persona.querySelector(".nombre-via-persona");
 
-contadorPersonas++;
+    const numeroVia =
+        persona.querySelector(".numero-via-persona");
 
+    const complemento =
+        persona.querySelector(".complemento-persona");
 
-let div=document.createElement("div");
+    const region =
+        persona.querySelector(".region-persona");
 
+    const provincia =
+        persona.querySelector(".provincia-persona");
 
-div.className="persona card p-3 mb-3";
+    const distrito =
+        persona.querySelector(".distrito-persona");
 
+    const direccion =
+        persona.querySelector(".direccion-persona");
 
+    const mostrado =
+        persona.querySelector(".domicilio-mostrado");
 
-div.innerHTML=`
 
+    if(!direccion){
+        return;
+    }
 
-<h5>
-Persona ${contadorPersonas}
-</h5>
 
+    let tipoTexto = "";
 
-<label>
-Nombres completos
-</label>
+    if(tipoVia && tipoVia.value){
 
-<input 
-type="text"
-name="nombres"
-class="form-control"
->
+        const opcion =
+            tipoVia.options[
+                tipoVia.selectedIndex
+            ];
 
-
-<label>
-DNI
-</label>
-
-<input 
-type="text"
-name="dni"
-class="form-control"
->
-
-
-<label>
-Teléfono
-</label>
-
-<input 
-type="text"
-name="telefono"
-class="form-control"
->
-
-
-<label>
-Dirección
-</label>
-
-<input 
-type="text"
-name="direccion"
-class="form-control"
->
-
-
-<label>
-Rol
-</label>
-
-
-<select 
-name="rol"
-class="form-control rol-persona"
-onchange="mostrarMapa(this)"
->
-
-
-<option value="">
-Seleccione rol
-</option>
-
-
-<option value="DENUNCIANTE">
-Denunciante
-</option>
-
-
-<option value="PRESUNTA_VICTIMA">
-Presunta víctima
-</option>
-
-
-<option value="DENUNCIADO">
-Denunciado
-</option>
-
-
-<option value="PARTICIPANTE">
-Participante
-</option>
-
-
-</select>
-
-
-
-<div 
-class="mapa-persona"
-style="display:none;height:300px;margin-top:15px;">
-</div>
-
-
-
-<input 
-type="hidden"
-name="latitud_persona"
-class="latitud-persona"
->
-
-
-<input 
-type="hidden"
-name="longitud_persona"
-class="longitud-persona"
->
-
-
-<button
-type="button"
-class="btn btn-danger mt-2"
-onclick="this.parentElement.remove()"
->
-
-❌ Eliminar persona
-
-</button>
-
-
-
-`;
-
-
-document
-.getElementById("personas")
-.appendChild(div);
-
-
-}
-
-
-
-
-
-
-function mostrarMapa(select){
-
-    let persona = select.closest(".persona");
-
-    let mapaDiv = persona.querySelector(".mapa-persona");
-
-    let latInput = persona.querySelector(".latitud-persona");
-
-    let lngInput = persona.querySelector(".longitud-persona");
-
-
-    /* Denunciante no tiene mapa */
-
-    if(select.value=="DENUNCIANTE"){
-
-    mapaDiv.style.display="none";
-
-    latInput.value="";
-    lngInput.value="";
-
-    let mapa=mapasPersonas.get(persona);
-
-    if(mapa && mapa.marcador){
-
-        mapa.removeLayer(mapa.marcador);
-
-        mapa.marcador=null;
+        if(opcion){
+            tipoTexto =
+                opcion.textContent.trim();
+        }
 
     }
 
-    return;
+
+    const nombre =
+        nombreVia
+        ? nombreVia.value.trim()
+        : "";
+
+
+    const numero =
+        numeroVia
+        ? numeroVia.value.trim()
+        : "";
+
+
+    const complementoTexto =
+        complemento
+        ? complemento.value.trim()
+        : "";
+
+
+    let regionTexto = "";
+    let provinciaTexto = "";
+    let distritoTexto = "";
+
+
+    if(region && region.value){
+
+        const opcion =
+            region.options[
+                region.selectedIndex
+            ];
+
+        if(opcion){
+            regionTexto =
+                opcion.textContent.trim();
+        }
+
+    }
+
+
+    if(provincia && provincia.value){
+
+        const opcion =
+            provincia.options[
+                provincia.selectedIndex
+            ];
+
+        if(opcion){
+            provinciaTexto =
+                opcion.textContent.trim();
+        }
+
+    }
+
+
+    if(distrito && distrito.value){
+
+        const opcion =
+            distrito.options[
+                distrito.selectedIndex
+            ];
+
+        if(opcion){
+            distritoTexto =
+                opcion.textContent.trim();
+        }
+
+    }
+
+
+    const partes = [];
+
+
+    if(tipoTexto && nombre){
+
+        partes.push(
+            tipoTexto + " " + nombre
+        );
+
+    }
+    else if(nombre){
+
+        partes.push(nombre);
+
+    }
+    else if(tipoTexto){
+
+        partes.push(tipoTexto);
+
+    }
+
+
+    if(numero){
+
+        partes.push(
+            "N° " + numero
+        );
+
+    }
+
+
+    if(complementoTexto){
+
+        partes.push(
+            complementoTexto
+        );
+
+    }
+
+
+    if(distritoTexto){
+
+        partes.push(
+            distritoTexto
+        );
+
+    }
+
+
+    if(provinciaTexto){
+
+        partes.push(
+            provinciaTexto
+        );
+
+    }
+
+
+    if(regionTexto){
+
+        partes.push(
+            regionTexto
+        );
+
+    }
+
+
+    const domicilioFinal =
+        partes.join(", ");
+
+
+    direccion.value =
+        domicilioFinal;
+
+
+    if(mostrado){
+
+        mostrado.textContent =
+            domicilioFinal || "—";
+
+    }
 
 }
 
 
-    mapaDiv.style.display="block";
+/* ==========================================================
+   CASCADA UBIGEO DE UNA PERSONA
+========================================================== */
+
+function configurarUbigeoPersona(persona){
+
+    const region =
+        persona.querySelector(".region-persona");
+
+    const provincia =
+        persona.querySelector(".provincia-persona");
+
+    const distrito =
+        persona.querySelector(".distrito-persona");
 
 
-    /*=========================
-      OBTENER O CREAR MAPA
-    =========================*/
-
-    let mapa = mapasPersonas.get(persona);
-
-    if(!mapa){
-
-        mapa = L.map(mapaDiv).setView(
-            [-12.0464,-77.0428],
-            13
-        );
-
-        L.tileLayer(
-            'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-        ).addTo(mapa);
-
-        mapa.marcador = null;
-
-        mapa.on("click",function(e){
-
-            latInput.value = e.latlng.lat;
-
-            lngInput.value = e.latlng.lng;
+    if(!region || !provincia || !distrito){
+        return;
+    }
 
 
-            if(mapa.marcador){
+    /* ================================================
+       CARGAR REGIONES
+    ================================================= */
 
-                mapa.removeLayer(
-                    mapa.marcador
+    fetch("{% url 'cargar_regiones' %}")
+
+        .then(response => {
+
+            if(!response.ok){
+
+                throw new Error(
+                    "Error al cargar regiones"
                 );
 
             }
 
-            let html = "";
+            return response.json();
 
+        })
 
-            if(select.value=="PRESUNTA_VICTIMA"){
+        .then(data => {
 
-                html=`
-                <div style="
-                    width:25px;
-                    height:25px;
-                    border-radius:50%;
-                    background:#0066ff;
-                    border:3px solid white;
-                    box-shadow:0 0 5px #555;
-                "></div>
-                `;
+            data.forEach(item => {
 
-            }
+                const option =
+                    document.createElement("option");
 
-            else if(select.value=="DENUNCIADO"){
+                option.value =
+                    item.id;
 
-                html=`
-                <div style="
-                    width:25px;
-                    height:25px;
-                    border-radius:50%;
-                    background:#8B4513;
-                    border:3px solid white;
-                    box-shadow:0 0 5px #555;
-                "></div>
-                `;
+                option.textContent =
+                    item.nombre;
 
-            }
-
-            else if(select.value=="PARTICIPANTE"){
-
-                html=`
-                <div style="
-                    width:25px;
-                    height:25px;
-                    border-radius:50%;
-                    background:linear-gradient(
-                        90deg,
-                        #0066ff 50%,
-                        #8B4513 50%
-                    );
-                    border:3px solid white;
-                    box-shadow:0 0 5px #555;
-                "></div>
-                `;
-
-            }
-
-
-            let icono=L.divIcon({
-
-                className:"",
-
-                html:html,
-
-                iconSize:[25,25],
-
-                iconAnchor:[12,12]
+                region.appendChild(option);
 
             });
 
+        })
 
-            mapa.marcador=L.marker(
+        .catch(error => {
 
-                e.latlng,
-
-                {
-                    icon:icono
-                }
-
-            ).addTo(mapa);
+            console.error(
+                "Error regiones:",
+                error
+            );
 
         });
+
+
+    /* ================================================
+       CAMBIO DE REGIÓN
+    ================================================= */
+
+    region.addEventListener(
+        "change",
+        function(){
+
+            provincia.innerHTML =
+                '<option value="">Seleccione una provincia</option>';
+
+            distrito.innerHTML =
+                '<option value="">Seleccione un distrito</option>';
+
+            provincia.disabled = true;
+
+            distrito.disabled = true;
+
+
+            actualizarDomicilioPersona(persona);
+
+
+            if(!this.value){
+                return;
+            }
+
+
+            fetch(
+                "{% url 'cargar_provincias' %}?region_id="
+                +
+                encodeURIComponent(this.value)
+            )
+
+            .then(response => {
+
+                if(!response.ok){
+
+                    throw new Error(
+                        "Error al cargar provincias"
+                    );
+
+                }
+
+                return response.json();
+
+            })
+
+            .then(data => {
+
+                data.forEach(item => {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value =
+                        item.id;
+
+                    option.textContent =
+                        item.nombre;
+
+                    provincia.appendChild(option);
+
+                });
+
+
+                provincia.disabled = false;
+
+                actualizarDomicilioPersona(persona);
+
+            })
+
+            .catch(error => {
+
+                console.error(
+                    "Error provincias:",
+                    error
+                );
+
+            });
+
+        }
+    );
+
+
+    /* ================================================
+       CAMBIO DE PROVINCIA
+    ================================================= */
+
+    provincia.addEventListener(
+        "change",
+        function(){
+
+            distrito.innerHTML =
+                '<option value="">Seleccione un distrito</option>';
+
+            distrito.disabled = true;
+
+
+            actualizarDomicilioPersona(persona);
+
+
+            if(!this.value){
+                return;
+            }
+
+
+            fetch(
+                "{% url 'cargar_distritos' %}?provincia_id="
+                +
+                encodeURIComponent(this.value)
+            )
+
+            .then(response => {
+
+                if(!response.ok){
+
+                    throw new Error(
+                        "Error al cargar distritos"
+                    );
+
+                }
+
+                return response.json();
+
+            })
+
+            .then(data => {
+
+                data.forEach(item => {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value =
+                        item.id;
+
+                    option.textContent =
+                        item.nombre;
+
+                    distrito.appendChild(option);
+
+                });
+
+
+                distrito.disabled = false;
+
+                actualizarDomicilioPersona(persona);
+
+            })
+
+            .catch(error => {
+
+                console.error(
+                    "Error distritos:",
+                    error
+                );
+
+            });
+
+        }
+    );
+
+
+    /* ================================================
+       CAMBIOS DEL DOMICILIO
+    ================================================= */
+
+    [
+        ".tipo-via-persona",
+        ".nombre-via-persona",
+        ".numero-via-persona",
+        ".complemento-persona",
+        ".distrito-persona"
+    ].forEach(selector => {
+
+        const campo =
+            persona.querySelector(selector);
+
+        if(!campo){
+            return;
+        }
+
+
+        const evento =
+            campo.tagName === "SELECT"
+            ? "change"
+            : "input";
+
+
+        campo.addEventListener(
+            evento,
+            function(){
+
+                actualizarDomicilioPersona(
+                    persona
+                );
+
+            }
+        );
+
+    });
+
+}
+
+
+/* ==========================================================
+   AGREGAR PERSONA
+========================================================== */
+
+function agregarPersona(){
+
+    contadorPersonas++;
+
+
+    const div =
+        document.createElement("div");
+
+
+    div.className =
+        "persona";
+
+
+    div.innerHTML = `
+
+        <h5>
+            Persona ${contadorPersonas}
+        </h5>
+
+
+        <div class="grid-persona">
+
+
+            <div class="campo campo-completo">
+
+                <label>
+                    Nombres completos
+                </label>
+
+                <input
+                    type="text"
+                    name="nombres"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    DNI
+                </label>
+
+                <input
+                    type="text"
+                    name="dni"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    Teléfono
+                </label>
+
+                <input
+                    type="text"
+                    name="telefono"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="subseccion">
+
+
+                <h6 class="subtitulo">
+                    🏠 Domicilio de la persona
+                </h6>
+
+
+                <div class="grid-domicilio">
+
+
+                    <div class="campo">
+
+                        <label>
+                            Región
+                        </label>
+
+                        <select
+                            name="region_persona"
+                            class="region-persona"
+                        >
+
+                            <option value="">
+                                Seleccione una región
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label>
+                            Provincia
+                        </label>
+
+                        <select
+                            name="provincia_persona"
+                            class="provincia-persona"
+                            disabled
+                        >
+
+                            <option value="">
+                                Seleccione una provincia
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label>
+                            Distrito
+                        </label>
+
+                        <select
+                            name="distrito_persona"
+                            class="distrito-persona"
+                            disabled
+                        >
+
+                            <option value="">
+                                Seleccione un distrito
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label>
+                            Tipo de vía
+                        </label>
+
+                        <select
+                            name="tipo_via_persona"
+                            class="tipo-via-persona"
+                        >
+
+                            <option value="">
+                                Seleccione
+                            </option>
+
+                            <option value="AV.">
+                                AV.
+                            </option>
+
+                            <option value="JR.">
+                                JR.
+                            </option>
+
+                            <option value="CALLE">
+                                CALLE
+                            </option>
+
+                            <option value="PASAJE">
+                                PASAJE
+                            </option>
+
+                            <option value="CARRETERA">
+                                CARRETERA
+                            </option>
+
+                            <option value="OTRO">
+                                OTRO
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label>
+                            Nombre de vía
+                        </label>
+
+                        <input
+                            type="text"
+                            name="nombre_via_persona"
+                            class="nombre-via-persona"
+                        >
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label>
+                            Número
+                        </label>
+
+                        <input
+                            type="text"
+                            name="numero_via_persona"
+                            class="numero-via-persona"
+                        >
+
+                    </div>
+
+
+                    <div class="campo campo-completo">
+
+                        <label>
+                            Complemento / referencia
+                        </label>
+
+                        <input
+                            type="text"
+                            name="complemento_persona"
+                            class="complemento-persona"
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+                <input
+                    type="hidden"
+                    name="direccion"
+                    class="direccion-persona"
+                >
+
+
+                <div class="domicilio-generado">
+
+                    <strong>
+                        Domicilio registrado:
+                    </strong>
+
+                    <span class="domicilio-mostrado">
+                        —
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="campo campo-completo">
+
+                <label>
+                    Rol
+                </label>
+
+                <select
+                    name="rol"
+                    class="form-control rol-persona"
+                    onchange="mostrarMapa(this)"
+                >
+
+                    <option value="">
+                        Seleccione rol
+                    </option>
+
+                    <option value="DENUNCIANTE">
+                        Denunciante
+                    </option>
+
+                    <option value="PRESUNTA_VICTIMA">
+                        Presunta víctima
+                    </option>
+
+                    <option value="DENUNCIADO">
+                        Denunciado
+                    </option>
+
+                    <option value="PARTICIPANTE">
+                        Participante
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="campo-completo mapa-persona">
+            </div>
+
+
+            <input
+                type="hidden"
+                name="latitud_persona"
+                class="latitud-persona"
+            >
+
+            <input
+                type="hidden"
+                name="longitud_persona"
+                class="longitud-persona"
+            >
+
+
+        </div>
+
+
+        <div class="botones-persona">
+
+            <button
+                type="button"
+                class="btn btn-danger"
+                onclick="eliminarPersona(this)"
+            >
+                ❌ Eliminar persona
+            </button>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById("personas")
+        .appendChild(div);
+
+
+    configurarUbigeoPersona(div);
+
+}
+
+
+/* ==========================================================
+   ELIMINAR PERSONA
+========================================================== */
+
+function eliminarPersona(boton){
+
+    const persona =
+        boton.closest(".persona");
+
+
+    if(!persona){
+        return;
+    }
+
+
+    const mapa =
+        mapasPersonas.get(persona);
+
+
+    if(mapa){
+
+        mapa.remove();
+
+        mapasPersonas.delete(persona);
+
+    }
+
+
+    persona.remove();
+
+}
+
+
+/* ==========================================================
+   MAPA DE PERSONA
+========================================================== */
+
+function mostrarMapa(select){
+
+    const persona =
+        select.closest(".persona");
+
+    const mapaDiv =
+        persona.querySelector(".mapa-persona");
+
+    const latInput =
+        persona.querySelector(".latitud-persona");
+
+    const lngInput =
+        persona.querySelector(".longitud-persona");
+
+
+    if(!persona || !mapaDiv){
+        return;
+    }
+
+
+    /* ================================================
+       DENUNCIANTE
+    ================================================= */
+
+    if(select.value === "DENUNCIANTE"){
+
+        mapaDiv.style.display =
+            "none";
+
+        latInput.value = "";
+        lngInput.value = "";
+
+
+        const mapa =
+            mapasPersonas.get(persona);
+
+
+        if(mapa){
+
+            mapa.remove();
+
+            mapasPersonas.delete(persona);
+
+        }
+
+
+        return;
+
+    }
+
+
+    mapaDiv.style.display =
+        "block";
+
+
+    let mapa =
+        mapasPersonas.get(persona);
+
+
+    /* ================================================
+       CREAR MAPA
+    ================================================= */
+
+    if(!mapa){
+
+        mapa =
+            L.map(mapaDiv).setView(
+                [-12.0464,-77.0428],
+                13
+            );
+
+
+        L.tileLayer(
+            "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution:
+                    "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(mapa);
+
+
+        mapa.marcador =
+            null;
+
+
+        mapa.on(
+            "click",
+            function(e){
+
+                latInput.value =
+                    e.latlng.lat;
+
+                lngInput.value =
+                    e.latlng.lng;
+
+
+                if(mapa.marcador){
+
+                    mapa.removeLayer(
+                        mapa.marcador
+                    );
+
+                }
+
+
+                let html = "";
+
+
+                if(
+                    select.value ===
+                    "PRESUNTA_VICTIMA"
+                ){
+
+                    html = `
+                        <div style="
+                            width:25px;
+                            height:25px;
+                            border-radius:50%;
+                            background:#0066ff;
+                            border:3px solid white;
+                            box-shadow:0 0 5px #555;
+                        "></div>
+                    `;
+
+                }
+
+                else if(
+                    select.value ===
+                    "DENUNCIADO"
+                ){
+
+                    html = `
+                        <div style="
+                            width:25px;
+                            height:25px;
+                            border-radius:50%;
+                            background:#8B4513;
+                            border:3px solid white;
+                            box-shadow:0 0 5px #555;
+                        "></div>
+                    `;
+
+                }
+
+                else if(
+                    select.value ===
+                    "PARTICIPANTE"
+                ){
+
+                    html = `
+                        <div style="
+                            width:25px;
+                            height:25px;
+                            border-radius:50%;
+                            background:linear-gradient(
+                                90deg,
+                                #0066ff 50%,
+                                #8B4513 50%
+                            );
+                            border:3px solid white;
+                            box-shadow:0 0 5px #555;
+                        "></div>
+                    `;
+
+                }
+
+
+                const icono =
+                    L.divIcon({
+
+                        className:"",
+                        html:html,
+                        iconSize:[25,25],
+                        iconAnchor:[12,12]
+
+                    });
+
+
+                mapa.marcador =
+                    L.marker(
+                        e.latlng,
+                        {
+                            icon:icono
+                        }
+                    ).addTo(mapa);
+
+            }
+        );
+
 
         mapasPersonas.set(
             persona,
             mapa
         );
 
-    }
-    
 
+        setTimeout(
+            function(){
+
+                mapa.invalidateSize();
+
+            },
+            100
+        );
+
+    }
     else{
 
-        setTimeout(function(){
+        setTimeout(
+            function(){
 
-            mapa.invalidateSize();
+                mapa.invalidateSize();
 
-        },100);
+            },
+            100
+        );
 
     }
 
 }
 
-</script>
 
+/* ==========================================================
+   INICIAR PERSONA 1
+========================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        const persona =
+            document.querySelector(
+                ".persona"
+            );
+
+
+        if(persona){
+
+            configurarUbigeoPersona(
+                persona
+            );
+
+            actualizarDomicilioPersona(
+                persona
+            );
+
+        }
+
+    }
+);
+
+</script>
 
 
 {% endblock %}

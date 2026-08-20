@@ -192,22 +192,27 @@ path(
     ),
 
 
-    # ===============================
-    # UBIGEO
-    # ===============================
+# ===============================
+# UBIGEO
+# ===============================
 
-    path(
-        "cargar-provincias/",
-        views.cargar_provincias,
-        name="cargar_provincias"
-    ),
+path(
+    "cargar-regiones/",
+    views.cargar_regiones,
+    name="cargar_regiones"
+),
 
-    path(
-        "cargar-distritos/",
-        views.cargar_distritos,
-        name="cargar_distritos"
-    ),
+path(
+    "cargar-provincias/",
+    views.cargar_provincias,
+    name="cargar_provincias"
+),
 
+path(
+    "cargar-distritos/",
+    views.cargar_distritos,
+    name="cargar_distritos"
+),
 
     # ===============================
     # UBICACIÓN PRELIMINAR
