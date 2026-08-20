@@ -82,6 +82,7 @@ class Distrito(models.Model):
     def __str__(self):
         return self.nombre
 
+
 class Caso(models.Model):
 
     RIESGOS = [
@@ -109,15 +110,90 @@ class Caso(models.Model):
         ("NO UBICADO", "No ubicado"),
     ]
 
+    # ==========================================
+    # DATOS DE LA PERSONA BENEFICIARIA
+    # ==========================================
 
-    beneficiario = models.CharField(max_length=200, blank=True)
+    beneficiario = models.CharField(
+        max_length=200,
+        blank=True
+    )
 
     dni_beneficiario = models.CharField(
         max_length=8,
         blank=True
     )
 
-    domicilio = models.CharField(max_length=300, blank=True)
+    domicilio = models.CharField(
+        max_length=300,
+        blank=True
+    )
+
+    # ==========================================
+    # UBICACIÓN DEL DOMICILIO DE LA BENEFICIARIA
+    # ==========================================
+
+    region_domicilio = models.ForeignKey(
+        Region,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="casos_region_domicilio"
+    )
+
+    provincia_domicilio = models.ForeignKey(
+        Provincia,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="casos_provincia_domicilio"
+    )
+
+    distrito_domicilio = models.ForeignKey(
+        Distrito,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="casos_distrito_domicilio"
+    )
+
+    # ==========================================
+    # DOMICILIO ESTRUCTURADO
+    # ==========================================
+
+    tipo_via = models.CharField(
+        max_length=30,
+        blank=True,
+        verbose_name="Tipo de vía"
+    )
+
+    nombre_via = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="Nombre de vía"
+    )
+
+    numero_via = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Número"
+    )
+
+    complemento_domicilio = models.CharField(
+        max_length=300,
+        blank=True,
+        verbose_name="Complemento / referencia"
+    )
+
+    domicilio_normalizado = models.CharField(
+        max_length=250,
+        blank=True,
+        verbose_name="Domicilio normalizado"
+    )
+
+    # ==========================================
+    # NIVEL DE RIESGO
+    # ==========================================
 
     nivel_riesgo = models.CharField(
         max_length=30,
@@ -125,7 +201,10 @@ class Caso(models.Model):
         blank=True
     )
 
-    # Ubicación de la denuncia
+    # ==========================================
+    # UBICACIÓN DE LA DENUNCIA
+    # ==========================================
+
     region_denuncia = models.ForeignKey(
         Region,
         on_delete=models.PROTECT,
@@ -150,7 +229,10 @@ class Caso(models.Model):
         blank=True,
     )
 
-    # Ubicación de la medida
+    # ==========================================
+    # UBICACIÓN DE LA MEDIDA
+    # ==========================================
+
     region_medida = models.ForeignKey(
         Region,
         on_delete=models.PROTECT,
@@ -173,8 +255,12 @@ class Caso(models.Model):
         related_name="casos_medida_distrito",
         null=True,
         blank=True,
-)
-    
+    )
+
+    # ==========================================
+    # COMISARÍAS
+    # ==========================================
+
     comisaria_denuncia = models.CharField(
         max_length=150,
         verbose_name="Comisaría donde se interpuso la denuncia"
@@ -185,25 +271,42 @@ class Caso(models.Model):
         verbose_name="Comisaría de Familia responsable"
     )
 
-    efectivo = models.CharField(max_length=100, blank=True)
+    # ==========================================
+    # RESPONSABLE
+    # ==========================================
 
-    responsable = models.ForeignKey(
-    User,
-    null=True,
-    blank=True,
-    on_delete=models.SET_NULL,
-    related_name="casos_asignados"
+    efectivo = models.CharField(
+        max_length=100,
+        blank=True
     )
 
-    folder = models.CharField(max_length=100, blank=True)
+    responsable = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="casos_asignados"
+    )
 
-    expediente = models.CharField(max_length=100, blank=True)
+    folder = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    expediente = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    # ==========================================
+    # DATOS DEL AGRESOR
+    # ==========================================
 
     agresor = models.CharField(
         max_length=200,
         blank=True
     )
-    
+
     dni_agresor = models.CharField(
         max_length=8,
         blank=True
@@ -221,14 +324,66 @@ class Caso(models.Model):
         blank=True
     )
 
+    tipo_via_agresor = models.CharField(
+        max_length=30,
+        blank=True,
+        verbose_name="Tipo de vía"
+    )
+
+    nombre_via_agresor = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="Nombre de vía"
+    )
+
+    numero_via_agresor = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Número"
+    )
+
+    complemento_domicilio_agresor = models.CharField(
+        max_length=300,
+        blank=True,
+        verbose_name="Complemento / referencia"
+    )
+
     agresor_registro = models.ForeignKey(
-    "Agresor",
-    on_delete=models.SET_NULL,
-    null=True,
-    blank=True,
-    related_name="casos"
-)
-    
+        "Agresor",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="casos"
+    )
+
+    # ==========================================
+    # UBICACIÓN DEL DOMICILIO DEL AGRESOR
+    # ==========================================
+
+    region_agresor = models.ForeignKey(
+        Region,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="casos_region_agresor"
+    )
+
+    provincia_agresor = models.ForeignKey(
+        Provincia,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="casos_provincia_agresor"
+    )
+
+    distrito_agresor = models.ForeignKey(
+        Distrito,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="casos_distrito_agresor"
+    )
+
     estado_ubicacion_agresor = models.CharField(
         "Estado de ubicación del agresor",
         max_length=15,
@@ -246,17 +401,31 @@ class Caso(models.Model):
         blank=True
     )
 
+
+
+    # ==========================================
+    # TELÉFONO BENEFICIARIA
+    # ==========================================
+
     telefono = models.CharField(
         "Teléfono de la beneficiaria",
         max_length=50,
         blank=True
     )
 
+    # ==========================================
+    # DENUNCIA
+    # ==========================================
+
     fecha_denuncia = models.DateField(
         "Fecha de la denuncia",
         null=True,
         blank=True
     )
+
+    # ==========================================
+    # TIPOS DE VIOLENCIA
+    # ==========================================
 
     violencia_fisica = models.BooleanField(
         "Violencia física",
@@ -271,13 +440,17 @@ class Caso(models.Model):
     violencia_sexual = models.BooleanField(
         "Violencia sexual",
         default=False
-    ) 
+    )
 
     violencia_economica = models.BooleanField(
         "Violencia económica o patrimonial",
         default=False
     )
-    
+
+    # ==========================================
+    # SEGUIMIENTO
+    # ==========================================
+
     fecha_registro = models.DateField(
         null=True,
         blank=True
@@ -298,6 +471,10 @@ class Caso(models.Model):
         default=False
     )
 
+    # ==========================================
+    # NOTIFICACIÓN BENEFICIARIA
+    # ==========================================
+
     notificacion_beneficiario = models.CharField(
         max_length=15,
         choices=NOTIFICACION,
@@ -314,6 +491,10 @@ class Caso(models.Model):
         blank=True
     )
 
+    # ==========================================
+    # NOTIFICACIÓN AGRESOR
+    # ==========================================
+
     notificacion_agresor = models.CharField(
         max_length=15,
         choices=NOTIFICACION,
@@ -329,6 +510,10 @@ class Caso(models.Model):
         "Motivo de notificación pendiente de la persona agresora",
         blank=True
     )
+
+    # ==========================================
+    # ESTADO DEL CASO
+    # ==========================================
 
     estado = models.CharField(
         max_length=15,
@@ -348,6 +533,10 @@ class Caso(models.Model):
         related_name="casos_eliminados"
     )
 
+    # ==========================================
+    # UBICACIÓN GEOGRÁFICA BENEFICIARIA
+    # ==========================================
+
     latitud = models.FloatField(
         null=True,
         blank=True
@@ -362,31 +551,60 @@ class Caso(models.Model):
         default=False
     )
 
+    # ==========================================
+    # SAVE
+    # ==========================================
+
     def save(self, *args, **kwargs):
 
-        # Beneficiaria
+        # ------------------------------
+        # Notificación beneficiaria
+        # ------------------------------
+
         if self.notificacion_beneficiario == "NOTIFICADO":
+
             self.motivo_notificacion_beneficiario_pendiente = ""
+
             self.fecha_notificacion_beneficiario = (
                 self.fecha_notificacion_beneficiario
                 or timezone.now().date()
             )
 
-        # Agresor
+        # ------------------------------
+        # Notificación agresor
+        # ------------------------------
+
         if self.notificacion_agresor == "NOTIFICADO":
+
             self.motivo_notificacion_agresor_pendiente = ""
+
             self.fecha_notificacion_agresor = (
                 self.fecha_notificacion_agresor
                 or timezone.now().date()
             )
 
+        # ------------------------------
+        # Próximo seguimiento
+        # ------------------------------
+
         if self.ultima_visita:
 
-            if self.nivel_riesgo in ["SEVERO", "SEVERO EXTREMO"]:
-                self.fecha_limite = self.ultima_visita + relativedelta(months=3)
+            if self.nivel_riesgo in [
+                "SEVERO",
+                "SEVERO EXTREMO"
+            ]:
+
+                self.fecha_limite = (
+                    self.ultima_visita
+                    + relativedelta(months=3)
+                )
 
             else:
-                self.fecha_limite = self.ultima_visita + relativedelta(months=6)
+
+                self.fecha_limite = (
+                    self.ultima_visita
+                    + relativedelta(months=6)
+                )
 
         super().save(*args, **kwargs)
 
@@ -394,21 +612,50 @@ class Caso(models.Model):
         return self.beneficiario
 
     class Meta:
+
         permissions = [
-            ("modificar_directo", "Puede modificar casos directamente"),
-            ("aprobar_modificacion", "Puede aprobar modificaciones"),
-            ("archivar_directo", "Puede archivar casos directamente"),
-            ("aprobar_archivado", "Puede aprobar archivados"),
-            ("eliminar_directo", "Puede eliminar casos directamente"),
-            ("aprobar_eliminacion", "Puede aprobar eliminaciones"),
-            ("administrar_usuarios", "Puede administrar usuarios"),
+            (
+                "modificar_directo",
+                "Puede modificar casos directamente"
+            ),
+            (
+                "aprobar_modificacion",
+                "Puede aprobar modificaciones"
+            ),
+            (
+                "archivar_directo",
+                "Puede archivar casos directamente"
+            ),
+            (
+                "aprobar_archivado",
+                "Puede aprobar archivados"
+            ),
+            (
+                "eliminar_directo",
+                "Puede eliminar casos directamente"
+            ),
+            (
+                "aprobar_eliminacion",
+                "Puede aprobar eliminaciones"
+            ),
+            (
+                "administrar_usuarios",
+                "Puede administrar usuarios"
+            ),
         ]
+
 
 class UbicacionPreliminar(models.Model):
 
     ALCANCE_MEDIDA = [
-        ("UNA_PERSONA", "Medida de protección a favor de una persona"),
-        ("AMBAS_PERSONAS", "Medida de protección a favor de ambas personas"),
+        (
+            "UNA_PERSONA",
+            "Medida de protección a favor de una persona"
+        ),
+        (
+            "AMBAS_PERSONAS",
+            "Medida de protección a favor de ambas personas"
+        ),
     ]
 
     TIPO_REGISTRO = [
@@ -459,8 +706,9 @@ class UbicacionPreliminar(models.Model):
         verbose_name="Fecha de conversión"
     )
 
-
+    # ==========================================
     # TIPO DE REGISTRO
+    # ==========================================
 
     tipo_registro = models.CharField(
         max_length=20,
@@ -475,8 +723,9 @@ class UbicacionPreliminar(models.Model):
         null=True
     )
 
-   
-    # UBICACIÓN DEL HECHO / REFERENCIA
+    # ==========================================
+    # UBICACIÓN
+    # ==========================================
 
     latitud = models.FloatField(
         null=True,
@@ -488,8 +737,9 @@ class UbicacionPreliminar(models.Model):
         blank=True
     )
 
-
+    # ==========================================
     # CONTROL
+    # ==========================================
 
     estado = models.CharField(
         max_length=20,
@@ -497,17 +747,14 @@ class UbicacionPreliminar(models.Model):
         default="PRELIMINAR"
     )
 
-
     fecha_registro = models.DateTimeField(
         auto_now_add=True
     )
-
 
     fecha_vencimiento = models.DateField(
         null=True,
         blank=True
     )
-
 
     registrado_por = models.ForeignKey(
         User,
@@ -516,10 +763,10 @@ class UbicacionPreliminar(models.Model):
         blank=True
     )
 
-
     def save(self, *args, **kwargs):
 
         if not self.fecha_vencimiento:
+
             from datetime import timedelta
 
             self.fecha_vencimiento = (
@@ -529,11 +776,10 @@ class UbicacionPreliminar(models.Model):
 
         super().save(*args, **kwargs)
 
-
     def __str__(self):
 
         return f"Registro preliminar {self.id}"
-    
+
 
 class PersonaPreliminar(models.Model):
 
@@ -611,10 +857,11 @@ class PersonaPreliminar(models.Model):
         blank=True,
         verbose_name="Motivo o disposición que sustenta la condición"
     )
-  
+
     def __str__(self):
         return self.nombres
-    
+
+
 class RolPersonaPreliminar(models.Model):
 
     ROLES = [
@@ -635,19 +882,18 @@ class RolPersonaPreliminar(models.Model):
         choices=ROLES
     )
 
-
     def __str__(self):
         return self.get_rol_display()
-    
+
 
 class SolicitudModificacion(models.Model):
 
     ESTADOS = [
-    ("PENDIENTE", "Pendiente"),
-    ("APROBADA", "Aprobada"),
-    ("UTILIZADA", "Utilizada"),
-    ("RECHAZADA", "Rechazada"),
-]
+        ("PENDIENTE", "Pendiente"),
+        ("APROBADA", "Aprobada"),
+        ("UTILIZADA", "Utilizada"),
+        ("RECHAZADA", "Rechazada"),
+    ]
 
     caso = models.ForeignKey(
         Caso,
@@ -667,7 +913,6 @@ class SolicitudModificacion(models.Model):
         default="PENDIENTE"
     )
 
-    
     notificacion_leida = models.BooleanField(
         default=False
     )
@@ -696,7 +941,8 @@ class SolicitudModificacion(models.Model):
 
     def __str__(self):
         return f"Solicitud #{self.id} - Caso {self.caso.id}"
-    
+
+
 class Mensaje(models.Model):
 
     destinatario = models.ForeignKey(
@@ -732,7 +978,8 @@ class Mensaje(models.Model):
 
     def __str__(self):
         return f"{self.asunto} - {self.destinatario.username}"
-    
+
+
 class Agresor(models.Model):
 
     nombres = models.CharField(
@@ -757,6 +1004,30 @@ class Agresor(models.Model):
         null=True
     )
 
+    region_domicilio = models.ForeignKey(
+        Region,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agresores_region_domicilio"
+    )
+
+    provincia_domicilio = models.ForeignKey(
+        Provincia,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agresores_provincia_domicilio"
+    )
+
+    distrito_domicilio = models.ForeignKey(
+        Distrito,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agresores_distrito_domicilio"
+    )
+
     latitud = models.FloatField(
         blank=True,
         null=True
@@ -774,7 +1045,6 @@ class Agresor(models.Model):
     activo = models.BooleanField(
         default=True
     )
-
 
     def __str__(self):
         return self.nombres
