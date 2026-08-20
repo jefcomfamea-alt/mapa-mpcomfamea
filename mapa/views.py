@@ -1157,6 +1157,7 @@ def casos_json(request):
                     "BENEFICIARIO": caso.beneficiario,
                     "DOMICILIO": caso.domicilio,
                     "NIVEL RIESGO": caso.nivel_riesgo,
+
                     "DISTRITO": str(caso.distrito_denuncia)
                         if caso.distrito_denuncia else "",
 
@@ -1164,6 +1165,7 @@ def casos_json(request):
                     "COMISARIA MEDIDA": caso.comisaria_medida,
 
                     "EFECTIVO": caso.efectivo,
+
                     "RESPONSABLE_ID":
                         caso.responsable.id
                         if caso.responsable else None,
@@ -1176,78 +1178,6 @@ def casos_json(request):
                     "LATITUD AGRESOR": caso.latitud_agresor,
                     "LONGITUD AGRESOR": caso.longitud_agresor,
 
-                    "TELEFONO": caso.telefono,
-
-                    "fecha_registro":
-                        str(caso.fecha_registro)
-                        if caso.fecha_registro else "",
-
-                    "ULTIMA VISITA":
-                        str(caso.ultima_visita)
-                        if caso.ultima_visita else "",
-
-                    "FECHA LIMITE DE SEGUIMIENTO":
-                        str(caso.fecha_limite)
-                        if caso.fecha_limite else "",
-
-                    "NOTIFICACION BENEFICIARIO":
-                        caso.notificacion_beneficiario,
-
-                    "FECHA NOTIFICACION BENEFICIARIO":
-                        str(caso.fecha_notificacion_beneficiario)
-                        if caso.fecha_notificacion_beneficiario else "",
-
-                    "NOTIFICACION AGRESOR":
-                        caso.notificacion_agresor,
-
-                    "FECHA NOTIFICACION AGRESOR":
-                        str(caso.fecha_notificacion_agresor)
-                        if caso.fecha_notificacion_agresor else "",
-                }
-            })
-
-        # ==========================================
-        # 🟤 UBICACIÓN DEL AGRESOR
-        # ==========================================
-
-        if (
-            caso.latitud_agresor is not None
-            and caso.longitud_agresor is not None
-        ):
-
-            features.append({
-                "type": "Feature",
-
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        caso.longitud_agresor,
-                        caso.latitud_agresor
-                    ]
-                },
-
-                "properties": {
-                    "id": caso.id,
-                    "TIPO_PUNTO": "AGRESOR",
-
-                    "BENEFICIARIO": caso.beneficiario,
-                    "DOMICILIO": caso.domicilio,
-                    "NIVEL RIESGO": caso.nivel_riesgo,
-                    "DISTRITO": str(caso.distrito_denuncia)
-                        if caso.distrito_denuncia else "",
-
-                    "COMISARIA DENUNCIA": caso.comisaria_denuncia,
-                    "COMISARIA MEDIDA": caso.comisaria_medida,
-
-                    "EFECTIVO": caso.efectivo,
-                    "RESPONSABLE_ID":
-                        caso.responsable.id
-                        if caso.responsable else None,
-
-                    "FOLDER": caso.folder,
-                    "EXP.": caso.expediente,
-
-                    "AGRESOR": caso.agresor,
                     "TELEFONO": caso.telefono,
 
                     "fecha_registro":
