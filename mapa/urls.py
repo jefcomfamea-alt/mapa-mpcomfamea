@@ -97,32 +97,32 @@ urlpatterns = [
 
 
     # ===============================
-    # CASOS ELIMINADOS
-    # ===============================
+# CASOS ELIMINADOS
+# ===============================
 
-    path(
-        "eliminar-caso/<int:id>/",
-        views.eliminar_caso,
-        name="eliminar_caso"
-    ),
+path(
+    "eliminar-caso/<int:id>/",
+    views.eliminar_caso,
+    name="eliminar_caso"
+),
 
-    path(
-        "casos-eliminados/",
-        views.casos_eliminados,
-        name="casos_eliminados"
-    ),
+path(
+    "casos-eliminados/",
+    views.casos_eliminados,
+    name="casos_eliminados"
+),
 
-    path(
-        "restaurar-caso-eliminado/<int:id>/",
-        views.restaurar_caso_eliminado,
-        name="restaurar_caso_eliminado"
-    ),
+path(
+    "casos-eliminados/restaurar/<int:id>/",
+    views.restaurar_caso_eliminado,
+    name="restaurar_caso_eliminado"
+),
 
-    path(
-        "eliminar-caso-definitivamente/<int:id>/",
-        views.eliminar_caso_definitivamente,
-        name="eliminar_caso_definitivamente"
-    ),
+path(
+    "casos-eliminados/eliminar-definitivamente/<int:id>/",
+    views.eliminar_caso_definitivamente,
+    name="eliminar_caso_definitivamente"
+),
 
 
     # ===============================

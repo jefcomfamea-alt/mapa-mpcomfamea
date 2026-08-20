@@ -1006,7 +1006,13 @@ def gestion_casos(request):
 
     busqueda = request.GET.get("q", "").strip()
 
-    casos = Caso.objects.all()
+    # ==========================================
+    # MOSTRAR SOLO CASOS ACTIVOS
+    # ==========================================
+
+    casos = Caso.objects.exclude(
+        estado="ELIMINADO"
+    )
 
     if busqueda:
 
@@ -1024,6 +1030,7 @@ def gestion_casos(request):
     # ============================
     # PAGINACIÓN: 20 CASOS
     # ============================
+
     from django.core.paginator import Paginator
 
     paginator = Paginator(casos, 20)
@@ -1694,7 +1701,6 @@ def casos_eliminados(request):
         }
     )
 
-
 @login_required
 @grupo_requerido("Administrador")
 def restaurar_caso_eliminado(request, id):
@@ -1719,6 +1725,46 @@ def restaurar_caso_eliminado(request, id):
 
     return redirect("casos_eliminados")
 
+
+@login_required
+@grupo_requerido("Administrador")
+def eliminar_caso_definitivamente(request, id):
+
+    caso = get_object_or_404(
+        Caso,
+        pk=id,
+        estado="ELIMINADO"
+    )
+
+    if request.method == "POST":
+        caso.delete()
+
+    return redirect("casos_eliminados")
+
+
+@login_required
+@grupo_requerido("Administrador")
+def restaurar_caso_eliminado(request, id):
+
+    caso = get_object_or_404(
+        Caso,
+        pk=id,
+        estado="ELIMINADO"
+    )
+
+    caso.estado = "ACTIVO"
+    caso.fecha_eliminacion = None
+    caso.eliminado_por = None
+
+    caso.save(
+        update_fields=[
+            "estado",
+            "fecha_eliminacion",
+            "eliminado_por"
+        ]
+    )
+
+    return redirect("casos_eliminados")
 
 @login_required
 @grupo_requerido("Administrador")

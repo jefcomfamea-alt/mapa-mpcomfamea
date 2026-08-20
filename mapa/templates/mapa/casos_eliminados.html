@@ -498,6 +498,12 @@
 
             font-size: 12px;
 
+            border: none;
+
+            cursor: pointer;
+
+            font-family: Arial, sans-serif;
+
         }
 
 
@@ -947,15 +953,25 @@
                                 </a>
 
 
-                                <a
-                                    href="{% url 'eliminar_caso_definitivamente' caso.id %}"
-                                    class="btn-eliminar"
-                                    onclick="return confirm('⚠️ ATENCIÓN: este caso será eliminado DEFINITIVAMENTE y no podrá ser recuperado. ¿Desea continuar?');"
+                                <form
+                                    method="POST"
+                                    action="{% url 'eliminar_caso_definitivamente' caso.id %}"
+                                    style="display:inline;"
+                                    onsubmit="return confirm('⚠️ ATENCIÓN: este caso será eliminado DEFINITIVAMENTE y no podrá ser recuperado. ¿Desea continuar?');"
                                 >
 
-                                    🗑️ Eliminar
+                                    {% csrf_token %}
 
-                                </a>
+                                    <button
+                                        type="submit"
+                                        class="btn-eliminar"
+                                    >
+
+                                        🗑️ Eliminar
+
+                                    </button>
+
+                                </form>
 
 
                             </td>

@@ -401,8 +401,6 @@ class Caso(models.Model):
         blank=True
     )
 
-
-
     # ==========================================
     # TELÉFONO BENEFICIARIA
     # ==========================================
@@ -547,6 +545,10 @@ class Caso(models.Model):
         blank=True
     )
 
+    # ==========================================
+    # CONTROL DE EDICIÓN
+    # ==========================================
+
     edicion_autorizada = models.BooleanField(
         default=False
     )
@@ -557,9 +559,9 @@ class Caso(models.Model):
 
     def save(self, *args, **kwargs):
 
-        # ------------------------------
-        # Notificación beneficiaria
-        # ------------------------------
+        # --------------------------------------
+        # NOTIFICACIÓN BENEFICIARIA
+        # --------------------------------------
 
         if self.notificacion_beneficiario == "NOTIFICADO":
 
@@ -570,9 +572,9 @@ class Caso(models.Model):
                 or timezone.now().date()
             )
 
-        # ------------------------------
-        # Notificación agresor
-        # ------------------------------
+        # --------------------------------------
+        # NOTIFICACIÓN AGRESOR
+        # --------------------------------------
 
         if self.notificacion_agresor == "NOTIFICADO":
 
@@ -583,9 +585,9 @@ class Caso(models.Model):
                 or timezone.now().date()
             )
 
-        # ------------------------------
-        # Próximo seguimiento
-        # ------------------------------
+        # --------------------------------------
+        # PRÓXIMO SEGUIMIENTO
+        # --------------------------------------
 
         if self.ultima_visita:
 
@@ -606,38 +608,57 @@ class Caso(models.Model):
                     + relativedelta(months=6)
                 )
 
+        # --------------------------------------
+        # GUARDAR
+        # --------------------------------------
+
         super().save(*args, **kwargs)
+
+    # ==========================================
+    # REPRESENTACIÓN
+    # ==========================================
 
     def __str__(self):
         return self.beneficiario
 
+    # ==========================================
+    # METADATA
+    # ==========================================
+
     class Meta:
 
         permissions = [
+
             (
                 "modificar_directo",
                 "Puede modificar casos directamente"
             ),
+
             (
                 "aprobar_modificacion",
                 "Puede aprobar modificaciones"
             ),
+
             (
                 "archivar_directo",
                 "Puede archivar casos directamente"
             ),
+
             (
                 "aprobar_archivado",
                 "Puede aprobar archivados"
             ),
+
             (
                 "eliminar_directo",
                 "Puede eliminar casos directamente"
             ),
+
             (
                 "aprobar_eliminacion",
                 "Puede aprobar eliminaciones"
             ),
+
             (
                 "administrar_usuarios",
                 "Puede administrar usuarios"
