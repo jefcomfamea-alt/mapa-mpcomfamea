@@ -2724,13 +2724,146 @@ def estadistica(request):
     # CALLES CON MÁS MEDIDAS DE PROTECCIÓN
     # ==========================================
 
+    import re
+
+    def obtener_grupo_calle(caso):
+
+        # ------------------------------------------
+        # 1. USAR DOMICILIO ESTRUCTURADO
+        # ------------------------------------------
+
+        tipo_via = getattr(caso, "tipo_via", None)
+        nombre_via = getattr(caso, "nombre_via", None)
+
+        if tipo_via and nombre_via:
+
+            tipo = str(tipo_via).strip().upper()
+            nombre = str(nombre_via).strip().upper()
+
+            if tipo and nombre:
+                return f"{tipo} {nombre}"
+
+        # ------------------------------------------
+        # 2. DOMICILIOS HISTÓRICOS
+        # ------------------------------------------
+
+        domicilio = (caso.domicilio or "").strip().upper()
+
+        if not domicilio:
+            return "DOMICILIO NO REGISTRADO"
+
+        # Normalizar espacios
+        domicilio = re.sub(
+            r"\s+",
+            " ",
+            domicilio
+        ).strip()
+
+        # ------------------------------------------
+        # 3. RECONOCER TIPOS DE VÍA
+        # ------------------------------------------
+
+        tipos_via = [
+            ("JIRON", "JIRON"),
+            ("JR.", "JIRON"),
+            ("JR", "JIRON"),
+
+            ("AVENIDA", "AV."),
+            ("AV.", "AV."),
+            ("AV", "AV."),
+
+            ("CALLE", "CALLE"),
+
+            ("PASAJE", "PASAJE"),
+            ("PSJE.", "PASAJE"),
+            ("PSJE", "PASAJE"),
+
+            ("PROLONGACION", "PROLONGACION"),
+            ("PROL.", "PROLONGACION"),
+            ("PROL", "PROLONGACION"),
+
+            ("JIRON", "JIRON"),
+            ("JR.", "JIRON"),
+            ("JR", "JIRON"),
+        ]
+
+        tipo_detectado = None
+        resto = domicilio
+
+        for prefijo, tipo_normalizado in tipos_via:
+
+            if domicilio.startswith(prefijo + " "):
+
+                tipo_detectado = tipo_normalizado
+
+                resto = domicilio[
+                    len(prefijo):
+                ].strip()
+
+                break
+
+        # ------------------------------------------
+        # 4. SI NO SE RECONOCE EL TIPO,
+        #    CONSERVAR LA LÓGICA ANTERIOR
+        # ------------------------------------------
+
+        if not tipo_detectado:
+
+            return obtener_nombre_calle(
+                caso.domicilio
+            )
+
+        # ------------------------------------------
+        # 5. QUITAR NÚMERO Y TODO LO QUE VIENE
+        # ------------------------------------------
+
+        # Ejemplos:
+        #
+        # CHIQUIAN NRO. 2865 - 2867
+        # CHIQUIAN 2781
+        # RIVA AGUERO N° 1569
+        #
+        # quedan:
+        #
+        # CHIQUIAN
+        # RIVA AGUERO
+
+        resto = re.split(
+            r"\s+(?:NRO\.?|N°|Nº|NUMERO|NÚMERO|#)\s*[\d\-\/]+",
+            resto,
+            maxsplit=1
+        )[0]
+
+        # También quitar número cuando aparece
+        # directamente después del nombre.
+        resto = re.split(
+            r"\s+\d+(?:\s*[-\/]\s*\d+)?(?:\s|$)",
+            resto,
+            maxsplit=1
+        )[0]
+
+        resto = resto.strip(
+            " ,.-"
+        )
+
+        # ------------------------------------------
+        # 6. LIMPIEZA FINAL
+        # ------------------------------------------
+
+        if not resto:
+    
+            return obtener_nombre_calle(
+                caso.domicilio
+            )
+
+        return f"{tipo_detectado} {resto}"
+
+
     calles_dict = {}
 
     for caso in casos_activos.order_by("-id"):
 
-        calle = obtener_nombre_calle(
-            caso.domicilio
-        )
+        calle = obtener_grupo_calle(caso)
 
         if calle not in calles_dict:
             calles_dict[calle] = []
