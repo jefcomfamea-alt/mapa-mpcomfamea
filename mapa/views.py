@@ -3092,7 +3092,7 @@ def casos_por_efectivo(request, id):
     efectivos = User.objects.filter(
         is_active=True,
         groups__name__in=[
-            "Efectivo_MP",
+            "Usuario_MP",
             "Efectivo_COMFAMEA"
         ]
     ).distinct().order_by(
