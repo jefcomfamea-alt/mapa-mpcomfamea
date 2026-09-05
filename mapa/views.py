@@ -1065,6 +1065,121 @@ def gestion_casos(request):
 
 @login_required
 @grupo_requerido("Administrador", "Jefe_MP")
+def reasignar_casos(request):
+
+    if request.method != "POST":
+        return redirect("gestion_casos")
+
+    # ==========================================
+    # CASOS SELECCIONADOS
+    # ==========================================
+
+    casos_ids = request.POST.getlist("casos")
+
+    # ==========================================
+    # NUEVO RESPONSABLE
+    # ==========================================
+
+    responsable_id = request.POST.get("responsable")
+
+    if not casos_ids:
+        return redirect("gestion_casos")
+
+    if not responsable_id:
+        return redirect("gestion_casos")
+
+    nuevo_responsable = get_object_or_404(
+        User,
+        pk=responsable_id,
+        is_active=True
+    )
+
+    # ==========================================
+    # OBTENER CASOS
+    # ==========================================
+
+    casos = Caso.objects.filter(
+        id__in=casos_ids
+    ).exclude(
+        estado="ELIMINADO"
+    )
+
+    # ==========================================
+    # NOMBRE DEL NUEVO RESPONSABLE
+    # ==========================================
+
+    nombre = (
+        f"{nuevo_responsable.first_name} "
+        f"{nuevo_responsable.last_name}"
+    ).strip()
+
+    nombre_efectivo = (
+        nombre
+        if nombre
+        else nuevo_responsable.username
+    )
+
+    cantidad = 0
+
+    # ==========================================
+    # REASIGNAR
+    # ==========================================
+
+    for caso in casos:
+
+        responsable_anterior = caso.responsable
+
+        # Si ya pertenece al mismo efectivo,
+        # no hacemos nada.
+        if responsable_anterior == nuevo_responsable:
+            continue
+
+        caso.responsable = nuevo_responsable
+        caso.efectivo = nombre_efectivo
+
+        # La autorización anterior deja de tener validez.
+        caso.edicion_autorizada = False
+
+        caso.save(
+            update_fields=[
+                "responsable",
+                "efectivo",
+                "edicion_autorizada"
+            ]
+        )
+
+        # ==========================================
+        # MENSAJE AL NUEVO RESPONSABLE
+        # ==========================================
+
+        Mensaje.objects.create(
+
+            destinatario=nuevo_responsable,
+
+            caso=caso,
+
+            asunto="🔔 Nuevo caso asignado",
+
+            contenido=(
+                "Se le comunica que se le ha asignado "
+                "el expediente N.° "
+                f"{caso.expediente or caso.folder} "
+                "para realizar la ejecución y seguimiento "
+                "de las medidas de protección."
+            )
+        )
+
+        cantidad += 1
+
+    # ==========================================
+    # VOLVER A GESTIÓN DE CASOS
+    # ==========================================
+
+    return redirect("gestion_casos")
+
+
+@login_required
+@grupo_requerido("Administrador", "Jefe_MP")
 def casos_preliminares(request):
 
     ubicaciones = (
@@ -2970,12 +3085,28 @@ def casos_por_efectivo(request, id):
         estado="ACTIVO"
     ).order_by("-id")
 
+    # ==========================================
+    # EFECTIVOS DISPONIBLES PARA REASIGNACIÓN
+    # ==========================================
+
+    efectivos = User.objects.filter(
+        is_active=True,
+        groups__name__in=[
+            "Efectivo_MP",
+            "Efectivo_COMFAMEA"
+        ]
+    ).distinct().order_by(
+        "first_name",
+        "last_name"
+    )
+
     return render(
         request,
         "mapa/casos_por_efectivo.html",
         {
             "efectivo": efectivo,
             "casos": casos,
+            "efectivos": efectivos,
         }
     )
 

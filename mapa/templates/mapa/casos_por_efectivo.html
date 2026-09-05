@@ -2,151 +2,929 @@
 
 {% block content %}
 
-<div style="padding:20px;">
+<style>
 
-    <h2>
-        Casos asignados a:
-        {{ efectivo.get_full_name|default:efectivo.username }}
-    </h2>
+    .contenedor-casos {
+        padding: 20px;
+    }
 
-    <p>
-        Total de casos activos: <strong>{{ casos|length }}</strong>
-    </p>
+    .titulo-casos {
+        color: #1B5E20;
+        margin-bottom: 8px;
+    }
 
-    <table
-        style="
-            width:100%;
-            border-collapse:collapse;
-            margin-top:20px;
-        "
+    .resumen-casos {
+        margin-bottom: 15px;
+        font-size: 16px;
+    }
+
+    /* ==========================================
+       BARRA DE ACCIONES
+    ========================================== */
+
+    .barra-acciones {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 15px 0;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .acciones-izquierda {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-acciones {
+        padding: 8px 14px;
+        background: white;
+        color: #333;
+        border: 1px solid #aaa;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-acciones:hover {
+        background: #f1f1f1;
+    }
+
+    .menu-acciones {
+        position: relative;
+        display: inline-block;
+    }
+
+    .menu-contenido {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 230px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        z-index: 1000;
+        margin-top: 4px;
+    }
+
+    .menu-contenido button {
+        width: 100%;
+        text-align: left;
+        padding: 10px 14px;
+        border: none;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .menu-contenido button:hover {
+        background: #f1f5f2;
+    }
+
+    .menu-contenido.mostrar {
+        display: block;
+    }
+
+    .btn-reasignar-menu {
+        color: #1B5E20;
+        font-weight: 600;
+    }
+
+    /* ==========================================
+       PANEL DE REASIGNACIÓN
+       Oculto inicialmente
+    ========================================== */
+
+    .panel-reasignacion {
+        display: none;
+        background: #f7f9f7;
+        border: 1px solid #d2d9d3;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .panel-reasignacion.mostrar {
+        display: block;
+    }
+
+    .panel-reasignacion-titulo {
+        margin: 0 0 12px 0;
+        color: #1B5E20;
+        font-size: 16px;
+    }
+
+    .form-reasignacion {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .select-responsable {
+        padding: 8px 10px;
+        border: 1px solid #aaa;
+        border-radius: 5px;
+        min-width: 280px;
+        background: white;
+    }
+
+    .btn-confirmar-reasignacion {
+        padding: 8px 15px;
+        background: #1B5E20;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .btn-confirmar-reasignacion:hover {
+        background: #144617;
+    }
+
+    .btn-confirmar-reasignacion:disabled {
+        background: #999;
+        cursor: not-allowed;
+    }
+
+    .btn-cancelar-reasignacion {
+        padding: 8px 15px;
+        background: white;
+        color: #555;
+        border: 1px solid #aaa;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .contador-seleccion {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .contador-seleccion strong {
+        color: #1B5E20;
+    }
+
+    /* ==========================================
+       TABLA
+    ========================================== */
+
+    .tabla-casos {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: white;
+    }
+
+    .tabla-casos th {
+        padding: 10px;
+        border: 1px solid #ccc;
+        background: #1B5E20;
+        color: white;
+    }
+
+    .tabla-casos td {
+        padding: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .tabla-casos tbody tr:hover {
+        background: #f5f8f5;
+    }
+
+    .columna-checkbox {
+        width: 42px;
+        text-align: center;
+    }
+
+    .checkbox-caso,
+    #seleccionar-todos {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    /* ==========================================
+       BOTÓN VOLVER
+    ========================================== */
+
+    .btn-volver {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 18px;
+        background: #1B5E20;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+    .btn-volver:hover {
+        background: #144617;
+    }
+
+</style>
+
+<div class="contenedor-casos">
+
+```
+<!-- ==========================================
+     TÍTULO
+========================================== -->
+
+<h2 class="titulo-casos">
+
+    Casos asignados a:
+
+    {{ efectivo.get_full_name|default:efectivo.username }}
+
+</h2>
+
+
+<p class="resumen-casos">
+
+    Total de casos activos:
+
+    <strong>{{ casos|length }}</strong>
+
+</p>
+
+
+<!-- ==========================================
+     BARRA DE ACCIONES
+========================================== -->
+
+{% if casos %}
+
+<div class="barra-acciones">
+
+    <div class="acciones-izquierda">
+
+        <div class="menu-acciones">
+
+            <button
+                type="button"
+                class="btn-acciones"
+                id="btnAcciones"
+            >
+                ⚙ Acciones ▾
+            </button>
+
+
+            <div
+                class="menu-contenido"
+                id="menuAcciones"
+            >
+
+                <button
+                    type="button"
+                    class="btn-reasignar-menu"
+                    id="btnMostrarReasignacion"
+                >
+                    🔄 Reasignar casos seleccionados
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <span class="contador-seleccion">
+
+            Seleccionados:
+
+            <strong id="contadorSeleccionados">
+                0
+            </strong>
+
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- ==========================================
+     FORMULARIO PRINCIPAL DE REASIGNACIÓN
+     OCULTO HASTA QUE SE SOLICITE
+========================================== -->
+
+<div
+    class="panel-reasignacion"
+    id="panelReasignacion"
+>
+
+    <h3 class="panel-reasignacion-titulo">
+
+        🔄 Reasignar casos seleccionados
+
+    </h3>
+
+
+    <form
+        method="POST"
+        action="{% url 'reasignar_casos' %}"
+        id="formReasignacion"
+        class="form-reasignacion"
     >
 
-        <thead>
+        {% csrf_token %}
 
-            <tr style="background:#1B5E20;color:white;">
 
-                <th style="padding:10px;border:1px solid #ccc;">
-                    N.°
-                </th>
+        <label for="responsable">
 
-                <th style="padding:10px;border:1px solid #ccc;">
-                    Beneficiaria
-                </th>
+            <strong>
+                Nuevo responsable:
+            </strong>
 
-                <th style="padding:10px;border:1px solid #ccc;">
-                    DNI
-                </th>
+        </label>
 
-                <th style="padding:10px;border:1px solid #ccc;">
-                    Expediente
-                </th>
 
-                <th style="padding:10px;border:1px solid #ccc;">
-                    Folder
-                </th>
+        <select
+            name="responsable"
+            id="responsable"
+            class="select-responsable"
+            required
+        >
 
-                <th style="padding:10px;border:1px solid #ccc;">
-                    Nivel de riesgo
-                </th>
+            <option value="">
+                -- Seleccione un efectivo --
+            </option>
 
-                <th style="padding:10px;border:1px solid #ccc;">
-                    Última visita
-                </th>
+            {% for nuevo_efectivo in efectivos %}
 
-                <th style="padding:10px;border:1px solid #ccc;">
-                    Fecha límite
-                </th>
+            <option value="{{ nuevo_efectivo.id }}">
 
-                <th style="padding:10px;border:1px solid #ccc;">
-                    Estado
-                </th>
+                {{ nuevo_efectivo.get_full_name|default:nuevo_efectivo.username }}
 
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            {% for caso in casos %}
-
-            <tr>
-
-                <td style="padding:8px;border:1px solid #ccc;">
-                    {{ forloop.counter }}
-                </td>
-
-                <td style="padding:8px;border:1px solid #ccc;">
-                    {{ caso.beneficiario }}
-                </td>
-
-                <td style="padding:8px;border:1px solid #ccc;">
-                    {{ caso.dni_beneficiario }}
-                </td>
-
-                <td style="padding:8px;border:1px solid #ccc;">
-                    {{ caso.expediente }}
-                </td>
-
-                <td style="padding:8px;border:1px solid #ccc;">
-                    {{ caso.folder }}
-                </td>
-
-                <td style="padding:8px;border:1px solid #ccc;">
-                    {{ caso.nivel_riesgo }}
-                </td>
-
-                <td style="padding:8px;border:1px solid #ccc;">
-                    {{ caso.ultima_visita|date:"d/m/Y" }}
-                </td>
-
-                <td style="padding:8px;border:1px solid #ccc;">
-                    {{ caso.fecha_limite|date:"d/m/Y" }}
-                </td>
-
-                <td style="padding:8px;border:1px solid #ccc;">
-                    {{ caso.estado }}
-                </td>
-
-            </tr>
-
-            {% empty %}
-
-            <tr>
-
-                <td
-                    colspan="9"
-                    style="
-                        padding:20px;
-                        text-align:center;
-                    "
-                >
-                    No tiene casos activos asignados.
-                </td>
-
-            </tr>
+            </option>
 
             {% endfor %}
 
-        </tbody>
+        </select>
 
-    </table>
 
-    <br>
+        <button
+            type="submit"
+            class="btn-confirmar-reasignacion"
+            id="btnConfirmarReasignacion"
+            disabled
+        >
 
-    <a
-        href="{% url 'estadistica' %}"
-        style="
-            display:inline-block;
-            padding:10px 18px;
-            background:#1B5E20;
-            color:white;
-            text-decoration:none;
-            border-radius:5px;
-        "
-    >
-        ← Volver a Estadística
-    </a>
+            Reasignar
+
+        </button>
+
+
+        <button
+            type="button"
+            class="btn-cancelar-reasignacion"
+            id="btnCancelarReasignacion"
+        >
+
+            Cancelar
+
+        </button>
+
+    </form>
 
 </div>
+
+
+<!-- ==========================================
+     TABLA DE CASOS
+========================================== -->
+
+<table class="tabla-casos">
+
+    <thead>
+
+        <tr>
+
+            <th class="columna-checkbox">
+
+                <input
+                    type="checkbox"
+                    id="seleccionar-todos"
+                    title="Seleccionar todos"
+                >
+
+            </th>
+
+
+            <th>
+                N.°
+            </th>
+
+
+            <th>
+                Beneficiaria
+            </th>
+
+
+            <th>
+                DNI
+            </th>
+
+
+            <th>
+                Expediente
+            </th>
+
+
+            <th>
+                Folder
+            </th>
+
+
+            <th>
+                Nivel de riesgo
+            </th>
+
+
+            <th>
+                Última visita
+            </th>
+
+
+            <th>
+                Fecha límite
+            </th>
+
+
+            <th>
+                Estado
+            </th>
+
+        </tr>
+
+    </thead>
+
+
+    <tbody>
+
+        {% for caso in casos %}
+
+        <tr>
+
+            <td class="columna-checkbox">
+
+                <input
+                    type="checkbox"
+                    name="casos"
+                    value="{{ caso.id }}"
+                    class="checkbox-caso"
+                >
+
+            </td>
+
+
+            <td>
+                {{ forloop.counter }}
+            </td>
+
+
+            <td>
+                {{ caso.beneficiario }}
+            </td>
+
+
+            <td>
+                {{ caso.dni_beneficiario }}
+            </td>
+
+
+            <td>
+                {{ caso.expediente }}
+            </td>
+
+
+            <td>
+                {{ caso.folder }}
+            </td>
+
+
+            <td>
+                {{ caso.nivel_riesgo }}
+            </td>
+
+
+            <td>
+                {{ caso.ultima_visita|date:"d/m/Y" }}
+            </td>
+
+
+            <td>
+                {{ caso.fecha_limite|date:"d/m/Y" }}
+            </td>
+
+
+            <td>
+                {{ caso.estado }}
+            </td>
+
+        </tr>
+
+
+        {% empty %}
+
+        <tr>
+
+            <td
+                colspan="10"
+                style="
+                    padding:20px;
+                    text-align:center;
+                "
+            >
+
+                No tiene casos activos asignados.
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endif %}
+
+
+<!-- ==========================================
+     VOLVER A ESTADÍSTICA
+========================================== -->
+
+<a
+    href="{% url 'estadistica' %}"
+    class="btn-volver"
+>
+
+    ← Volver a Estadística
+
+</a>
+```
+
+</div>
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const btnAcciones =
+            document.getElementById(
+                "btnAcciones"
+            );
+
+        const menuAcciones =
+            document.getElementById(
+                "menuAcciones"
+            );
+
+        const btnMostrarReasignacion =
+            document.getElementById(
+                "btnMostrarReasignacion"
+            );
+
+        const panelReasignacion =
+            document.getElementById(
+                "panelReasignacion"
+            );
+
+        const btnCancelarReasignacion =
+            document.getElementById(
+                "btnCancelarReasignacion"
+            );
+
+        const seleccionarTodos =
+            document.getElementById(
+                "seleccionar-todos"
+            );
+
+        const checkboxes =
+            document.querySelectorAll(
+                ".checkbox-caso"
+            );
+
+        const contador =
+            document.getElementById(
+                "contadorSeleccionados"
+            );
+
+        const responsable =
+            document.getElementById(
+                "responsable"
+            );
+
+        const btnConfirmar =
+            document.getElementById(
+                "btnConfirmarReasignacion"
+            );
+
+        const formulario =
+            document.getElementById(
+                "formReasignacion"
+            );
+
+
+        /* ==========================================
+           MENÚ ACCIONES
+        ========================================== */
+
+        btnAcciones.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation();
+
+                menuAcciones.classList.toggle(
+                    "mostrar"
+                );
+
+            }
+        );
+
+
+        /*
+         * Cerrar menú al hacer clic fuera
+         */
+
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    !event.target.closest(
+                        ".menu-acciones"
+                    )
+                ) {
+
+                    menuAcciones.classList.remove(
+                        "mostrar"
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* ==========================================
+           ACTUALIZAR CONTADOR
+        ========================================== */
+
+        function actualizarSeleccion() {
+
+            const seleccionados =
+                document.querySelectorAll(
+                    ".checkbox-caso:checked"
+                );
+
+            const cantidad =
+                seleccionados.length;
+
+
+            contador.textContent =
+                cantidad;
+
+
+            /*
+             * El botón de reasignación
+             * solamente se habilita si:
+             *
+             * - hay casos seleccionados
+             * - hay nuevo responsable
+             */
+
+            if (btnConfirmar) {
+
+                btnConfirmar.disabled =
+                    cantidad === 0 ||
+                    responsable.value === "";
+
+            }
+
+
+            /*
+             * Actualizar seleccionar todos
+             */
+
+            if (
+                seleccionarTodos &&
+                checkboxes.length > 0
+            ) {
+
+                seleccionarTodos.checked =
+                    cantidad === checkboxes.length;
+
+            }
+
+        }
+
+
+        /* ==========================================
+           SELECCIONAR TODOS
+        ========================================== */
+
+        if (seleccionarTodos) {
+
+            seleccionarTodos.addEventListener(
+                "change",
+                function () {
+
+                    checkboxes.forEach(
+                        function (checkbox) {
+
+                            checkbox.checked =
+                                seleccionarTodos.checked;
+
+                        }
+                    );
+
+                    actualizarSeleccion();
+
+                }
+            );
+
+        }
+
+
+        /* ==========================================
+           SELECCIÓN INDIVIDUAL
+        ========================================== */
+
+        checkboxes.forEach(
+            function (checkbox) {
+
+                checkbox.addEventListener(
+                    "change",
+                    actualizarSeleccion
+                );
+
+            }
+        );
+
+
+        /* ==========================================
+           MOSTRAR REASIGNACIÓN
+        ========================================== */
+
+        btnMostrarReasignacion.addEventListener(
+            "click",
+            function () {
+
+                const seleccionados =
+                    document.querySelectorAll(
+                        ".checkbox-caso:checked"
+                    );
+
+
+                if (
+                    seleccionados.length === 0
+                ) {
+
+                    alert(
+                        "Primero seleccione uno o más casos."
+                    );
+
+                    menuAcciones.classList.remove(
+                        "mostrar"
+                    );
+
+                    return;
+
+                }
+
+
+                panelReasignacion.classList.add(
+                    "mostrar"
+                );
+
+
+                menuAcciones.classList.remove(
+                    "mostrar"
+                );
+
+
+                actualizarSeleccion();
+
+            }
+        );
+
+
+        /* ==========================================
+           CANCELAR REASIGNACIÓN
+        ========================================== */
+
+        btnCancelarReasignacion.addEventListener(
+            "click",
+            function () {
+
+                panelReasignacion.classList.remove(
+                    "mostrar"
+                );
+
+                responsable.value = "";
+
+                actualizarSeleccion();
+
+            }
+        );
+
+
+        /* ==========================================
+           CAMBIO DE RESPONSABLE
+        ========================================== */
+
+        responsable.addEventListener(
+            "change",
+            actualizarSeleccion
+        );
+
+
+        /* ==========================================
+           CONFIRMACIÓN
+        ========================================== */
+
+        formulario.addEventListener(
+            "submit",
+            function (event) {
+
+                const seleccionados =
+                    document.querySelectorAll(
+                        ".checkbox-caso:checked"
+                    );
+
+
+                if (
+                    seleccionados.length === 0
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Debe seleccionar al menos un caso."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    responsable.value === ""
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Debe seleccionar el nuevo efectivo responsable."
+                    );
+
+                    return;
+
+                }
+
+
+                const nombreResponsable =
+                    responsable.options[
+                        responsable.selectedIndex
+                    ].text.trim();
+
+
+                const mensaje =
+                    "¿Está seguro de reasignar " +
+                    seleccionados.length +
+                    " caso(s) al efectivo:\n\n" +
+                    nombreResponsable +
+                    "?\n\n" +
+                    "El responsable de los casos seleccionados será actualizado.";
+
+
+                if (
+                    !confirm(mensaje)
+                ) {
+
+                    event.preventDefault();
+
+                }
+
+            }
+        );
+
+
+        actualizarSeleccion();
+
+    }
+);
+
+</script>
 
 {% endblock %}

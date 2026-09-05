@@ -289,4 +289,10 @@ path(
         name="casos_por_efectivo"
     ),
 
+    path(
+        "reasignar-casos/",
+        views.reasignar_casos,
+        name="reasignar_casos"
+    ),
+
 ]
