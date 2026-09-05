@@ -2130,6 +2130,17 @@ def mapa_agresores(request):
         longitud__isnull=False
     )
 
+    # ==========================================
+    # DETERMINAR AGRESORES NO NOTIFICADOS
+    # ==========================================
+
+    for agresor in agresores:
+
+        # Si tiene al menos un caso pendiente
+        agresor.no_notificado = agresor.casos.filter(
+            notificacion_agresor="PENDIENTE"
+        ).exists()
+
     fecha_limite = timezone.now() - timedelta(days=30)
 
     agresores_preliminares = PersonaPreliminar.objects.filter(

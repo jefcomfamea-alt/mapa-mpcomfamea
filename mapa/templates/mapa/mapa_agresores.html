@@ -91,6 +91,26 @@
 
 }
 
+/* ==========================================
+   AGRESOR NO NOTIFICADO
+   ========================================== */
+
+@keyframes parpadeoAgresorNoNotificado {
+
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.15;
+    }
+
+}
+
+.agresor-no-notificado {
+    animation: parpadeoAgresorNoNotificado 1s infinite;
+}
+
 </style>
 
 
@@ -227,6 +247,9 @@ var marcadorDefinitivo = L.circleMarker(
 `
 );
 
+{% if agresor.no_notificado %}
+    marcadorDefinitivo.getElement().classList.add("agresor-no-notificado");
+{% endif %}
 
 registrosAgresores.push({
 
