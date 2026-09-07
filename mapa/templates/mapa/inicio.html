@@ -653,6 +653,18 @@ DESPLEGABLE DE BÚSQUEDA
 
 {% endif %}
 
+{% if es_admin or es_jefe or es_usuario_mp or es_usuario_estadistica %}
+
+<button
+    class="botonMenu azul"
+    onclick="window.location.href='/central-alertas/'">
+
+    🔔 Central de Alertas
+
+</button>
+
+{% endif %}
+
 
 {% if es_admin or es_jefe or es_usuario_mp or es_usuario_estadistica %}
 

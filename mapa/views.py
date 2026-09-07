@@ -25,8 +25,11 @@ from .models import (
     UbicacionPreliminar,
     PersonaPreliminar,
     RolPersonaPreliminar,
-    Agresor
+    Agresor,
+    AlertaEmergencia,
+    SolicitudWhatsApp
 )
+
 from .decorators import grupo_requerido
 from .forms_solicitudes import SolicitudModificacionForm
 
@@ -3464,3 +3467,752 @@ def corregir_niveles_riesgo(request):
         )
 
     return redirect("estadistica")
+
+# ============================================================
+# CENTRAL DE ALERTAS DE EMERGENCIA
+# ============================================================
+
+@login_required
+def central_alertas(request):
+
+    # --------------------------------------------------------
+    # PERMISOS
+    # --------------------------------------------------------
+
+    es_admin = (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name="Administrador"
+        ).exists()
+    )
+
+    es_jefe = request.user.groups.filter(
+        name="Jefe_MP"
+    ).exists()
+
+    es_comisario = request.user.groups.filter(
+        name="Comisario"
+    ).exists()
+
+    if not (es_admin or es_jefe or es_comisario):
+        return HttpResponseForbidden(
+            "No tiene autorización para acceder a la Central de Alertas."
+        )
+
+    # --------------------------------------------------------
+    # ALERTAS ACTIVAS
+    # --------------------------------------------------------
+
+    alertas = (
+        AlertaEmergencia.objects
+        .select_related("caso", "atendido_por")
+        .filter(
+            estado__in=[
+                "ACTIVA",
+                "ACEPTADA",
+                "EN_CAMINO",
+                "EN_LUGAR",
+            ]
+        )
+        .order_by("-fecha_hora_activacion")
+    )
+
+    # --------------------------------------------------------
+    # CASOS DISPONIBLES PARA SIMULACIÓN
+    #
+    # ESTO ES SOLAMENTE PARA PRUEBAS LOCALES
+    # --------------------------------------------------------
+
+    casos_prueba = (
+        Caso.objects
+        .filter(
+            estado="ACTIVO"
+        )
+        .exclude(
+            latitud__isnull=True,
+            longitud__isnull=True
+        )
+        .order_by("beneficiario")[:100]
+    )
+
+    return render(
+        request,
+        "mapa/central_alertas.html",
+        {
+            "alertas": alertas,
+            "casos_prueba": casos_prueba,
+        }
+    )
+
+
+# ============================================================
+# CREAR ALERTA DE EMERGENCIA
+# ============================================================
+
+@login_required
+def crear_alerta_emergencia(request, id):
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "Método no permitido."
+            },
+            status=405
+        )
+
+    caso = get_object_or_404(
+        Caso,
+        pk=id,
+        estado="ACTIVO"
+    )
+
+    # --------------------------------------------------------
+    # EVITAR ALERTAS DUPLICADAS
+    # --------------------------------------------------------
+
+    alerta_activa = AlertaEmergencia.objects.filter(
+        caso=caso,
+        estado__in=[
+            "ACTIVA",
+            "ACEPTADA",
+            "EN_CAMINO",
+            "EN_LUGAR",
+        ]
+    ).first()
+
+    if alerta_activa:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "Este caso ya tiene una alerta activa.",
+                "alerta_id": alerta_activa.id
+            },
+            status=400
+        )
+
+    # --------------------------------------------------------
+    # OBTENER GPS
+    # --------------------------------------------------------
+
+    latitud = request.POST.get("latitud")
+    longitud = request.POST.get("longitud")
+
+    # Para esta primera fase:
+    # si no llega GPS, usamos la ubicación registrada del caso.
+
+    if not latitud:
+        latitud = caso.latitud
+
+    if not longitud:
+        longitud = caso.longitud
+
+    if latitud is None or longitud is None:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "El caso no tiene coordenadas disponibles."
+            },
+            status=400
+        )
+
+    # --------------------------------------------------------
+    # CREAR ALERTA
+    # --------------------------------------------------------
+
+    alerta = AlertaEmergencia.objects.create(
+        caso=caso,
+        latitud=latitud,
+        longitud=longitud,
+        estado="ACTIVA"
+    )
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "alerta_id": alerta.id,
+            "estado": alerta.estado,
+            "beneficiario": caso.beneficiario,
+            "latitud": float(alerta.latitud),
+            "longitud": float(alerta.longitud),
+            "mensaje": "Alerta de emergencia registrada correctamente."
+        }
+    )
+
+
+# ============================================================
+# ALERTAS EN FORMATO JSON
+# ============================================================
+
+@login_required
+def alertas_json(request):
+
+    es_admin = (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name="Administrador"
+        ).exists()
+    )
+
+    es_jefe = request.user.groups.filter(
+        name="Jefe_MP"
+    ).exists()
+
+    es_comisario = request.user.groups.filter(
+        name="Comisario"
+    ).exists()
+
+    if not (es_admin or es_jefe or es_comisario):
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "No autorizado."
+            },
+            status=403
+        )
+
+    alertas = (
+        AlertaEmergencia.objects
+        .select_related("caso", "atendido_por")
+        .filter(
+            estado__in=[
+                "ACTIVA",
+                "ACEPTADA",
+                "EN_CAMINO",
+                "EN_LUGAR",
+            ]
+        )
+        .order_by("-fecha_hora_activacion")
+    )
+
+    datos = []
+
+    for alerta in alertas:
+
+        datos.append(
+            {
+                "id": alerta.id,
+                "caso_id": alerta.caso.id,
+                "beneficiario": alerta.caso.beneficiario,
+                "dni": alerta.caso.dni_beneficiario,
+                "agresor": alerta.caso.agresor,
+                "nivel_riesgo": alerta.caso.nivel_riesgo,
+                "domicilio": alerta.caso.domicilio,
+                "telefono": alerta.caso.telefono,
+                "latitud": float(alerta.latitud),
+                "longitud": float(alerta.longitud),
+                "estado": alerta.estado,
+                "fecha_hora_activacion": (
+                    alerta.fecha_hora_activacion.isoformat()
+                ),
+                "atendido_por": (
+                    alerta.atendido_por.get_full_name()
+                    if alerta.atendido_por
+                    else ""
+                ),
+            }
+        )
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "alertas": datos
+        }
+    )
+
+
+# ============================================================
+# ACTUALIZAR ESTADO DE ALERTA
+# ============================================================
+
+@login_required
+def actualizar_estado_alerta(request, id):
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "Método no permitido."
+            },
+            status=405
+        )
+
+    es_admin = (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name="Administrador"
+        ).exists()
+    )
+
+    es_jefe = request.user.groups.filter(
+        name="Jefe_MP"
+    ).exists()
+
+    es_comisario = request.user.groups.filter(
+        name="Comisario"
+    ).exists()
+
+    if not (es_admin or es_jefe or es_comisario):
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "No autorizado."
+            },
+            status=403
+        )
+
+    alerta = get_object_or_404(
+        AlertaEmergencia,
+        pk=id
+    )
+
+    nuevo_estado = request.POST.get("estado")
+
+    estados_validos = {
+        "ACTIVA",
+        "ACEPTADA",
+        "EN_CAMINO",
+        "EN_LUGAR",
+        "FINALIZADA",
+        "FALSA",
+    }
+
+    if nuevo_estado not in estados_validos:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "Estado no válido."
+            },
+            status=400
+        )
+
+    ahora = timezone.now()
+
+    # --------------------------------------------------------
+    # ACTUALIZAR FECHAS
+    # --------------------------------------------------------
+
+    if nuevo_estado == "ACEPTADA":
+
+        alerta.fecha_aceptacion = ahora
+        alerta.atendido_por = request.user
+
+    elif nuevo_estado == "EN_CAMINO":
+
+        alerta.fecha_en_camino = ahora
+
+        if not alerta.atendido_por:
+            alerta.atendido_por = request.user
+
+    elif nuevo_estado == "EN_LUGAR":
+
+        alerta.fecha_llegada = ahora
+
+        if not alerta.atendido_por:
+            alerta.atendido_por = request.user
+
+    elif nuevo_estado in ["FINALIZADA", "FALSA"]:
+
+        alerta.fecha_finalizacion = ahora
+
+        if not alerta.atendido_por:
+            alerta.atendido_por = request.user
+
+    alerta.estado = nuevo_estado
+
+    alerta.save()
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "alerta_id": alerta.id,
+            "estado": alerta.estado
+        }
+    )
+
+# ==========================================================
+# WEBHOOK WHATSAPP
+# ==========================================================
+
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import json
+
+
+@csrf_exempt
+def webhook_whatsapp(request):
+
+    # ======================================================
+    # VERIFICACIÓN DEL WEBHOOK
+    # ======================================================
+
+    if request.method == "GET":
+
+        modo = request.GET.get("hub.mode")
+        token = request.GET.get("hub.verify_token")
+        challenge = request.GET.get("hub.challenge")
+
+        token_correcto = getattr(
+            settings,
+            "WHATSAPP_VERIFY_TOKEN",
+            ""
+        )
+
+        if (
+            modo == "subscribe"
+            and token
+            and token == token_correcto
+        ):
+            return HttpResponse(
+                challenge
+            )
+
+        return HttpResponse(
+            "Token de verificación incorrecto",
+            status=403
+        )
+
+    # ======================================================
+    # RECIBIR MENSAJE
+    # ======================================================
+
+    if request.method != "POST":
+
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "Método no permitido"
+            },
+            status=405
+        )
+
+    try:
+
+        data = json.loads(
+            request.body.decode("utf-8")
+        )
+
+    except Exception:
+
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "JSON inválido"
+            },
+            status=400
+        )
+
+    # ======================================================
+    # PROCESAR ESTRUCTURA DE WHATSAPP
+    # ======================================================
+
+    try:
+
+        entry = data.get("entry", [])
+
+        if not entry:
+            return JsonResponse(
+                {"ok": True}
+            )
+
+        changes = entry[0].get(
+            "changes",
+            []
+        )
+
+        if not changes:
+            return JsonResponse(
+                {"ok": True}
+            )
+
+        value = changes[0].get(
+            "value",
+            {}
+        )
+
+        messages = value.get(
+            "messages",
+            []
+        )
+
+        if not messages:
+
+            # Puede ser un evento que no sea
+            # un mensaje recibido.
+
+            return JsonResponse(
+                {"ok": True}
+            )
+
+        mensaje = messages[0]
+
+        telefono = mensaje.get(
+            "from"
+        )
+
+        mensaje_id = mensaje.get(
+            "id",
+            ""
+        )
+
+        tipo = mensaje.get(
+            "type"
+        )
+
+        # ==================================================
+        # BUSCAR CASO POR TELÉFONO
+        # ==================================================
+
+        caso = None
+
+        if telefono:
+
+            telefono_limpio = (
+                telefono
+                .replace("+", "")
+                .replace(" ", "")
+                .replace("-", "")
+            )
+
+            casos = Caso.objects.filter(
+                estado="ACTIVO"
+            )
+
+            for posible_caso in casos:
+
+                telefono_caso = (
+                    posible_caso.telefono
+                    or ""
+                )
+
+                telefono_caso_limpio = (
+                    str(telefono_caso)
+                    .replace("+", "")
+                    .replace(" ", "")
+                    .replace("-", "")
+                )
+
+                if (
+                    telefono_caso_limpio
+                    and
+                    telefono_caso_limpio.endswith(
+                        telefono_limpio[-9:]
+                    )
+                ):
+
+                    caso = posible_caso
+                    break
+
+        # ==================================================
+        # MENSAJE DE TEXTO
+        # ==================================================
+
+        if tipo == "text":
+
+            texto = (
+                mensaje
+                .get("text", {})
+                .get("body", "")
+            )
+
+            solicitud = (
+                SolicitudWhatsApp.objects
+                .filter(
+                    telefono=telefono,
+                    estado="ESPERANDO_UBICACION"
+                )
+                .order_by("-fecha_hora")
+                .first()
+            )
+
+            if not solicitud:
+
+                solicitud = (
+                    SolicitudWhatsApp.objects.create(
+                        telefono=telefono,
+                        mensaje_inicial=texto,
+                        caso=caso,
+                        estado=(
+                            "ESPERANDO_UBICACION"
+                            if caso
+                            else "NO_IDENTIFICADA"
+                        ),
+                        mensaje_whatsapp_id=mensaje_id
+                    )
+                )
+
+            return JsonResponse(
+                {
+                    "ok": True,
+                    "tipo": "text",
+                    "telefono": telefono,
+                    "caso_id": (
+                        caso.id
+                        if caso
+                        else None
+                    ),
+                    "estado": solicitud.estado
+                }
+            )
+
+        # ==================================================
+        # UBICACIÓN
+        # ==================================================
+
+        if tipo == "location":
+
+            location = mensaje.get(
+                "location",
+                {}
+            )
+
+            latitud = location.get(
+                "latitude"
+            )
+
+            longitud = location.get(
+                "longitude"
+            )
+
+            if (
+                latitud is None
+                or
+                longitud is None
+            ):
+
+                return JsonResponse(
+                    {
+                        "ok": False,
+                        "error":
+                            "Ubicación incompleta"
+                    },
+                    status=400
+                )
+
+            solicitud = (
+                SolicitudWhatsApp.objects
+                .filter(
+                    telefono=telefono,
+                    estado="ESPERANDO_UBICACION"
+                )
+                .order_by("-fecha_hora")
+                .first()
+            )
+
+            # ------------------------------------------------
+            # SI NO EXISTE UNA SOLICITUD PREVIA
+            # ------------------------------------------------
+
+            if not solicitud:
+
+                solicitud = (
+                    SolicitudWhatsApp.objects.create(
+                        telefono=telefono,
+                        estado=(
+                            "UBICACION_RECIBIDA"
+                        ),
+                        mensaje_whatsapp_id=mensaje_id
+                    )
+                )
+
+            # ------------------------------------------------
+            # SI NO IDENTIFICAMOS EL CASO
+            # ------------------------------------------------
+
+            if not solicitud.caso:
+
+                solicitud.latitud = latitud
+                solicitud.longitud = longitud
+                solicitud.estado = "NO_IDENTIFICADA"
+
+                solicitud.save()
+
+                return JsonResponse(
+                    {
+                        "ok": True,
+                        "estado": "NO_IDENTIFICADA"
+                    }
+                )
+
+            caso = solicitud.caso
+
+            # ------------------------------------------------
+            # EVITAR DUPLICAR ALERTAS
+            # ------------------------------------------------
+
+            alerta_existente = (
+                AlertaEmergencia.objects
+                .filter(
+                    caso=caso,
+                    estado__in=[
+                        "ACTIVA",
+                        "ACEPTADA",
+                        "EN_CAMINO",
+                        "EN_LUGAR"
+                    ]
+                )
+                .first()
+            )
+
+            if alerta_existente:
+
+                solicitud.latitud = latitud
+                solicitud.longitud = longitud
+                solicitud.alerta = alerta_existente
+                solicitud.estado = "ALERTA_CREADA"
+                solicitud.save()
+
+                return JsonResponse(
+                    {
+                        "ok": True,
+                        "estado": "ALERTA_EXISTENTE",
+                        "alerta_id":
+                            alerta_existente.id
+                    }
+                )
+
+            # ------------------------------------------------
+            # CREAR ALERTA
+            # ------------------------------------------------
+
+            alerta = AlertaEmergencia.objects.create(
+                caso=caso,
+                latitud=latitud,
+                longitud=longitud,
+                estado="ACTIVA"
+            )
+
+            solicitud.latitud = latitud
+            solicitud.longitud = longitud
+            solicitud.alerta = alerta
+            solicitud.estado = "ALERTA_CREADA"
+
+            solicitud.save()
+
+            return JsonResponse(
+                {
+                    "ok": True,
+                    "estado": "ALERTA_CREADA",
+                    "alerta_id": alerta.id,
+                    "caso_id": caso.id,
+                    "latitud": float(latitud),
+                    "longitud": float(longitud)
+                }
+            )
+
+        return JsonResponse(
+            {
+                "ok": True,
+                "tipo": tipo
+            }
+        )
+
+    except Exception as e:
+
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": str(e)
+            },
+            status=500
+        )

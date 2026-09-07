@@ -295,4 +295,42 @@ path(
         name="reasignar_casos"
     ),
 
+        # =================================================
+    # CENTRAL DE ALERTAS DE EMERGENCIA
+    # =================================================
+
+    path(
+        "central-alertas/",
+        views.central_alertas,
+        name="central_alertas"
+    ),
+
+    path(
+        "alertas/crear/<int:id>/",
+        views.crear_alerta_emergencia,
+        name="crear_alerta_emergencia"
+    ),
+
+    path(
+        "alertas/json/",
+        views.alertas_json,
+        name="alertas_json"
+    ),
+
+    path(
+        "alertas/<int:id>/estado/",
+        views.actualizar_estado_alerta,
+        name="actualizar_estado_alerta"
+    ),
+
+    # =================================================
+    # WHATSAPP - WEBHOOK
+    # =================================================
+
+    path(
+        "webhook/whatsapp/",
+        views.webhook_whatsapp,
+        name="webhook_whatsapp"
+    ),
+
 ]

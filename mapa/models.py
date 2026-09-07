@@ -1069,3 +1069,165 @@ class Agresor(models.Model):
 
     def __str__(self):
         return self.nombres
+
+# ==========================================
+# ALERTAS DE EMERGENCIA / BOTÓN DE AUXILIO
+# ==========================================
+
+class AlertaEmergencia(models.Model):
+
+    ESTADOS = [
+        ("ACTIVA", "Activa"),
+        ("ACEPTADA", "Aceptada"),
+        ("EN_CAMINO", "En camino"),
+        ("EN_LUGAR", "En el lugar"),
+        ("FINALIZADA", "Finalizada"),
+        ("FALSA", "Falsa alarma"),
+    ]
+
+    # Caso al que pertenece la alerta
+    caso = models.ForeignKey(
+        Caso,
+        on_delete=models.PROTECT,
+        related_name="alertas_emergencia"
+    )
+
+    # Momento exacto en que se activa
+    fecha_hora_activacion = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    # Ubicación GPS en el momento de la alerta
+    latitud = models.FloatField()
+
+    longitud = models.FloatField()
+
+    # Estado operativo de la emergencia
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADOS,
+        default="ACTIVA"
+    )
+
+    # Usuario que toma la alerta
+    atendido_por = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="alertas_atendidas"
+    )
+
+    # Tiempos operativos
+    fecha_aceptacion = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    fecha_en_camino = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    fecha_llegada = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    fecha_finalizacion = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    # Observaciones del operador/efectivo
+    observaciones = models.TextField(
+        blank=True
+    )
+
+    def __str__(self):
+
+        return (
+            f"Alerta #{self.id} - "
+            f"{self.caso.beneficiario} - "
+            f"{self.estado}"
+        )
+
+    class Meta:
+
+        verbose_name = "Alerta de emergencia"
+        verbose_name_plural = "Alertas de emergencia"
+        ordering = ["-fecha_hora_activacion"]
+
+
+# ==========================================================
+# SOLICITUDES DE AUXILIO RECIBIDAS POR WHATSAPP
+# ==========================================================
+
+class SolicitudWhatsApp(models.Model):
+
+    ESTADOS = [
+        ("ESPERANDO_UBICACION", "Esperando ubicación"),
+        ("UBICACION_RECIBIDA", "Ubicación recibida"),
+        ("ALERTA_CREADA", "Alerta creada"),
+        ("NO_IDENTIFICADA", "Número no identificado"),
+    ]
+
+    telefono = models.CharField(
+        max_length=30
+    )
+
+    mensaje_inicial = models.TextField(
+        blank=True
+    )
+
+    fecha_hora = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    estado = models.CharField(
+        max_length=30,
+        choices=ESTADOS,
+        default="ESPERANDO_UBICACION"
+    )
+
+    caso = models.ForeignKey(
+        Caso,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="solicitudes_whatsapp"
+    )
+
+    alerta = models.ForeignKey(
+        "AlertaEmergencia",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="solicitud_whatsapp"
+    )
+
+    latitud = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+    longitud = models.FloatField(
+        null=True,
+        blank=True
+    )
+
+    mensaje_whatsapp_id = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    def __str__(self):
+        return (
+            f"WhatsApp {self.telefono} - "
+            f"{self.estado}"
+        )
+
+    class Meta:
+        verbose_name = "Solicitud de auxilio por WhatsApp"
+        verbose_name_plural = "Solicitudes de auxilio por WhatsApp"
+        ordering = ["-fecha_hora"]

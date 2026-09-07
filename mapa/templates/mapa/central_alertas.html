@@ -1,0 +1,1327 @@
+{% extends "mapa/base.html" %}
+
+{% block content %}
+
+<style>
+
+    body {
+        background: #eef2ef;
+    }
+
+    .central-contenedor {
+        width: 96%;
+        margin: 20px auto;
+    }
+
+    .central-titulo {
+        background: #1B5E20;
+        color: white;
+        padding: 18px 22px;
+        border-radius: 8px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .central-titulo h2 {
+        margin: 0;
+        font-size: 25px;
+    }
+
+    .central-titulo p {
+        margin: 6px 0 0 0;
+        font-size: 14px;
+        opacity: 0.92;
+    }
+
+    .resumen-alertas {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+
+    .indicador {
+        background: white;
+        border-radius: 8px;
+        padding: 14px 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.10);
+        min-width: 170px;
+    }
+
+    .indicador-titulo {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .indicador-valor {
+        font-size: 25px;
+        font-weight: bold;
+        color: #1B5E20;
+    }
+
+    .central-grid {
+        display: grid;
+        grid-template-columns: 390px 1fr;
+        gap: 18px;
+        align-items: stretch;
+    }
+
+    .panel-alertas {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 650px;
+        max-height: 750px;
+    }
+
+    .panel-alertas-header {
+        background: #f5f7f5;
+        border-bottom: 1px solid #ddd;
+        padding: 13px 16px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    #listaAlertas {
+        overflow-y: auto;
+        padding: 10px;
+        flex: 1;
+    }
+
+    .sin-alertas {
+        text-align: center;
+        color: #777;
+        padding: 55px 20px;
+        font-size: 15px;
+    }
+
+    .alerta-card {
+        border: 1px solid #ddd;
+        border-left: 6px solid #777;
+        border-radius: 7px;
+        margin-bottom: 10px;
+        padding: 13px;
+        background: #fff;
+        cursor: pointer;
+        transition: 0.15s;
+    }
+
+    .alerta-card:hover {
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        transform: translateY(-1px);
+    }
+
+    .alerta-card.severo-extremo {
+        border-left-color: #990000;
+    }
+
+    .alerta-card.severo {
+        border-left-color: #ff0000;
+    }
+
+    .alerta-card.moderado {
+        border-left-color: #ffd966;
+    }
+
+    .alerta-card.leve {
+        border-left-color: #00b050;
+    }
+
+    .alerta-card.no-determinado {
+        border-left-color: #800080;
+    }
+
+    .alerta-cabecera {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .alerta-beneficiaria {
+        font-size: 15px;
+        font-weight: bold;
+        color: #222;
+        line-height: 1.3;
+    }
+
+    .alerta-id {
+        font-size: 12px;
+        color: #777;
+        white-space: nowrap;
+    }
+
+    .alerta-dato {
+        font-size: 13px;
+        margin: 4px 0;
+        color: #444;
+        line-height: 1.35;
+    }
+
+    .alerta-dato strong {
+        color: #222;
+    }
+
+    .riesgo {
+        display: inline-block;
+        padding: 3px 7px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .riesgo-leve {
+        background: #00b050;
+    }
+
+    .riesgo-moderado {
+        background: #d6b656;
+        color: #222;
+    }
+
+    .riesgo-severo {
+        background: #ff0000;
+    }
+
+    .riesgo-severo-extremo {
+        background: #990000;
+    }
+
+    .riesgo-no-determinado {
+        background: #800080;
+    }
+
+    .estado-alerta {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 5px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: bold;
+        background: #e8f5e9;
+        color: #1B5E20;
+    }
+
+    .alerta-tiempo {
+        margin-top: 8px;
+        font-size: 11px;
+        color: #777;
+    }
+
+    .acciones-alerta {
+        margin-top: 11px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .btn-estado {
+        border: none;
+        border-radius: 5px;
+        padding: 7px 9px;
+        font-size: 11px;
+        cursor: pointer;
+        font-weight: bold;
+        background: #1B5E20;
+        color: white;
+    }
+
+    .btn-estado:hover {
+        opacity: 0.88;
+    }
+
+    .btn-falsa {
+        background: #777;
+    }
+
+    .mapa-panel {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        overflow: hidden;
+        min-height: 650px;
+    }
+
+    #mapaAlertas {
+        width: 100%;
+        height: 100%;
+        min-height: 650px;
+    }
+
+    .marcador-alerta {
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        background: #d50000;
+        border: 3px solid white;
+        box-shadow:
+            0 0 0 2px #d50000,
+            0 0 14px rgba(213,0,0,0.75);
+        animation: alertaPulso 1.2s infinite;
+    }
+
+    @keyframes alertaPulso {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.35);
+            opacity: 0.65;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .popup-alerta {
+        min-width: 250px;
+        font-size: 13px;
+    }
+
+    .popup-alerta-titulo {
+        font-size: 15px;
+        font-weight: bold;
+        color: #1B5E20;
+        margin-bottom: 7px;
+    }
+
+    .popup-alerta-dato {
+        margin: 4px 0;
+    }
+
+    .central-estado {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #666;
+        text-align: right;
+    }
+
+    @media (max-width: 900px) {
+
+        .central-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .panel-alertas {
+            min-height: 400px;
+            max-height: 550px;
+        }
+
+        .mapa-panel {
+            min-height: 500px;
+        }
+
+        #mapaAlertas {
+            min-height: 500px;
+        }
+    }
+
+</style>
+
+
+<div class="central-contenedor">
+
+    <!-- ===================================================== -->
+    <!-- TITULO -->
+    <!-- ===================================================== -->
+
+    <div class="central-titulo">
+
+        <h2>
+            🚨 CENTRAL DE ALERTAS DE EMERGENCIA
+        </h2>
+
+        <p>
+            Recepción y atención de alertas de emergencia
+            generadas por las personas beneficiarias.
+        </p>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- INDICADORES -->
+    <!-- ===================================================== -->
+
+    <div class="resumen-alertas">
+
+        <div class="indicador">
+
+            <div class="indicador-titulo">
+                Alertas activas
+            </div>
+
+            <div
+                class="indicador-valor"
+                id="totalAlertas"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="indicador">
+
+            <div class="indicador-titulo">
+                Última actualización
+            </div>
+
+            <div
+                id="ultimaActualizacion"
+                style="
+                    font-size:15px;
+                    font-weight:bold;
+                    color:#1B5E20;
+                    margin-top:7px;
+                "
+            >
+                --
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- CENTRAL -->
+    <!-- ===================================================== -->
+
+    <div class="central-grid">
+
+
+        <!-- ================================================= -->
+        <!-- LISTA DE ALERTAS -->
+        <!-- ================================================= -->
+
+        <div class="panel-alertas">
+
+            <div class="panel-alertas-header">
+
+                🚨 ALERTAS EN ATENCIÓN
+
+            </div>
+
+
+            <div id="listaAlertas">
+
+                <div class="sin-alertas">
+                    No hay alertas activas.
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- MAPA -->
+        <!-- ================================================= -->
+
+        <div class="mapa-panel">
+
+            <div id="mapaAlertas"></div>
+
+        </div>
+
+    </div>
+
+
+    <div class="central-estado">
+
+        Sistema de monitoreo automático.
+        Actualización cada 5 segundos.
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- LEAFLET -->
+<!-- ========================================================= -->
+
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ========================================================
+    // MAPA
+    // ========================================================
+
+    const mapa = L.map("mapaAlertas").setView(
+        [-12.0435, -76.9950],
+        13
+    );
+
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }
+    ).addTo(mapa);
+
+
+    // ========================================================
+    // VARIABLES
+    // ========================================================
+
+    let marcadores = {};
+
+
+    // ========================================================
+    // CSRF
+    // ========================================================
+
+    function obtenerCookie(nombre) {
+
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+
+            const cookies = document.cookie.split(";");
+
+            for (let i = 0; i < cookies.length; i++) {
+
+                const cookie = cookies[i].trim();
+
+                if (
+                    cookie.substring(
+                        0,
+                        nombre.length + 1
+                    ) === (nombre + "=")
+                ) {
+
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(nombre.length + 1)
+                    );
+
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+
+    // ========================================================
+    // ESCAPAR HTML
+    // ========================================================
+
+    function escaparHTML(valor) {
+
+        if (valor === null || valor === undefined) {
+            return "";
+        }
+
+        return String(valor)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+
+    // ========================================================
+    // CLASE DEL RIESGO
+    // ========================================================
+
+    function claseRiesgo(riesgo) {
+
+        if (!riesgo) {
+            return "no-determinado";
+        }
+
+        const texto = String(riesgo)
+            .toUpperCase()
+            .trim();
+
+        if (texto === "LEVE") {
+            return "leve";
+        }
+
+        if (texto === "MODERADO") {
+            return "moderado";
+        }
+
+        if (texto === "SEVERO") {
+            return "severo";
+        }
+
+        if (texto === "SEVERO EXTREMO") {
+            return "severo-extremo";
+        }
+
+        return "no-determinado";
+    }
+
+
+    // ========================================================
+    // TEXTO DEL RIESGO
+    // ========================================================
+
+    function textoRiesgo(riesgo) {
+
+        return escaparHTML(
+            riesgo || "NO DETERMINADO"
+        );
+
+    }
+
+
+    // ========================================================
+    // MARCADOR
+    // ========================================================
+
+    function crearIconoAlerta() {
+
+        return L.divIcon({
+
+            className: "",
+
+            html:
+                '<div class="marcador-alerta"></div>',
+
+            iconSize: [22, 22],
+
+            iconAnchor: [11, 11],
+
+            popupAnchor: [0, -11]
+
+        });
+
+    }
+
+
+    // ========================================================
+    // FORMATO FECHA
+    // ========================================================
+
+    function formatearFecha(fecha) {
+
+        if (!fecha) {
+            return "--";
+        }
+
+        try {
+
+            const d = new Date(fecha);
+
+            return d.toLocaleString(
+                "es-PE",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit"
+                }
+            );
+
+        } catch (e) {
+
+            return fecha;
+
+        }
+    }
+
+
+    // ========================================================
+    // POPUP
+    // ========================================================
+
+    function construirPopup(alerta) {
+
+        return `
+
+            <div class="popup-alerta">
+
+                <div class="popup-alerta-titulo">
+                    🚨 ALERTA #${escaparHTML(alerta.id)}
+                </div>
+
+                <div class="popup-alerta-dato">
+                    <strong>Beneficiaria:</strong>
+                    ${escaparHTML(alerta.beneficiario)}
+                </div>
+
+                <div class="popup-alerta-dato">
+                    <strong>DNI:</strong>
+                    ${escaparHTML(alerta.dni || "--")}
+                </div>
+
+                <div class="popup-alerta-dato">
+                    <strong>Agresor:</strong>
+                    ${escaparHTML(alerta.agresor || "--")}
+                </div>
+
+                <div class="popup-alerta-dato">
+                    <strong>Riesgo:</strong>
+                    ${textoRiesgo(alerta.nivel_riesgo)}
+                </div>
+
+                <div class="popup-alerta-dato">
+                    <strong>Teléfono:</strong>
+                    ${escaparHTML(alerta.telefono || "--")}
+                </div>
+
+                <div class="popup-alerta-dato">
+                    <strong>Domicilio:</strong>
+                    ${escaparHTML(alerta.domicilio || "--")}
+                </div>
+
+                <div class="popup-alerta-dato">
+                    <strong>Estado:</strong>
+                    ${escaparHTML(alerta.estado)}
+                </div>
+
+                <div class="popup-alerta-dato">
+                    <strong>Activada:</strong>
+                    ${formatearFecha(
+                        alerta.fecha_hora_activacion
+                    )}
+                </div>
+
+            </div>
+
+        `;
+    }
+
+
+    // ========================================================
+    // BOTONES DE ESTADO
+    // ========================================================
+
+    function botonesEstado(alerta) {
+
+        let html = "";
+
+
+        if (alerta.estado === "ACTIVA") {
+
+            html += `
+                <button
+                    class="btn-estado"
+                    onclick="cambiarEstado(
+                        ${alerta.id},
+                        'ACEPTADA'
+                    )"
+                >
+                    ✓ ACEPTAR
+                </button>
+            `;
+
+            html += `
+                <button
+                    class="btn-estado btn-falsa"
+                    onclick="cambiarEstado(
+                        ${alerta.id},
+                        'FALSA'
+                    )"
+                >
+                    FALSA
+                </button>
+            `;
+        }
+
+
+        if (alerta.estado === "ACEPTADA") {
+
+            html += `
+                <button
+                    class="btn-estado"
+                    onclick="cambiarEstado(
+                        ${alerta.id},
+                        'EN_CAMINO'
+                    )"
+                >
+                    🚓 EN CAMINO
+                </button>
+            `;
+        }
+
+
+        if (alerta.estado === "EN_CAMINO") {
+
+            html += `
+                <button
+                    class="btn-estado"
+                    onclick="cambiarEstado(
+                        ${alerta.id},
+                        'EN_LUGAR'
+                    )"
+                >
+                    📍 EN EL LUGAR
+                </button>
+            `;
+        }
+
+
+        if (alerta.estado === "EN_LUGAR") {
+
+            html += `
+                <button
+                    class="btn-estado"
+                    onclick="cambiarEstado(
+                        ${alerta.id},
+                        'FINALIZADA'
+                    )"
+                >
+                    ✓ FINALIZAR
+                </button>
+            `;
+        }
+
+
+        if (!html) {
+            return "";
+        }
+
+
+        return `
+            <div class="acciones-alerta">
+                ${html}
+            </div>
+        `;
+
+    }
+
+
+    // ========================================================
+    // CARGAR ALERTAS
+    // ========================================================
+
+    async function cargarAlertas() {
+
+        try {
+
+            const respuesta = await fetch(
+                "{% url 'alertas_json' %}",
+                {
+                    method: "GET",
+                    cache: "no-store",
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest"
+                    }
+                }
+            );
+
+
+            if (!respuesta.ok) {
+
+                throw new Error(
+                    "Error HTTP " +
+                    respuesta.status
+                );
+
+            }
+
+
+            const data = await respuesta.json();
+
+
+            if (!data.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "No fue posible obtener las alertas."
+                );
+
+            }
+
+
+            const alertas = data.alertas || [];
+
+
+            // =================================================
+            // CONTADOR
+            // =================================================
+
+            document.getElementById(
+                "totalAlertas"
+            ).textContent = alertas.length;
+
+
+            document.getElementById(
+                "ultimaActualizacion"
+            ).textContent = new Date().toLocaleTimeString(
+                "es-PE"
+            );
+
+
+            // =================================================
+            // LISTA
+            // =================================================
+
+            const lista =
+                document.getElementById(
+                    "listaAlertas"
+                );
+
+
+            lista.innerHTML = "";
+
+
+            if (alertas.length === 0) {
+
+                lista.innerHTML = `
+
+                    <div class="sin-alertas">
+
+                        <div style="
+                            font-size:35px;
+                            margin-bottom:10px;
+                        ">
+                            ✓
+                        </div>
+
+                        No hay alertas activas
+                        en este momento.
+
+                    </div>
+
+                `;
+
+            }
+
+
+            // =================================================
+            // ALERTAS
+            // =================================================
+
+            alertas.forEach(function (alerta) {
+
+                const riesgoClase =
+                    claseRiesgo(
+                        alerta.nivel_riesgo
+                    );
+
+
+                const card =
+                    document.createElement("div");
+
+
+                card.className =
+                    "alerta-card " +
+                    riesgoClase;
+
+
+                card.innerHTML = `
+
+                    <div class="alerta-cabecera">
+
+                        <div class="alerta-beneficiaria">
+
+                            🚨
+                            ${escaparHTML(
+                                alerta.beneficiario
+                            )}
+
+                        </div>
+
+                        <div class="alerta-id">
+
+                            #${escaparHTML(
+                                alerta.id
+                            )}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="alerta-dato">
+
+                        <strong>DNI:</strong>
+
+                        ${escaparHTML(
+                            alerta.dni || "--"
+                        )}
+
+                    </div>
+
+
+                    <div class="alerta-dato">
+
+                        <strong>Agresor:</strong>
+
+                        ${escaparHTML(
+                            alerta.agresor || "--"
+                        )}
+
+                    </div>
+
+
+                    <div class="alerta-dato">
+
+                        <strong>Riesgo:</strong>
+
+                        <span class="
+                            riesgo
+                            riesgo-${riesgoClase}
+                        ">
+
+                            ${textoRiesgo(
+                                alerta.nivel_riesgo
+                            )}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="alerta-dato">
+
+                        <strong>Teléfono:</strong>
+
+                        ${escaparHTML(
+                            alerta.telefono || "--"
+                        )}
+
+                    </div>
+
+
+                    <div class="alerta-dato">
+
+                        <strong>Domicilio:</strong>
+
+                        ${escaparHTML(
+                            alerta.domicilio || "--"
+                        )}
+
+                    </div>
+
+
+                    <div class="estado-alerta">
+
+                        ${escaparHTML(
+                            alerta.estado
+                        )}
+
+                    </div>
+
+
+                    <div class="alerta-tiempo">
+
+                        Activada:
+
+                        ${formatearFecha(
+                            alerta.fecha_hora_activacion
+                        )}
+
+                    </div>
+
+
+                    ${botonesEstado(alerta)}
+
+                `;
+
+
+                // =============================================
+                // CENTRAR MAPA AL HACER CLICK
+                // =============================================
+
+                card.addEventListener(
+                    "click",
+                    function (evento) {
+
+                        if (
+                            evento.target.tagName ===
+                            "BUTTON"
+                        ) {
+                            return;
+                        }
+
+
+                        if (
+                            alerta.latitud !== null &&
+                            alerta.longitud !== null
+                        ) {
+
+                            mapa.setView(
+                                [
+                                    parseFloat(
+                                        alerta.latitud
+                                    ),
+                                    parseFloat(
+                                        alerta.longitud
+                                    )
+                                ],
+                                17
+                            );
+
+
+                            if (
+                                marcadores[
+                                    alerta.id
+                                ]
+                            ) {
+
+                                marcadores[
+                                    alerta.id
+                                ].openPopup();
+
+                            }
+
+                        }
+
+                    }
+                );
+
+
+                lista.appendChild(card);
+
+
+                // =============================================
+                // MARCADOR
+                // =============================================
+
+                const lat =
+                    parseFloat(alerta.latitud);
+
+                const lng =
+                    parseFloat(alerta.longitud);
+
+
+                if (
+                    Number.isFinite(lat) &&
+                    Number.isFinite(lng)
+                ) {
+
+                    if (
+                        marcadores[
+                            alerta.id
+                        ]
+                    ) {
+
+                        marcadores[
+                            alerta.id
+                        ].setLatLng([
+                            lat,
+                            lng
+                        ]);
+
+                        marcadores[
+                            alerta.id
+                        ].setPopupContent(
+                            construirPopup(alerta)
+                        );
+
+                    } else {
+
+                        const marcador =
+                            L.marker(
+                                [lat, lng],
+                                {
+                                    icon:
+                                        crearIconoAlerta()
+                                }
+                            )
+                            .addTo(mapa)
+                            .bindPopup(
+                                construirPopup(
+                                    alerta
+                                )
+                            );
+
+
+                        marcadores[
+                            alerta.id
+                        ] = marcador;
+
+                    }
+
+                }
+
+            });
+
+
+            // =================================================
+            // ELIMINAR MARCADORES DE ALERTAS QUE YA NO ESTÁN
+            // =================================================
+
+            const idsActuales =
+                new Set(
+                    alertas.map(
+                        alerta => String(alerta.id)
+                    )
+                );
+
+
+            Object.keys(marcadores).forEach(
+                function (id) {
+
+                    if (
+                        !idsActuales.has(
+                            String(id)
+                        )
+                    ) {
+
+                        mapa.removeLayer(
+                            marcadores[id]
+                        );
+
+                        delete marcadores[id];
+
+                    }
+
+                }
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Error cargando alertas:",
+                error
+            );
+
+            document.getElementById(
+                "ultimaActualizacion"
+            ).textContent = "Error";
+
+        }
+
+    }
+
+
+    // ========================================================
+    // CAMBIAR ESTADO
+    // ========================================================
+
+    window.cambiarEstado = async function (
+        alertaId,
+        nuevoEstado
+    ) {
+
+        if (
+            !confirm(
+                "¿Confirma cambiar el estado de la alerta a " +
+                nuevoEstado +
+                "?"
+            )
+        ) {
+            return;
+        }
+
+
+        try {
+
+            const csrfToken =
+                obtenerCookie("csrftoken");
+
+
+            const respuesta = await fetch(
+                `/alertas/${alertaId}/estado/`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/x-www-form-urlencoded; charset=UTF-8",
+
+                        "X-CSRFToken":
+                            csrfToken,
+
+                        "X-Requested-With":
+                            "XMLHttpRequest"
+                    },
+
+                    body: new URLSearchParams({
+                        estado: nuevoEstado
+                    })
+                }
+            );
+
+
+            const data =
+                await respuesta.json();
+
+
+            if (!respuesta.ok || !data.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "No se pudo actualizar el estado."
+                );
+
+            }
+
+
+            await cargarAlertas();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.message ||
+                "No se pudo actualizar la alerta."
+            );
+
+        }
+
+    };
+
+
+    // ========================================================
+    // PRIMERA CARGA
+    // ========================================================
+
+    cargarAlertas();
+
+
+    // ========================================================
+    // ACTUALIZACIÓN AUTOMÁTICA
+    // ========================================================
+
+    setInterval(
+        cargarAlertas,
+        5000
+    );
+
+
+    // ========================================================
+    // AJUSTAR MAPA
+    // ========================================================
+
+    setTimeout(
+        function () {
+            mapa.invalidateSize();
+        },
+        300
+    );
+
+});
+
+</script>
+
+{% endblock %}

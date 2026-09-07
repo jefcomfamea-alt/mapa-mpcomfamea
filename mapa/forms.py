@@ -24,6 +24,7 @@ class CasoForm(forms.ModelForm):
         fields = [
             "beneficiario",
             "dni_beneficiario",
+            "telefono",
             "domicilio",
 
             # ==============================
@@ -98,7 +99,7 @@ class CasoForm(forms.ModelForm):
             "ultima_visita",
 
             # ==============================
-            # NOTIFICACIÓN BENEFICIARIO
+            # NOTIFICACIÓN BENEFICIARIA
             # ==============================
             "notificacion_beneficiario",
             "fecha_notificacion_beneficiario",
@@ -121,6 +122,30 @@ class CasoForm(forms.ModelForm):
         ]
 
         widgets = {
+
+            # ==================================================
+            # TELÉFONO BENEFICIARIA
+            # ==================================================
+
+            "telefono": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Teléfono de la beneficiaria",
+                    "autocomplete": "tel",
+                }
+            ),
+
+            # ==================================================
+            # TELÉFONO AGRESOR
+            # ==================================================
+
+            "telefono_agresor": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Teléfono del agresor",
+                    "autocomplete": "tel",
+                }
+            ),
 
             # ==================================================
             # FECHAS
@@ -205,7 +230,7 @@ class CasoForm(forms.ModelForm):
             "longitud_agresor": forms.HiddenInput(),
 
             # ==================================================
-            # TIPOS DE VÍA
+            # TIPOS DE VÍA BENEFICIARIA
             # ==================================================
 
             "tipo_via": forms.Select(
@@ -233,6 +258,10 @@ class CasoForm(forms.ModelForm):
                     "class": "form-control",
                 },
             ),
+
+            # ==================================================
+            # TIPOS DE VÍA AGRESOR
+            # ==================================================
 
             "tipo_via_agresor": forms.Select(
                 choices=[
@@ -746,7 +775,7 @@ class CasoForm(forms.ModelForm):
             )
 
         # ==================================================
-        # NOTIFICACIÓN BENEFICIARIO
+        # NOTIFICACIÓN BENEFICIARIA
         # ==================================================
 
         notificacion_beneficiario = cleaned_data.get(
@@ -879,6 +908,7 @@ class PersonaPreliminarForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "Teléfono",
+                    "autocomplete": "tel",
                 }
             ),
 
