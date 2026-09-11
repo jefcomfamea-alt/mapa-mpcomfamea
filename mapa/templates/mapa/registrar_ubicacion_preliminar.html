@@ -1661,6 +1661,7 @@ function mostrarMapa(select){
         L.tileLayer(
             "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
             {
+        referrerPolicy: "origin",
                 attribution:
                     "&copy; OpenStreetMap contributors"
             }

@@ -477,9 +477,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
             maxZoom: 19,
+    referrerPolicy: "origin",
+
             attribution: "&copy; OpenStreetMap contributors"
         }
     ).addTo(mapa);
