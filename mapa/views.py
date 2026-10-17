@@ -1266,34 +1266,30 @@ def eliminar_caso_preliminar(request, id):
     return redirect("casos_preliminares")
 
 
+
 @login_required
 def casos_json(request):
 
     features = []
 
+    # Identificar si la cuenta corresponde al jurado.
+    es_jurado = request.user.username.lower() == "jurado"
+
     for caso in Caso.objects.filter(estado="ACTIVO"):
 
-        # ==========================================
-        # 🔵 UBICACIÓN DE LA BENEFICIARIA
-        # ==========================================
-
+        # Ubicación de la beneficiaria.
         if caso.latitud is not None and caso.longitud is not None:
 
-            features.append({
-                "type": "Feature",
+            # Información básica para mostrar el punto en el mapa.
+            propiedades = {
+                "TIPO_PUNTO": "BENEFICIARIO",
+            }
 
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        caso.longitud,
-                        caso.latitud
-                    ]
-                },
-
-                "properties": {
+            # Los datos completos se entregan únicamente
+            # a los usuarios distintos de la cuenta jurado.
+            if not es_jurado:
+                propiedades.update({
                     "id": caso.id,
-                    "TIPO_PUNTO": "BENEFICIARIO",
-
                     "BENEFICIARIO": caso.beneficiario,
                     "DOMICILIO": caso.domicilio,
                     "NIVEL RIESGO": caso.nivel_riesgo,
@@ -1303,7 +1299,6 @@ def casos_json(request):
 
                     "COMISARIA DENUNCIA": caso.comisaria_denuncia,
                     "COMISARIA MEDIDA": caso.comisaria_medida,
-
                     "EFECTIVO": caso.efectivo,
 
                     "RESPONSABLE_ID":
@@ -1312,7 +1307,6 @@ def casos_json(request):
 
                     "FOLDER": caso.folder,
                     "EXP.": caso.expediente,
-
                     "AGRESOR": caso.agresor,
 
                     "LATITUD AGRESOR": caso.latitud_agresor,
@@ -1345,13 +1339,25 @@ def casos_json(request):
                     "FECHA NOTIFICACION AGRESOR":
                         str(caso.fecha_notificacion_agresor)
                         if caso.fecha_notificacion_agresor else "",
-                }
+                })
+
+            features.append({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        caso.longitud,
+                        caso.latitud
+                    ]
+                },
+                "properties": propiedades
             })
 
     return JsonResponse({
         "type": "FeatureCollection",
         "features": features
     })
+
 
 @login_required
 def editar_caso(request, id):

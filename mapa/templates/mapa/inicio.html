@@ -908,7 +908,19 @@ return marcador;
        
         marcadoresCasos.push(layer);
 
-                layer.bindPopup(
+        if ("{{ request.user.username|lower }}" === "jurado") {
+
+            layer.bindPopup(
+                "<div style='font-family:Arial; min-width:230px; text-align:center;'>" +
+                "<strong style='color:#1B5E20;'>SIGESMP</strong><br><br>" +
+                "Por motivos de confidencialidad, no tiene autorización para visualizar los datos personales de este caso." +
+                "</div>"
+            );
+
+            return;
+        }
+
+        layer.bindPopup(
 
             "<b>Beneficiario:</b> "+(p["BENEFICIARIO"]||"")+"<br>"+
             "<b>Agresor:</b> "+(p["AGRESOR"]||"")+"<br>"+
