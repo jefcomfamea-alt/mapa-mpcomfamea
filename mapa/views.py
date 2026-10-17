@@ -360,8 +360,16 @@ def desactivar_usuario(request, pk):
     return redirect("administrar_usuarios")
 
 @login_required
-@grupo_requerido("Administrador", "Jefe_MP", "Usuario_MP", "jurado")
 def nuevo_caso(request):
+
+    if not (
+        request.user.username.lower() == "jurado"
+        or request.user.is_superuser
+        or request.user.groups.filter(
+            name__in=["Administrador", "Jefe_MP", "Usuario_MP"]
+        ).exists()
+    ):
+        return redirect("inicio")
 
     # ==========================================
     # DATOS RECIBIDOS DESDE CONVERSIÓN
