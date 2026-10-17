@@ -279,7 +279,7 @@
 
                     {{ form.beneficiario.label_tag }}
                     {{ form.beneficiario }}
-                    
+
                     {% if form.beneficiario.errors %}
                         <div class="errores">
                             {{ form.beneficiario.errors }}
@@ -1131,17 +1131,27 @@ function actualizarDomicilio() {
 
 
     const domicilioFinal =
-        partes.join(", ");
+        partes.join(", ").trim();
 
 
-    domicilio.value =
-        domicilioFinal;
+    /*
+       CORRECCIÓN:
+       No borrar el domicilio preliminar cuando
+       los campos estructurados están vacíos.
+    */
+
+    if (domicilioFinal) {
+
+        domicilio.value =
+            domicilioFinal;
+
+    }
 
 
     if (domicilioMostrado) {
 
         domicilioMostrado.textContent =
-            domicilioFinal || "—";
+            domicilio.value.trim() || "—";
 
     }
 
@@ -1343,17 +1353,27 @@ function actualizarDomicilioAgresor() {
 
 
     const domicilioFinal =
-        partes.join(", ");
+        partes.join(", ").trim();
 
 
-    direccion.value =
-        domicilioFinal;
+    /*
+       CORRECCIÓN:
+       No borrar la dirección preliminar cuando
+       los campos estructurados están vacíos.
+    */
+
+    if (domicilioFinal) {
+
+        direccion.value =
+            domicilioFinal;
+
+    }
 
 
     if (domicilioMostrado) {
 
         domicilioMostrado.textContent =
-            domicilioFinal || "—";
+            direccion.value.trim() || "—";
 
     }
 
