@@ -156,6 +156,7 @@ def inicio(request):
     # 5. ROLES
     # ==========================================================
 
+    es_jurado = request.user.username.lower() == "jurado"
     es_admin = (
         request.user.is_superuser
         or request.user.groups.filter(
@@ -196,6 +197,7 @@ def inicio(request):
             "pendientes": pendientes,
 
             "es_admin": es_admin,
+            "es_jurado": es_jurado,
             "es_jefe": es_jefe,
             "es_usuario_mp": es_usuario_mp,
             "es_efectivo_comfamea": es_efectivo_comfamea,
