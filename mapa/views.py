@@ -1277,15 +1277,30 @@ def eliminar_caso_preliminar(request, id):
     return redirect("casos_preliminares")
 
 
+
 @login_required
 def casos_json(request):
 
     features = []
 
-    for caso in Caso.objects.filter(estado="ACTIVO"):
+    # ==========================================
+    # ACCESO EXCEPCIONAL DEL USUARIO JURADO
+    # ÚNICAMENTE AL CASO 391
+    # ==========================================
+
+    if request.user.username.lower() == "jurado":
+        casos = Caso.objects.filter(
+            estado="ACTIVO",
+            id=391
+        )
+    else:
+        # Se conserva la consulta actual para los demás usuarios.
+        casos = Caso.objects.filter(estado="ACTIVO")
+
+    for caso in casos:
 
         # ==========================================
-        # 🔵 UBICACIÓN DE LA BENEFICIARIA
+        # UBICACIÓN DE LA BENEFICIARIA
         # ==========================================
 
         if caso.latitud is not None and caso.longitud is not None:
@@ -1363,6 +1378,7 @@ def casos_json(request):
         "type": "FeatureCollection",
         "features": features
     })
+
 
 @login_required
 def editar_caso(request, id):
