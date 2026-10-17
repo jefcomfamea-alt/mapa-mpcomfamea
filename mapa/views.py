@@ -1284,18 +1284,12 @@ def casos_json(request):
     features = []
 
     # ==========================================
-    # ACCESO EXCEPCIONAL DEL USUARIO JURADO
-    # ÚNICAMENTE AL CASO 391
+    # MOSTRAR TODOS LOS CASOS ACTIVOS EN EL MAPA
+    # Se conserva el comportamiento original.
+    # El usuario jurado también verá todos los puntos.
     # ==========================================
 
-    if request.user.username.lower() == "jurado":
-        casos = Caso.objects.filter(
-            estado="ACTIVO",
-            id=391
-        )
-    else:
-        # Se conserva la consulta actual para los demás usuarios.
-        casos = Caso.objects.filter(estado="ACTIVO")
+    casos = Caso.objects.filter(estado="ACTIVO")
 
     for caso in casos:
 
