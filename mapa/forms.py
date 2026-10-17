@@ -688,12 +688,11 @@ class CasoForm(forms.ModelForm):
         # RESPONSABLE
         # ==================================================
 
+        # Permitir seleccionar a cualquier efectivo activo,
+        # independientemente de la oficina o grupo al que pertenezca.
         self.fields["responsable"].queryset = (
             User.objects
-            .filter(
-                groups__name="Usuario_MP",
-                is_active=True
-            )
+            .filter(is_active=True)
             .order_by(
                 "first_name",
                 "last_name",
