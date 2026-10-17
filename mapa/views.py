@@ -360,7 +360,7 @@ def desactivar_usuario(request, pk):
     return redirect("administrar_usuarios")
 
 @login_required
-@grupo_requerido("Administrador", "Jefe_MP", "Usuario_MP")
+@grupo_requerido("Administrador", "Jefe_MP", "Usuario_MP", "jurado")
 def nuevo_caso(request):
 
     # ==========================================
