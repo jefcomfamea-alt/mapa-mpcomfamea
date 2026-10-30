@@ -2549,10 +2549,11 @@ def obtener_nombre_calle(domicilio):
     return direccion
 
 
+
 def obtener_grupo_calle(caso):
     """
-    Obtiene el nombre normalizado de la calle para agrupar
-    medidas de protección sin modificar los domicilios originales.
+    Obtiene el nombre normalizado para agrupar medidas de protección
+    sin modificar los domicilios originales.
     """
 
     import re
@@ -2590,12 +2591,43 @@ def obtener_grupo_calle(caso):
     if not domicilio:
         return "DOMICILIO NO REGISTRADO"
 
-    # 2. Unificar las abreviaturas y nombres de vías
+    # 2. Normalizar variantes específicas
+
+    # Unificar errores ortográficos de Ferrocarril
+    domicilio = re.sub(
+        r"\bFERROCARIL\b",
+        "FERROCARRIL",
+        domicilio
+    )
+
+    # Unificar las referencias de Los Nogales, torre 6
+    domicilio_limpio = re.sub(
+        r"[^A-Z0-9 ]",
+        " ",
+        domicilio
+    )
+    domicilio_limpio = re.sub(
+        r"\s+",
+        " ",
+        domicilio_limpio
+    ).strip()
+
+    if (
+        "LOS NOGALES" in domicilio_limpio
+        and "251" in domicilio_limpio
+        and (
+            re.search(r"\bTORRE\s*6\b", domicilio_limpio)
+            or re.search(r"\b6TO\b", domicilio_limpio)
+        )
+    ):
+        return "CONDOMINIO LOS NOGALES - TORRE 6"
+
+    # 3. Unificar abreviaturas y nombres de vías
     tipos_via = [
         (r"^(?:JIRON|JR\.?)\s+", "JIRON"),
         (r"^(?:AVENIDA|AV\.?)\s+", "AVENIDA"),
         (r"^(?:CALLE|CL\.?)\s+", "CALLE"),
-        (r"^(?:PASAJE|PSJE\.?)\s+", "PASAJE"),
+        (r"^(?:PASAJE|PSJ\.?|PSJE\.?)\s+", "PASAJE"),
         (r"^(?:PROLONGACION|PROL\.?)\s+", "PROLONGACION"),
     ]
 
@@ -2610,14 +2642,14 @@ def obtener_grupo_calle(caso):
             resto = domicilio[coincidencia.end():].strip()
             break
 
-    # 3. Si no se reconoce el tipo de vía,
+    # 4. Si no se reconoce el tipo de vía,
     # utilizar la limpieza general
     if not tipo_detectado:
         return obtener_nombre_calle(domicilio)
 
-    # 4. Retirar números y referencias del inmueble
+    # 5. Retirar números y referencias del inmueble
     resto = re.split(
-        r"\s+(?:NRO\.?|N°|Nº|NUMERO|#)\s*[\d\-\/]+",
+        r"\s+(?:NRO?\.?|N°|Nº|NUMERO|#)\s*[\d-]+",
         resto,
         maxsplit=1
     )[0]
@@ -2628,7 +2660,7 @@ def obtener_grupo_calle(caso):
         maxsplit=1
     )[0]
 
-    # 5. Retirar datos de departamentos, interiores,
+    # 6. Retirar datos de departamentos, interiores,
     # manzanas, lotes y pisos
     resto = re.split(
         r"\s+(?:DPTO\.?|DEPARTAMENTO|EDIFICIO|BLOCK|BL\.?|"
@@ -2642,8 +2674,9 @@ def obtener_grupo_calle(caso):
     if not resto:
         return "DOMICILIO NO REGISTRADO"
 
-    # 6. Devolver el nombre uniforme de la calle
-    return f"{tipo_detectado} {resto}"   
+    # 7. Devolver el nombre uniforme
+    return f"{tipo_detectado} {resto}"
+  
 
 @login_required
 def estadistica(request):
