@@ -2492,20 +2492,29 @@ def ubicaciones_preliminares_json(request):
 
 def obtener_nombre_calle(domicilio):
     """
-    Obtiene el nombre base de la calle desde el domicilio
-    para poder agrupar las medidas de protección.
+    Limpia el domicilio y obtiene una dirección base.
+    No modifica el registro original.
     """
+
+    import re
+    import unicodedata
 
     if not domicilio:
         return "DOMICILIO NO REGISTRADO"
 
-    direccion = domicilio.strip().upper()
+    direccion = str(domicilio).strip().upper()
+
+    # Quitar tildes para uniformizar las direcciones
+    direccion = unicodedata.normalize("NFKD", direccion)
+    direccion = "".join(
+        c for c in direccion
+        if not unicodedata.combining(c)
+    )
 
     # Normalizar espacios
     direccion = re.sub(r"\s+", " ", direccion)
 
-    # Eliminar desde donde empiezan los datos internos
-    # del inmueble.
+    # Eliminar datos internos del inmueble
     patrones = [
         r"\s+DPTO\.?\s*.*$",
         r"\s+DEPARTAMENTO\s*.*$",
@@ -2521,6 +2530,7 @@ def obtener_nombre_calle(domicilio):
         r"\s+LOTE\s*.*$",
         r"\s+N[°º.]?\s*\d+.*$",
         r"\s+NUMERO\s*\d+.*$",
+        r"\s+#\s*\d+.*$",
     ]
 
     for patron in patrones:
@@ -2531,18 +2541,18 @@ def obtener_nombre_calle(domicilio):
             flags=re.IGNORECASE
         )
 
-    # Quitar guiones sobrantes al final
-    direccion = re.sub(r"\s*-\s*$", "", direccion).strip()
+    direccion = direccion.strip(" ,.-")
 
     if not direccion:
         return "DOMICILIO NO REGISTRADO"
 
     return direccion
 
- def obtener_grupo_calle(caso):
+
+def obtener_grupo_calle(caso):
     """
-    Obtiene un nombre de calle normalizado para agrupar medidas.
-    No modifica el domicilio original del caso.
+    Obtiene el nombre normalizado de la calle para agrupar
+    medidas de protección sin modificar los domicilios originales.
     """
 
     import re
@@ -2551,7 +2561,6 @@ def obtener_nombre_calle(domicilio):
     def normalizar(texto):
         texto = str(texto or "").strip().upper()
 
-        # Unificar tildes: JIRÓN = JIRON
         texto = unicodedata.normalize("NFKD", texto)
         texto = "".join(
             c for c in texto
@@ -2559,25 +2568,33 @@ def obtener_nombre_calle(domicilio):
         )
 
         texto = re.sub(r"\s+", " ", texto)
+
         return texto.strip()
 
-    # Priorizar los campos estructurados, pero normalizarlos
-    tipo_via = normalizar(getattr(caso, "tipo_via", ""))
-    nombre_via = normalizar(getattr(caso, "nombre_via", ""))
+    # 1. Priorizar los campos estructurados
+    tipo_via = normalizar(
+        getattr(caso, "tipo_via", "")
+    )
+
+    nombre_via = normalizar(
+        getattr(caso, "nombre_via", "")
+    )
 
     if tipo_via and nombre_via:
         domicilio = f"{tipo_via} {nombre_via}"
     else:
-        domicilio = normalizar(caso.domicilio)
+        domicilio = normalizar(
+            getattr(caso, "domicilio", "")
+        )
 
     if not domicilio:
         return "DOMICILIO NO REGISTRADO"
 
-    # Reconocer y unificar tipos de vía
+    # 2. Unificar las abreviaturas y nombres de vías
     tipos_via = [
         (r"^(?:JIRON|JR\.?)\s+", "JIRON"),
-        (r"^(?:AVENIDA|AV\.?)\s+", "AV."),
-        (r"^(?:CALLE)\s+", "CALLE"),
+        (r"^(?:AVENIDA|AV\.?)\s+", "AVENIDA"),
+        (r"^(?:CALLE|CL\.?)\s+", "CALLE"),
         (r"^(?:PASAJE|PSJE\.?)\s+", "PASAJE"),
         (r"^(?:PROLONGACION|PROL\.?)\s+", "PROLONGACION"),
     ]
@@ -2593,11 +2610,12 @@ def obtener_nombre_calle(domicilio):
             resto = domicilio[coincidencia.end():].strip()
             break
 
-    # Si no se reconoce el tipo de vía, usar la limpieza anterior
+    # 3. Si no se reconoce el tipo de vía,
+    # utilizar la limpieza general
     if not tipo_detectado:
-        return normalizar(obtener_nombre_calle(domicilio))
+        return obtener_nombre_calle(domicilio)
 
-    # Eliminar número del inmueble y los datos posteriores
+    # 4. Retirar números y referencias del inmueble
     resto = re.split(
         r"\s+(?:NRO\.?|N°|Nº|NUMERO|#)\s*[\d\-\/]+",
         resto,
@@ -2610,7 +2628,8 @@ def obtener_nombre_calle(domicilio):
         maxsplit=1
     )[0]
 
-    # Eliminar referencias internas
+    # 5. Retirar datos de departamentos, interiores,
+    # manzanas, lotes y pisos
     resto = re.split(
         r"\s+(?:DPTO\.?|DEPARTAMENTO|EDIFICIO|BLOCK|BL\.?|"
         r"INTERIOR|INT\.?|PISO|MZ\.?|MANZANA|LT\.?|LOTE)\b",
@@ -2621,8 +2640,9 @@ def obtener_nombre_calle(domicilio):
     resto = resto.strip(" ,.-")
 
     if not resto:
-        return normalizar(obtener_nombre_calle(domicilio))
+        return "DOMICILIO NO REGISTRADO"
 
+    # 6. Devolver el nombre uniforme de la calle
     return f"{tipo_detectado} {resto}"   
 
 @login_required
@@ -3085,7 +3105,7 @@ def descargar_estadistica(request):
     # ==========================================
 
     from openpyxl import Workbook
-    from openpyxl.styles import Font, Alignment
+    from openpyxl.styles import Font, Alignment, PatternFill
     from io import BytesIO
 
     # ==========================================
@@ -3096,7 +3116,7 @@ def descargar_estadistica(request):
         estado="ACTIVO"
     )
 
-        # ==========================================
+    # ==========================================
     # CALLES CON MÁS MEDIDAS DE PROTECCIÓN
     # ==========================================
 
@@ -3104,7 +3124,8 @@ def descargar_estadistica(request):
 
     for caso in casos_activos.order_by("-id"):
 
-        calle = obtener_nombre_calle(caso.domicilio)
+        # Utilizar la misma función que la pantalla
+        calle = obtener_grupo_calle(caso)
 
         if calle not in calles_dict:
             calles_dict[calle] = []
@@ -3250,7 +3271,7 @@ def descargar_estadistica(request):
     ws.merge_cells("A1:B1")
 
     # ==========================================
-    # ENCABEZADOS
+    # INDICADORES GENERALES
     # ==========================================
 
     ws["A3"] = "INDICADOR"
@@ -3259,66 +3280,19 @@ def descargar_estadistica(request):
     ws["A3"].font = Font(bold=True)
     ws["B3"].font = Font(bold=True)
 
-    # ==========================================
-    # DATOS
-    # ==========================================
-
     datos = [
 
-        (
-            "Total de casos activos",
-            total_casos
-        ),
-
-        (
-            "Casos leves",
-            casos_leves
-        ),
-
-        (
-            "Casos moderados",
-            casos_moderados
-        ),
-
-        (
-            "Casos severos",
-            casos_severos
-        ),
-
-        (
-            "Casos severo extremo",
-            casos_severo_extremo
-        ),
-
-        (
-            "Casos no determinado",
-            casos_no_determinado
-        ),
-
-        (
-            "Casos por vencer en 3 días",
-            casos_por_vencer
-        ),
-
-        (
-            "Casos vencidos",
-            casos_vencidos
-        ),
-
-        (
-            "Casos al día",
-            casos_al_dia
-        ),
-
-        (
-            "Preliminares pendientes",
-            total_preliminares
-        ),
-
-        (
-            "Agresores registrados",
-            total_agresores
-        ),
+        ("Total de casos activos", total_casos),
+        ("Casos leves", casos_leves),
+        ("Casos moderados", casos_moderados),
+        ("Casos severos", casos_severos),
+        ("Casos severo extremo", casos_severo_extremo),
+        ("Casos no determinado", casos_no_determinado),
+        ("Casos por vencer en 3 días", casos_por_vencer),
+        ("Casos vencidos", casos_vencidos),
+        ("Casos al día", casos_al_dia),
+        ("Preliminares pendientes", total_preliminares),
+        ("Agresores registrados", total_agresores),
 
     ]
 
@@ -3341,11 +3315,163 @@ def descargar_estadistica(request):
         fila += 1
 
     # ==========================================
-    # ANCHO DE COLUMNAS
+    # RANKING DE CALLES
     # ==========================================
 
-    ws.column_dimensions["A"].width = 35
-    ws.column_dimensions["B"].width = 15
+    fila += 2
+
+    ws.cell(
+        row=fila,
+        column=1,
+        value="RANKING DE CALLES CON MÁS MEDIDAS DE PROTECCIÓN"
+    )
+
+    ws.cell(
+        row=fila,
+        column=1
+    ).font = Font(
+        bold=True,
+        size=13
+    )
+
+    ws.merge_cells(
+        start_row=fila,
+        start_column=1,
+        end_row=fila,
+        end_column=7
+    )
+
+    fila += 1
+
+    encabezados_calles = [
+        "N.º",
+        "CALLE AGRUPADA",
+        "TOTAL MEDIDAS",
+        "BENEFICIARIO",
+        "DNI",
+        "FOLDER",
+        "EXPEDIENTE",
+        "NIVEL DE RIESGO",
+        "DOMICILIO ORIGINAL",
+    ]
+
+    for columna, encabezado in enumerate(
+        encabezados_calles,
+        start=1
+    ):
+
+        celda = ws.cell(
+            row=fila,
+            column=columna,
+            value=encabezado
+        )
+
+        celda.font = Font(
+            bold=True,
+            color="FFFFFF"
+        )
+
+        celda.fill = PatternFill(
+            fill_type="solid",
+            fgColor="1F4E78"
+        )
+
+        celda.alignment = Alignment(
+            horizontal="center",
+            vertical="center",
+            wrap_text=True
+        )
+
+    fila += 1
+
+    # ==========================================
+    # DETALLE DE CADA CALLE Y SUS CASOS
+    # ==========================================
+
+    numero_calle = 1
+
+    for calle in calles_estadistica:
+
+        for indice, caso in enumerate(calle["casos"]):
+
+            ws.cell(
+                row=fila,
+                column=1,
+                value=numero_calle if indice == 0 else ""
+            )
+
+            ws.cell(
+                row=fila,
+                column=2,
+                value=calle["nombre"] if indice == 0 else ""
+            )
+
+            ws.cell(
+                row=fila,
+                column=3,
+                value=calle["total"] if indice == 0 else ""
+            )
+
+            ws.cell(
+                row=fila,
+                column=4,
+                value=caso["beneficiario"]
+            )
+
+            ws.cell(
+                row=fila,
+                column=5,
+                value=caso["dni"]
+            )
+
+            ws.cell(
+                row=fila,
+                column=6,
+                value=caso["folder"]
+            )
+
+            ws.cell(
+                row=fila,
+                column=7,
+                value=caso["expediente"]
+            )
+
+            ws.cell(
+                row=fila,
+                column=8,
+                value=caso["riesgo"]
+            )
+
+            ws.cell(
+                row=fila,
+                column=9,
+                value=caso["domicilio"]
+            )
+
+            fila += 1
+
+        numero_calle += 1
+
+    # ==========================================
+    # FORMATO Y ANCHO DE COLUMNAS
+    # ==========================================
+
+    anchos = {
+        "A": 10,
+        "B": 28,
+        "C": 16,
+        "D": 30,
+        "E": 15,
+        "F": 15,
+        "G": 20,
+        "H": 20,
+        "I": 45,
+    }
+
+    for columna, ancho in anchos.items():
+        ws.column_dimensions[columna].width = ancho
+
+    ws.freeze_panes = "A4"
 
     # ==========================================
     # GENERAR ARCHIVO
