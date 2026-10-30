@@ -1476,6 +1476,7 @@ def editar_caso(request, id):
 
         return redirect("gestion_casos")
 
+    
     # =====================================================
     # FORMULARIO
     # =====================================================
@@ -1490,10 +1491,7 @@ def editar_caso(request, id):
 
         if form.is_valid():
 
-            # =================================================
             # RESPONSABLE NUEVO
-            # =================================================
-
             caso = form.save(commit=False)
 
             responsable_nuevo = caso.responsable
@@ -1511,38 +1509,20 @@ def editar_caso(request, id):
                     else responsable_nuevo.username
                 )
 
-            # =================================================
             # DETECTAR CAMBIO DE RESPONSABLE
-            # =================================================
-
             responsable_cambio = (
                 responsable_anterior != responsable_nuevo
             )
 
-            # =================================================
-            # SI CAMBIÓ EL RESPONSABLE
-            # =================================================
-
             if responsable_cambio:
-
                 caso.edicion_autorizada = False
 
-            # =================================================
-            # SI EL RESPONSABLE ACTUAL GUARDÓ
-            #
-            # LA AUTORIZACIÓN SE CONSUME AQUÍ
-            # =================================================
-
             elif es_responsable:
-
                 caso.edicion_autorizada = False
 
             caso.save()
 
-            # =================================================
-            # MARCAR MENSAJES DEL CASO COMO LEÍDOS
-            # =================================================
-
+            # MARCAR MENSAJES COMO LEÍDOS
             Mensaje.objects.filter(
                 destinatario=request.user,
                 caso=caso,
@@ -1552,23 +1532,13 @@ def editar_caso(request, id):
                 fecha_lectura=timezone.now()
             )
 
-            # =================================================
-            # MENSAJE AL NUEVO RESPONSABLE
-            # =================================================
-
-            if (
-                responsable_cambio
-                and responsable_nuevo
-            ):
+            # NOTIFICAR AL NUEVO RESPONSABLE
+            if responsable_cambio and responsable_nuevo:
 
                 Mensaje.objects.create(
-
                     destinatario=responsable_nuevo,
-
                     caso=caso,
-
                     asunto="🔔 Nuevo caso asignado",
-
                     contenido=(
                         "Se le comunica que se le ha "
                         "asignado el expediente N.° "
@@ -1579,10 +1549,7 @@ def editar_caso(request, id):
                     )
                 )
 
-            # =================================================
             # SOLICITUD DE MODIFICACIÓN APROBADA
-            # =================================================
-
             if es_usuario:
 
                 solicitud = (
@@ -1591,28 +1558,20 @@ def editar_caso(request, id):
                         solicitante=request.user,
                         estado="APROBADA"
                     )
-                    .order_by(
-                        "-fecha_autorizacion"
-                    )
+                    .order_by("-fecha_autorizacion")
                     .first()
                 )
 
                 if solicitud:
 
                     solicitud.estado = "UTILIZADA"
-
-                    solicitud.fecha_utilizacion = (
-                        timezone.now()
-                    )
-
+                    solicitud.fecha_utilizacion = timezone.now()
                     solicitud.save()
 
                     caso.edicion_autorizada = False
 
                     caso.save(
-                        update_fields=[
-                            "edicion_autorizada"
-                        ]
+                        update_fields=["edicion_autorizada"]
                     )
 
             return redirect("gestion_casos")
@@ -1624,20 +1583,24 @@ def editar_caso(request, id):
             usuario=request.user
         )
 
-        response = render(
-            request,
-            "mapa/nuevo_caso.html",
-            {
-                "form": form,
-                "caso": caso,
-            }
-        )
+    # RENDERIZAR TANTO GET COMO POST NO VÁLIDO
+    response = render(
+        request,
+        "mapa/nuevo_caso.html",
+        {
+            "form": form,
+            "caso": caso,
+        }
+    )
 
-    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response["Cache-Control"] = (
+        "no-store, no-cache, must-revalidate, max-age=0"
+    )
     response["Pragma"] = "no-cache"
     response["Expires"] = "0"
 
     return response
+
 
 @login_required
 def actualizar_ubicacion_caso(request, id):
