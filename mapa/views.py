@@ -2548,145 +2548,273 @@ def obtener_nombre_calle(domicilio):
 
     return direccion
 
+import re
+import unicodedata
+from difflib import SequenceMatcher
 
-def obtener_grupo_calle(caso):
-    """
-    Obtiene el nombre normalizado para agrupar medidas de protección
-    sin modificar los domicilios originales.
-    """
 
-    import re
-    import unicodedata
+def agrupar_casos_por_domicilio(casos):
+
+    """
+    Agrupa automáticamente domicilios similares.
+    No modifica los domicilios originales ni los registros.
+    Devuelve: {nombre_grupo: [casos]}
+    """
 
     def normalizar(texto):
-        texto = str(texto or "").strip().upper()
+
+        texto = str(texto or "").upper().strip()
 
         texto = unicodedata.normalize("NFKD", texto)
+
         texto = "".join(
             c for c in texto
             if not unicodedata.combining(c)
         )
 
-        texto = re.sub(r"\s+", " ", texto)
+        texto = re.sub(r"[^A-Z0-9 ]", " ", texto)
+        texto = re.sub(r"\s+", " ", texto).strip()
 
-        return texto.strip()
+        return texto
 
-    # 1. Priorizar los campos estructurados
-    tipo_via = normalizar(
-        getattr(caso, "tipo_via", "")
-    )
+    def preparar_domicilio(caso):
 
-    nombre_via = normalizar(
-        getattr(caso, "nombre_via", "")
-    )
-
-    if tipo_via and nombre_via:
-        domicilio = f"{tipo_via} {nombre_via}"
-    else:
-        domicilio = normalizar(
-            getattr(caso, "domicilio", "")
+        tipo_via = normalizar(
+            getattr(caso, "tipo_via", "")
         )
 
-    if not domicilio:
-        return "DOMICILIO NO REGISTRADO"
+        nombre_via = normalizar(
+            getattr(caso, "nombre_via", "")
+        )
 
-    # 2. Corregir variantes ortográficas específicas
-    domicilio = re.sub(
-        r"\bFERROCARIL\b",
-        "FERROCARRIL",
-        domicilio
-    )
-
-    # 3. Unificar todas las variantes de Condominio Los Nogales
-    domicilio_limpio = re.sub(
-        r"[^A-Z0-9 ]",
-        " ",
-        domicilio
-    )
-
-    domicilio_limpio = re.sub(
-        r"\s+",
-        " ",
-        domicilio_limpio
-    ).strip()
-
-    if (
-        "LOS NOGALES" in domicilio_limpio
-        and (
-            "CONDOMINIO" in domicilio_limpio
-            or "CONDOMINO" in domicilio_limpio
-            or (
-                "251" in domicilio_limpio
-                and (
-                    re.search(
-                        r"\bTORRE\s*6\b",
-                        domicilio_limpio
-                    )
-                    or re.search(
-                        r"\b6TO\b",
-                        domicilio_limpio
-                    )
-                )
+        if tipo_via and nombre_via:
+            domicilio = f"{tipo_via} {nombre_via}"
+        else:
+            domicilio = normalizar(
+                getattr(caso, "domicilio", "")
             )
+
+        if not domicilio:
+            return None
+
+        # Normalizar abreviaturas de vías
+        equivalencias = [
+            (r"\bJR\b", "JIRON"),
+            (r"\bAV\b", "AVENIDA"),
+            (r"\bCL\b", "CALLE"),
+            (r"\bCA\b", "CALLE"),
+            (r"\bPSJ\b", "PASAJE"),
+            (r"\bPSJE\b", "PASAJE"),
+            (r"\bPJE\b", "PASAJE"),
+            (r"\bPROL\b", "PROLONGACION"),
+        ]
+
+        for patron, reemplazo in equivalencias:
+            domicilio = re.sub(
+                patron,
+                reemplazo,
+                domicilio
+            )
+
+        # Reconocer condominios aunque aparezca primero
+        # el nombre de una calle o una referencia.
+        condo = re.search(
+            r"\bCONDOMINIOS?\s+(.+)",
+            domicilio
         )
-    ):
-        return "CONDOMINIO LOS NOGALES"
 
-    # 4. Unificar abreviaturas y nombres de vías
-    tipos_via = [
-        (r"^(?:JIRON|JR\.?)\s+", "JIRON"),
-        (r"^(?:AVENIDA|AV\.?)\s+", "AVENIDA"),
-        (r"^(?:CALLE|CL\.?)\s+", "CALLE"),
-        (r"^(?:PASAJE|PSJ\.?|PSJE\.?)\s+", "PASAJE"),
-        (r"^(?:PROLONGACION|PROL\.?)\s+", "PROLONGACION"),
-    ]
+        if condo:
 
-    tipo_detectado = None
-    resto = domicilio
+            nombre = condo.group(1)
 
-    for patron, tipo in tipos_via:
-        coincidencia = re.match(patron, domicilio)
+            nombre = re.split(
+                r"\b(?:EDIFICIO|EDIF|EDF|TORRE|BLOCK|BLOQUE|"
+                r"DPTO|DEPARTAMENTO|INTERIOR|PISO|MZ|MANZANA|LOTE)\b",
+                nombre
+            )[0]
 
-        if coincidencia:
-            tipo_detectado = tipo
-            resto = domicilio[coincidencia.end():].strip()
-            break
+            nombre = re.sub(
+                r"\b\d+\b",
+                " ",
+                nombre
+            )
 
-    # 5. Si no se reconoce el tipo de vía,
-    # utilizar la limpieza general
-    if not tipo_detectado:
-        return obtener_nombre_calle(domicilio)
+            nombre = re.sub(
+                r"\s+",
+                " ",
+                nombre
+            ).strip()
 
-    # 6. Retirar números y referencias del inmueble
-    resto = re.split(
-        r"\s+(?:NRO?\.?|N°|Nº|NUMERO|#)\s*[\d-]+",
-        resto,
-        maxsplit=1
-    )[0]
+            if nombre:
+                return {
+                    "tipo": "CONDOMINIO",
+                    "nombre": nombre,
+                    "grupo": f"CONDOMINIO {nombre}",
+                }
 
-    resto = re.split(
-        r"\s+\d+(?:\s*[-/]\s*\d+)?(?:\s|$)",
-        resto,
-        maxsplit=1
-    )[0]
+        # Identificar tipo de vía
+        tipos = [
+            "PROLONGACION",
+            "AVENIDA",
+            "PASAJE",
+            "JIRON",
+            "CALLE",
+        ]
 
-    # 7. Retirar datos de departamentos, interiores,
-    # manzanas, lotes y pisos
-    resto = re.split(
-        r"\s+(?:DPTO\.?|DEPARTAMENTO|EDIFICIO|BLOCK|BL\.?|"
-        r"INTERIOR|INT\.?|PISO|MZ\.?|MANZANA|LT\.?|LOTE)\b",
-        resto,
-        maxsplit=1
-    )[0]
+        tipo = None
+        resto = domicilio
 
-    resto = resto.strip(" ,.-")
+        for posible_tipo in tipos:
 
-    if not resto:
-        return "DOMICILIO NO REGISTRADO"
+            if domicilio.startswith(posible_tipo + " "):
 
-    # 8. Devolver el nombre uniforme
-    return f"{tipo_detectado} {resto}"
+                tipo = posible_tipo
 
+                resto = domicilio[
+                    len(posible_tipo):
+                ].strip()
+
+                break
+
+        # Retirar referencias numéricas y datos secundarios
+        resto = re.split(
+            r"\b(?:NRO|NUMERO|N|DPTO|DEPARTAMENTO|"
+            r"INTERIOR|INT|EDIFICIO|EDIF|EDF|TORRE|"
+            r"BLOCK|BLOQUE|PISO|MANZANA|MZ|LOTE|LT)\b",
+            resto
+        )[0]
+
+        resto = re.sub(
+            r"\b\d+[A-Z]?\b",
+            " ",
+            resto
+        )
+
+        resto = re.sub(
+            r"\s+",
+            " ",
+            resto
+        ).strip()
+
+        if not resto:
+            return None
+
+        if not tipo:
+            # No mezclar domicilios sin tipo de vía
+            # con avenidas, jirones o calles.
+            return {
+                "tipo": "OTRO",
+                "nombre": resto,
+                "grupo": resto,
+            }
+
+        return {
+            "tipo": tipo,
+            "nombre": resto,
+            "grupo": f"{tipo} {resto}",
+        }
+
+    def similitud(nombre1, nombre2):
+
+        if nombre1 == nombre2:
+            return 1.0
+
+        proporcion = SequenceMatcher(
+            None,
+            nombre1,
+            nombre2
+        ).ratio()
+
+        palabras1 = set(nombre1.split())
+        palabras2 = set(nombre2.split())
+
+        if not palabras1 or not palabras2:
+            return 0
+
+        coincidencia = (
+            len(palabras1 & palabras2)
+            / len(palabras1 | palabras2)
+        )
+
+        return max(
+            proporcion,
+            coincidencia
+        )
+
+    # Preparar todos los domicilios
+    registros = []
+
+    for caso in casos:
+
+        datos = preparar_domicilio(caso)
+
+        if datos:
+            registros.append((caso, datos))
+        else:
+            registros.append((
+                caso,
+                {
+                    "tipo": "SIN DOMICILIO",
+                    "nombre": str(caso.id),
+                    "grupo": "DOMICILIO NO REGISTRADO",
+                }
+            ))
+
+    # Ordenar para que el resultado sea reproducible
+    registros.sort(
+        key=lambda x: (
+            x[1]["tipo"],
+            x[1]["nombre"],
+            x[0].id
+        )
+    )
+
+    grupos = []
+    resultado = {}
+
+    # Comparar domicilios y asignar grupos
+    for caso, datos in registros:
+
+        mejor_grupo = None
+        mejor_similitud = 0
+
+        for grupo in grupos:
+
+            # Nunca unir tipos de vía diferentes
+            if datos["tipo"] != grupo["tipo"]:
+                continue
+
+            porcentaje = similitud(
+                datos["nombre"],
+                grupo["nombre"]
+            )
+
+            if porcentaje > mejor_similitud:
+                mejor_similitud = porcentaje
+                mejor_grupo = grupo
+
+        # Coincidencia exacta o similitud alta
+        if mejor_grupo and mejor_similitud >= 0.88:
+
+            resultado[
+                mejor_grupo["grupo"]
+            ].append(caso)
+
+        else:
+
+            nuevo_grupo = {
+                "tipo": datos["tipo"],
+                "nombre": datos["nombre"],
+                "grupo": datos["grupo"],
+            }
+
+            grupos.append(nuevo_grupo)
+
+            resultado[
+                nuevo_grupo["grupo"]
+            ] = [caso]
+
+    return resultado
 
 @login_required
 def estadistica(request):
@@ -2986,17 +3114,13 @@ def estadistica(request):
     # CALLES CON MÁS MEDIDAS DE PROTECCIÓN
     # ==========================================
 
-    calles_dict = {}
+    casos_lista = list(
+        casos_activos.order_by("-id")
+    )
 
-    for caso in casos_activos.order_by("-id"):
-
-        # Utilizar la función centralizada de normalización
-        calle = obtener_grupo_calle(caso)
-
-        if calle not in calles_dict:
-            calles_dict[calle] = []
-
-        calles_dict[calle].append(caso)
+    calles_dict = agrupar_casos_por_domicilio(
+        casos_lista
+    )
 
     # Ordenar de mayor a menor cantidad de casos
     calles_con_medidas = sorted(
@@ -3112,6 +3236,7 @@ def casos_por_efectivo(request, id):
         }
     )
 
+
 @login_required
 def descargar_estadistica(request):
 
@@ -3161,19 +3286,16 @@ def descargar_estadistica(request):
 
     # ==========================================
     # CALLES CON MÁS MEDIDAS DE PROTECCIÓN
+    # MISMA FUNCIÓN DE AGRUPACIÓN DE LA PANTALLA
     # ==========================================
 
-    calles_dict = {}
+    casos_lista = list(
+        casos_activos.order_by("-id")
+    )
 
-    for caso in casos_activos.order_by("-id"):
-
-        # Utilizar la misma función que la pantalla
-        calle = obtener_grupo_calle(caso)
-
-        if calle not in calles_dict:
-            calles_dict[calle] = []
-
-        calles_dict[calle].append(caso)
+    calles_dict = agrupar_casos_por_domicilio(
+        casos_lista
+    )
 
     # Ordenar calles de mayor a menor cantidad
     calles_con_medidas = sorted(
@@ -3381,7 +3503,7 @@ def descargar_estadistica(request):
         start_row=fila,
         start_column=1,
         end_row=fila,
-        end_column=7
+        end_column=9
     )
 
     fila += 1
