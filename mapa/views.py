@@ -2549,7 +2549,6 @@ def obtener_nombre_calle(domicilio):
     return direccion
 
 
-
 def obtener_grupo_calle(caso):
     """
     Obtiene el nombre normalizado para agrupar medidas de protección
@@ -2591,21 +2590,20 @@ def obtener_grupo_calle(caso):
     if not domicilio:
         return "DOMICILIO NO REGISTRADO"
 
-    # 2. Normalizar variantes específicas
-
-    # Unificar errores ortográficos de Ferrocarril
+    # 2. Corregir variantes ortográficas específicas
     domicilio = re.sub(
         r"\bFERROCARIL\b",
         "FERROCARRIL",
         domicilio
     )
 
-    # Unificar las referencias de Los Nogales, torre 6
+    # 3. Unificar todas las variantes de Condominio Los Nogales
     domicilio_limpio = re.sub(
         r"[^A-Z0-9 ]",
         " ",
         domicilio
     )
+
     domicilio_limpio = re.sub(
         r"\s+",
         " ",
@@ -2614,15 +2612,27 @@ def obtener_grupo_calle(caso):
 
     if (
         "LOS NOGALES" in domicilio_limpio
-        and "251" in domicilio_limpio
         and (
-            re.search(r"\bTORRE\s*6\b", domicilio_limpio)
-            or re.search(r"\b6TO\b", domicilio_limpio)
+            "CONDOMINIO" in domicilio_limpio
+            or "CONDOMINO" in domicilio_limpio
+            or (
+                "251" in domicilio_limpio
+                and (
+                    re.search(
+                        r"\bTORRE\s*6\b",
+                        domicilio_limpio
+                    )
+                    or re.search(
+                        r"\b6TO\b",
+                        domicilio_limpio
+                    )
+                )
+            )
         )
     ):
-        return "CONDOMINIO LOS NOGALES - TORRE 6"
+        return "CONDOMINIO LOS NOGALES"
 
-    # 3. Unificar abreviaturas y nombres de vías
+    # 4. Unificar abreviaturas y nombres de vías
     tipos_via = [
         (r"^(?:JIRON|JR\.?)\s+", "JIRON"),
         (r"^(?:AVENIDA|AV\.?)\s+", "AVENIDA"),
@@ -2642,12 +2652,12 @@ def obtener_grupo_calle(caso):
             resto = domicilio[coincidencia.end():].strip()
             break
 
-    # 4. Si no se reconoce el tipo de vía,
+    # 5. Si no se reconoce el tipo de vía,
     # utilizar la limpieza general
     if not tipo_detectado:
         return obtener_nombre_calle(domicilio)
 
-    # 5. Retirar números y referencias del inmueble
+    # 6. Retirar números y referencias del inmueble
     resto = re.split(
         r"\s+(?:NRO?\.?|N°|Nº|NUMERO|#)\s*[\d-]+",
         resto,
@@ -2660,7 +2670,7 @@ def obtener_grupo_calle(caso):
         maxsplit=1
     )[0]
 
-    # 6. Retirar datos de departamentos, interiores,
+    # 7. Retirar datos de departamentos, interiores,
     # manzanas, lotes y pisos
     resto = re.split(
         r"\s+(?:DPTO\.?|DEPARTAMENTO|EDIFICIO|BLOCK|BL\.?|"
@@ -2674,9 +2684,9 @@ def obtener_grupo_calle(caso):
     if not resto:
         return "DOMICILIO NO REGISTRADO"
 
-    # 7. Devolver el nombre uniforme
+    # 8. Devolver el nombre uniforme
     return f"{tipo_detectado} {resto}"
-  
+
 
 @login_required
 def estadistica(request):
